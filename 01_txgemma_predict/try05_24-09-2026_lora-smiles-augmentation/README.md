@@ -39,3 +39,30 @@ partway through loading CF**, before finishing CF/TTR or writing a final summary
 Follow-up needed: give this script its own explicit target list (decoupled from the
 shared prep pipeline's `TARGETS`), then decide separately whether a CF/TTR numeric
 fine-tune is wanted as its own deliberate run.
+
+## Analysis (25-09-2026) — why Fabry didn't pass with the same fix that worked for Gaucher
+Per `coverage_report.json` (in `/work/hdd/bisa/sshah21/results/txgemma_lora_orphan/`):
+Fabry had **89 real training compounds** (445 lines after 5x SMILES augmentation);
+Gaucher had **1,208** (6,040 lines) — a ~13.5x gap, consistent with the original
+zero-shot finding that BindingDB has ~0 GLA records vs. 17 for GBA1. Augmentation
+multiplies existing signal, it can't manufacture missing signal.
+
+The failure mode confirms this: for Fabry, the model predicted **436 for migalastat
+AND all 3 hard-negative diastereomers** (real labels 196/925/754/993) — total collapse
+to a constant, not a wrong-direction guess. For Gaucher, the model predicted distinct
+values (691 for ambroxol vs. 791/791/839 for its hard negatives) that correctly
+separate the reference from the negatives.
+
+Two compounding causes: (1) 13.5x less real data leaves too little contrastive signal
+to learn a real potency function, so the model collapses toward a single value for
+anything in the "GLA-active-looking" family; (2) Fabry's specific hard negatives are
+literal diastereomers of migalastat itself (same graph, differing only in stereocenter
+configuration, i.e. `@` vs `@@` in the SMILES) — the single hardest possible
+discrimination case — while Gaucher's hard-negative set includes actual scaffold
+differences, a comparatively easier (though still meaningful) test.
+
+Net: the fix genuinely improved Fabry (try04's confidently-wrong answer became
+try05's honest inability to discriminate), it just didn't have enough real training
+data to also solve what is independently the harder of the two discrimination
+problems. More Fabry-specific data (not just more augmentation of the existing 89) is
+the likely next lever, not a different augmentation strategy.
