@@ -33,10 +33,14 @@ from the library root. A failed push only prints a warning — it does not fail 
 script, so local commits still accumulate as a backup even if the remote is
 unreachable or not yet configured.
 
-**The "why it failed" diagnosis is never automatic.** `finalize_trial.sh` only records
-the raw fact of what happened (state/log) — writing an actual root-cause explanation
-still needs a human or Claude to look at the log and fill in the `TODO` left by
-`new_trial.sh`, same as every existing try in this library.
+**The "why it failed" diagnosis is never automatic.** `finalize_trial.sh` records the
+raw fact of what happened (state/exit code/log) and greps the log for common failure
+signatures (traceback, OOM, non-zero exit, cancellation) as a labeled "not a
+diagnosis" section — but writing the actual root-cause explanation still needs a human
+or Claude to read that evidence and fill in the `TODO` left by `new_trial.sh`, same as
+every existing try in this library. See `../CLAUDE_INSTRUCTIONS.txt` for exactly when
+and how Claude is expected to do that (on submitting a job, and whenever it checks
+status), including writing the finding into the file itself, not just into chat.
 
 ## Full pattern for a `.sb` file
 ```bash
