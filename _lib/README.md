@@ -37,10 +37,11 @@ unreachable or not yet configured.
 raw fact of what happened (state/exit code/log) and greps the log for common failure
 signatures (traceback, OOM, non-zero exit, cancellation) as a labeled "not a
 diagnosis" section — but writing the actual root-cause explanation still needs a human
-or Claude to read that evidence and fill in the `TODO` left by `new_trial.sh`, same as
-every existing try in this library. See `../CLAUDE_INSTRUCTIONS.txt` for exactly when
-and how Claude is expected to do that (on submitting a job, and whenever it checks
-status), including writing the finding into the file itself, not just into chat.
+or a coding assistant to read that evidence and fill in the `TODO` left by
+`new_trial.sh`, same as every existing try in this library. See
+`../AGENT_INSTRUCTIONS.txt` for exactly when and how an assistant is expected to do
+that (on submitting a job, and whenever it checks status), including writing the
+finding into the file itself, not just into chat.
 
 ## Full pattern for a `.sb` file
 ```bash

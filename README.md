@@ -1,7 +1,7 @@
 # Library index
 
-**For Claude:** if you're picking this project up in a new session, read
-[CLAUDE_INSTRUCTIONS.txt](CLAUDE_INSTRUCTIONS.txt) first — it defines what you're
+**For a coding assistant:** if you're picking this project up in a new session, read
+[AGENT_INSTRUCTIONS.txt](AGENT_INSTRUCTIONS.txt) first — it defines what you're
 expected to write into trial READMEs (and when) as part of this project's workflow.
 
 Organized by project, then by try (one folder per distinct attempt, named

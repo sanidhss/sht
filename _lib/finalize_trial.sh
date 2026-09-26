@@ -8,7 +8,7 @@
 #
 # The failure-signature grep is mechanical pattern matching, not a diagnosis -- it just
 # surfaces the raw evidence (traceback, OOM, non-zero exit) so whoever writes the real
-# root-cause explanation (human or Claude) doesn't have to go find it in the raw log.
+# root-cause explanation (human or assistant) doesn't have to go find it in the raw log.
 #
 # Usage: finalize_trial.sh <trial_dir> <slurm_job_id>
 set -uo pipefail  # intentionally not -e: git push failing shouldn't be fatal here
@@ -53,14 +53,12 @@ fi
   echo
   echo "_If this failed, the root-cause diagnosis above this line still needs to be_"
   echo "_written by hand -- this section only records the raw outcome, not why. See_"
-  echo "_library/CLAUDE_INSTRUCTIONS.txt for who's expected to fill that in and when._"
+  echo "_library/AGENT_INSTRUCTIONS.txt for who's expected to fill that in and when._"
 } >> "$TRIAL_DIR/README.md"
 
 cd "$LIBRARY_DIR" || exit 0
 git add -A
-git commit -m "Auto-commit: job ${JOB_ID:-manual} finished (${INFO:-unknown})
-
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" --quiet \
+git commit -m "Auto-commit: job ${JOB_ID:-manual} finished (${INFO:-unknown})" --quiet \
   || echo "finalize_trial.sh: nothing to commit"
 git push --quiet \
   || echo "finalize_trial.sh: WARNING -- git push failed, committed locally only. Check remote/auth."
