@@ -1,0 +1,24 @@
+Found local copy...
+Found local copy...
+Found local copy...
+Found saved processed KG... Loading...
+Creating splits... it takes several minutes...
+split_data_path:  /work/hdd/bisa/sshah21/primekg/complex_disease_1
+Creating DGL graph....
+Done!
+=== [fabry seed=1] Blindness check ===
+LEAKAGE: 2 drug<->fabry edges are in TRAIN -- not blind:
+Traceback (most recent call last):
+  File "/projects/bisa/sshah21/scripts/py_scripts/txgnn_fabry.py", line 116, in <module>
+    outs.append(run_disease_eval(disease_name, cfg['idx'], cfg['split'](seed), seed, result_dir))
+  File "/projects/bisa/sshah21/scripts/py_scripts/txgnn_fabry.py", line 62, in run_disease_eval
+    if not check_blind(d.df_train, idx, name):
+  File "/projects/bisa/sshah21/scripts/py_scripts/txgnn_fabry.py", line 47, in check_blind
+    print(leaked[['x_name', 'relation', 'y_name']].drop_duplicates().to_string())
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/pandas/core/frame.py", line 3813, in __getitem__
+    indexer = self.columns._get_indexer_strict(key, "columns")[1]
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/pandas/core/indexes/base.py", line 6070, in _get_indexer_strict
+    self._raise_if_missing(keyarr, indexer, axis_name)
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/pandas/core/indexes/base.py", line 6133, in _raise_if_missing
+    raise KeyError(f"{not_found} not in index")
+KeyError: "['x_name', 'y_name'] not in index"

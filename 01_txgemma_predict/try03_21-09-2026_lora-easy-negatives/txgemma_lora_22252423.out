@@ -1,0 +1,42 @@
+A conda environment has been detected CONDA_PREFIX= /sw/rh9.4/python/miniforge3 
+miniconda3 is loaded. Consider running conda deactivate and reloading it.
+Loading weights:   0%|          | 0/464 [00:00<?, ?it/s]Loading weights:   0%|          | 1/464 [04:41<36:14:14, 281.76s/it]Loading weights:   0%|          | 2/464 [04:41<14:54:19, 116.15s/it]Loading weights:  17%|█▋        | 80/464 [04:49<11:47,  1.84s/it]   Loading weights:  17%|█▋        | 81/464 [05:06<13:25,  2.10s/it]Loading weights:  20%|█▉        | 91/464 [06:08<18:17,  2.94s/it]Loading weights:  20%|█▉        | 92/464 [06:15<18:55,  3.05s/it]Loading weights:  22%|██▏       | 100/464 [06:19<14:45,  2.43s/it]Loading weights:  22%|██▏       | 102/464 [06:49<20:42,  3.43s/it]Loading weights:  22%|██▏       | 103/464 [07:01<23:21,  3.88s/it]Loading weights:  22%|██▏       | 104/464 [07:07<24:15,  4.04s/it]Loading weights:  24%|██▎       | 110/464 [07:07<14:57,  2.53s/it]Loading weights:  24%|██▍       | 113/464 [07:59<33:19,  5.70s/it]Loading weights:  25%|██▍       | 114/464 [08:00<30:14,  5.19s/it]Loading weights:  25%|██▍       | 115/464 [08:01<27:55,  4.80s/it]Loading weights:  27%|██▋       | 124/464 [08:28<20:49,  3.68s/it]Loading weights:  27%|██▋       | 126/464 [08:33<19:36,  3.48s/it]Loading weights:  29%|██▊       | 133/464 [08:33<10:50,  1.97s/it]Loading weights:  29%|██▉       | 135/464 [08:57<19:11,  3.50s/it]Loading weights:  29%|██▉       | 136/464 [08:57<17:25,  3.19s/it]Loading weights:  30%|██▉       | 137/464 [09:05<20:03,  3.68s/it]Loading weights:  31%|███       | 143/464 [09:07<10:30,  1.97s/it]Loading weights:  31%|███▏      | 146/464 [10:05<35:06,  6.62s/it]Loading weights:  32%|███▏      | 147/464 [10:12<35:39,  6.75s/it]Loading weights:  32%|███▏      | 148/464 [10:13<30:49,  5.85s/it]Loading weights:  34%|███▍      | 157/464 [10:52<25:06,  4.91s/it]Loading weights:  34%|███▍      | 159/464 [10:52<20:51,  4.10s/it]Loading weights:  36%|███▌      | 168/464 [11:08<14:12,  2.88s/it]Loading weights:  36%|███▋      | 169/464 [11:11<14:17,  2.91s/it]Loading weights:  39%|███▊      | 179/464 [11:37<12:59,  2.74s/it]Loading weights:  39%|███▉      | 180/464 [11:43<13:52,  2.93s/it]Loading weights:  41%|████      | 190/464 [12:00<10:42,  2.34s/it]Loading weights:  41%|████▏     | 192/464 [12:04<10:25,  2.30s/it]Loading weights:  43%|████▎     | 201/464 [12:33<11:44,  2.68s/it]Loading weights:  44%|████▍     | 203/464 [12:36<11:02,  2.54s/it]Loading weights:  45%|████▌     | 210/464 [12:43<08:25,  1.99s/it]Loading weights:  46%|████▌     | 212/464 [13:11<15:09,  3.61s/it]Loading weights:  48%|████▊     | 223/464 [14:25<20:47,  5.18s/it]Loading weights:  48%|████▊     | 224/464 [14:35<22:06,  5.53s/it]Loading weights:  50%|█████     | 234/464 [14:47<13:18,  3.47s/it]Loading weights:  51%|█████     | 235/464 [16:07<31:38,  8.29s/it]Loading weights:  51%|█████     | 236/464 [16:28<35:34,  9.36s/it]Loading weights:  53%|█████▎    | 245/464 [17:01<23:29,  6.44s/it]Loading weights:  53%|█████▎    | 246/464 [17:03<22:02,  6.07s/it]Loading weights:  53%|█████▎    | 247/464 [17:29<29:03,  8.04s/it]Loading weights:  55%|█████▌    | 256/464 [18:17<22:40,  6.54s/it]Loading weights:  55%|█████▌    | 257/464 [18:20<21:29,  6.23s/it]Loading weights:  56%|█████▌    | 258/464 [18:20<19:19,  5.63s/it]Loading weights:  57%|█████▋    | 264/464 [18:23<10:42,  3.21s/it]Loading weights:  58%|█████▊    | 267/464 [19:03<18:42,  5.70s/it]Loading weights:  59%|█████▉    | 276/464 [19:22<12:00,  3.83s/it]Loading weights:  60%|█████▉    | 278/464 [20:10<20:50,  6.72s/it]Loading weights:  60%|██████    | 279/464 [20:11<18:56,  6.14s/it]Loading weights:  60%|██████    | 280/464 [20:11<16:43,  5.45s/it]Loading weights:  62%|██████▏   | 287/464 [20:12<07:48,  2.65s/it]Loading weights:  62%|██████▏   | 289/464 [20:45<14:51,  5.10s/it]Loading weights:  62%|██████▎   | 290/464 [20:45<13:08,  4.53s/it]Loading weights:  65%|██████▍   | 300/464 [21:01<07:22,  2.70s/it]Loading weights:  65%|██████▍   | 301/464 [21:05<07:38,  2.81s/it]Loading weights:  65%|██████▌   | 302/464 [21:06<07:09,  2.65s/it]Loading weights:  66%|██████▋   | 308/464 [21:06<03:43,  1.43s/it]Loading weights:  67%|██████▋   | 311/464 [21:20<05:42,  2.24s/it]Loading weights:  67%|██████▋   | 312/464 [21:22<05:24,  2.13s/it]Loading weights:  67%|██████▋   | 313/464 [21:23<05:01,  2.00s/it]Loading weights:  69%|██████▉   | 320/464 [21:25<02:25,  1.01s/it]Loading weights:  69%|██████▉   | 322/464 [21:34<04:01,  1.70s/it]Loading weights:  70%|██████▉   | 323/464 [21:35<03:42,  1.58s/it]Loading weights:  70%|██████▉   | 324/464 [21:35<03:12,  1.38s/it]Loading weights:  71%|███████   | 330/464 [21:35<01:27,  1.54it/s]Loading weights:  71%|███████▏  | 331/464 [21:35<01:20,  1.65it/s]Loading weights:  72%|███████▏  | 333/464 [21:49<04:43,  2.16s/it]Loading weights:  72%|███████▏  | 335/464 [21:49<03:32,  1.65s/it]Loading weights:  74%|███████▎  | 342/464 [21:52<01:50,  1.11it/s]Loading weights:  74%|███████▍  | 344/464 [22:27<08:08,  4.07s/it]Loading weights:  77%|███████▋  | 355/464 [22:34<03:36,  1.99s/it]Loading weights:  77%|███████▋  | 356/464 [22:46<04:55,  2.74s/it]Loading weights:  77%|███████▋  | 357/464 [22:48<04:49,  2.70s/it]Loading weights:  79%|███████▉  | 366/464 [23:45<07:36,  4.66s/it]Loading weights:  81%|████████  | 375/464 [23:46<03:56,  2.66s/it]Loading weights:  81%|████████▏ | 377/464 [24:22<06:36,  4.56s/it]Loading weights:  81%|████████▏ | 378/464 [24:24<06:14,  4.36s/it]Loading weights:  83%|████████▎ | 386/464 [24:26<03:03,  2.35s/it]Loading weights:  84%|████████▎ | 388/464 [24:51<04:55,  3.88s/it]Loading weights:  84%|████████▍ | 389/464 [24:55<04:45,  3.81s/it]Loading weights:  84%|████████▍ | 390/464 [24:58<04:37,  3.75s/it]Loading weights:  86%|████████▌ | 399/464 [25:36<04:22,  4.04s/it]Loading weights:  86%|████████▌ | 400/464 [25:40<04:18,  4.03s/it]Loading weights:  88%|████████▊ | 410/464 [25:53<02:16,  2.53s/it]Loading weights:  89%|████████▊ | 411/464 [25:57<02:20,  2.66s/it]Loading weights:  91%|█████████ | 421/464 [26:24<01:53,  2.64s/it]Loading weights:  91%|█████████ | 422/464 [26:27<01:52,  2.67s/it]Loading weights:  91%|█████████ | 423/464 [26:28<01:45,  2.57s/it]Loading weights:  93%|█████████▎| 430/464 [26:29<00:46,  1.38s/it]Loading weights:  93%|█████████▎| 432/464 [26:57<01:51,  3.49s/it]Loading weights:  94%|█████████▎| 434/464 [26:58<01:25,  2.85s/it]Loading weights:  95%|█████████▌| 441/464 [26:59<00:36,  1.58s/it]Loading weights:  95%|█████████▌| 443/464 [27:26<01:13,  3.49s/it]Loading weights:  96%|█████████▌| 444/464 [27:26<01:04,  3.22s/it]Loading weights:  97%|█████████▋| 452/464 [27:31<00:21,  1.76s/it]Loading weights:  98%|█████████▊| 454/464 [27:57<00:36,  3.63s/it]Loading weights: 100%|█████████▉| 462/464 [27:58<00:03,  1.92s/it]Loading weights: 100%|█████████▉| 463/464 [27:58<00:01,  1.80s/it]Loading weights: 100%|██████████| 464/464 [27:58<00:00,  3.62s/it]
+[transformers] `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+=== Training variant: blind ===
+  epoch 0: avg loss 1.9962
+  epoch 1: avg loss 1.3674
+  epoch 2: avg loss 0.8144
+=== Evaluating variant: blind ===
+  gla/migalastat: '206'
+  gla/isofagomine: '603'
+  gla/aspirin: '367'
+  gla/caffeine: '613'
+  gla/metformin: '644'
+  gla/ibuprofen: '500'
+  gla/imatinib: '452'
+  gaucher/migalastat: '666'
+  gaucher/isofagomine: '768'
+  gaucher/aspirin: '952'
+  gaucher/caffeine: '952'
+  gaucher/metformin: '687'
+  gaucher/ibuprofen: '764'
+  gaucher/imatinib: '614'
+=== Training variant: with_holdout ===
+  epoch 0: avg loss 2.0793
+  epoch 1: avg loss 1.4811
+  epoch 2: avg loss 1.1057
+=== Evaluating variant: with_holdout ===
+  gla/migalastat: '608'
+  gla/isofagomine: '952'
+  gla/aspirin: '464'
+  gla/caffeine: '464'
+  gla/metformin: '667'
+  gla/ibuprofen: '571'
+  gla/imatinib: '482'
+  gaucher/migalastat: '768'
+  gaucher/isofagomine: '952'
+  gaucher/aspirin: '952'
+  gaucher/caffeine: '952'
+  gaucher/metformin: '713'
+  gaucher/ibuprofen: '434'
+  gaucher/imatinib: '758'

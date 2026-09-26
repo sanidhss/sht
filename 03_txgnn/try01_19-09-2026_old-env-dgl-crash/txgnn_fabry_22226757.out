@@ -1,0 +1,38 @@
+Found local copy...
+Found local copy...
+Found local copy...
+disease eval index is not none, use the individual disease split...
+Found saved processed KG... Loading...
+Creating splits... it takes several minutes...
+split_data_path:  /work/hdd/bisa/sshah21/primekg/disease_eval_[31384.0]
+Creating DGL graph....
+Done!
+Traceback (most recent call last):
+  File "/projects/bisa/sshah21/scripts/txgnn_fabry.py", line 9, in <module>
+    model.model_initialize(n_hid=100, n_inp=100, n_out=100, proto=True, proto_num=3,
+  File "/work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/txgnn/TxGNN.py", line 89, in model_initialize
+    self.g_test_pos, self.g_test_neg = evaluate_graph_construct(self.df_test, self.G, 'fix_dst', 1, self.device)
+  File "/work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/txgnn/utils.py", line 545, in evaluate_graph_construct
+    g_neg_valid = ng(g_valid)
+  File "/work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/txgnn/utils.py", line 528, in __call__
+    return dgl.heterograph(out, num_nodes_dict={ntype: graph.number_of_nodes(ntype) for ntype in graph.ntypes})
+  File "/work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/dgl/convert.py", line 381, in heterograph
+    hgidx = heterograph_index.create_heterograph_from_relations(
+  File "/work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/dgl/heterograph_index.py", line 1374, in create_heterograph_from_relations
+    return _CAPI_DGLHeteroCreateHeteroGraphWithNumNodes(
+  File "dgl/_ffi/_cython/./function.pxi", line 295, in dgl._ffi._cy3.core.FunctionBase.__call__
+  File "dgl/_ffi/_cython/./function.pxi", line 227, in dgl._ffi._cy3.core.FuncCall
+  File "dgl/_ffi/_cython/./function.pxi", line 217, in dgl._ffi._cy3.core.FuncCall3
+dgl._ffi.base.DGLError: [23:46:49] /opt/dgl/src/graph/heterograph.cc:125: Check failed: !rel_graphs.empty(): Empty heterograph is not allowed.
+Stack trace:
+  [bt] (0) /work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/dgl/libdgl.so(+0x93ae84) [0x7f400aac1e84]
+  [bt] (1) /work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/dgl/libdgl.so(dgl::HeteroGraph::HeteroGraph(std::shared_ptr<dgl::GraphInterface>, std::vector<std::shared_ptr<dgl::BaseHeteroGraph>, std::allocator<std::shared_ptr<dgl::BaseHeteroGraph> > > const&, std::vector<long, std::allocator<long> > const&)+0x86d) [0x7f400aac306d]
+  [bt] (2) /work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/dgl/libdgl.so(dgl::CreateHeteroGraph(std::shared_ptr<dgl::GraphInterface>, std::vector<std::shared_ptr<dgl::BaseHeteroGraph>, std::allocator<std::shared_ptr<dgl::BaseHeteroGraph> > > const&, std::vector<long, std::allocator<long> > const&)+0x5a) [0x7f400aa94a1a]
+  [bt] (3) /work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/dgl/libdgl.so(+0x94c112) [0x7f400aad3112]
+  [bt] (4) /work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/dgl/libdgl.so(DGLFuncCall+0x4f) [0x7f400aa61fdf]
+  [bt] (5) /work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/dgl/_ffi/_cy3/core.cpython-39-x86_64-linux-gnu.so(+0x1d8d7) [0x7f3ff90288d7]
+  [bt] (6) /work/hdd/bisa/sshah21/envs/txgnn/lib/python3.9/site-packages/dgl/_ffi/_cy3/core.cpython-39-x86_64-linux-gnu.so(+0x1e150) [0x7f3ff9029150]
+  [bt] (7) /work/hdd/bisa/sshah21/envs/txgnn/bin/python(_PyObject_MakeTpCall+0x2ec) [0x5643d98f68ac]
+  [bt] (8) /work/hdd/bisa/sshah21/envs/txgnn/bin/python(_PyEval_EvalFrameDefault+0x48c6) [0x5643d98f28f6]
+
+

@@ -1,0 +1,3 @@
+A conda environment has been detected CONDA_PREFIX= /sw/rh9.4/python/miniforge3 
+miniconda3 is loaded. Consider running conda deactivate and reloading it.
+/work/hdd/bisa/sshah21/envs/txgemma/bin/python: can't open file '/projects/bisa/sshah21/scripts/blind_chaperone_rank_txgemma.py': [Errno 2] No such file or directory
