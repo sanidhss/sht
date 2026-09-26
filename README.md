@@ -1,9 +1,5 @@
 # Library index
 
-**For a coding assistant:** if you're picking this project up in a new session, read
-[AGENT_INSTRUCTIONS.txt](AGENT_INSTRUCTIONS.txt) first — it defines what you're
-expected to write into trial READMEs (and when) as part of this project's workflow.
-
 Organized by project, then by try (one folder per distinct attempt, named
 `tryNN_DD-MM-YYYY_short-description`). Each try folder contains the scripts as they
 existed at that point (where separately preserved — several were edited in place across

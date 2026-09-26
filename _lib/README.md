@@ -38,10 +38,9 @@ raw fact of what happened (state/exit code/log) and greps the log for common fai
 signatures (traceback, OOM, non-zero exit, cancellation) as a labeled "not a
 diagnosis" section — but writing the actual root-cause explanation still needs a human
 or a coding assistant to read that evidence and fill in the `TODO` left by
-`new_trial.sh`, same as every existing try in this library. See
-`../AGENT_INSTRUCTIONS.txt` for exactly when and how an assistant is expected to do
-that (on submitting a job, and whenever it checks status), including writing the
-finding into the file itself, not just into chat.
+`new_trial.sh`, same as every existing try in this library. (A local-only,
+not-pushed-to-GitHub file at the library root has the fuller workflow instructions for
+an assistant, if one is being used.)
 
 ## Full pattern for a `.sb` file
 ```bash
