@@ -28,12 +28,25 @@ provably blind to the true answer during training?
 7. **try08** — confirmed the attention bug affects both diseases identically once both
    use `disease_eval`. Patched the library's error handling to reveal the real
    exception (previously swallowed into a bare `ValueError`).
-8. **try09 (current)** — root-caused the attention bug precisely (a DGL minibatch/block
-   sampling quirk for same-type relations) and fixed it by skipping `pretrain()` when
-   `attention=True`, verified safe via `finetune()`'s own source. Not yet run under this
-   fix.
+8. **try09** — root-caused the attention bug precisely (a DGL minibatch/block sampling
+   quirk for same-type relations) and fixed it by skipping `pretrain()` when
+   `attention=True`, verified safe via `finetune()`'s own source. Training itself
+   worked under this fix (both diseases trained to completion) but both jobs crashed
+   at the final **test-evaluation** step: `KeyError: ('drug', 'contraindication',
+   'disease')` in `evaluate_fb()`.
+9. **try10 (current)** — verified (against PrimeKG directly, not assumed) that this is
+   a library gap, not a rare-disease data gap: PrimeKG has 30,675 real
+   `contraindication` edges and both diseases have some, but TxGNN's own `disease_eval`
+   split correctly puts only `indication`/`rev_indication` edges into each disease's
+   test set (by design, for a single-disease zero-shot split) — `evaluate_fb()` just
+   hardcoded an assumption that all 3 relation types are always present in test, an
+   assumption that only held for the `complex_disease` split style. Patched
+   `evaluate_fb()` to filter to relation types actually present, matching a tolerance
+   the function's own per-relation AUROC loop already had. Resubmitted both jobs
+   (22454275 fabry, 22454276 gaucher).
 
 ## Current state
-Zero results yet under `attention=True` — every attempt so far has been infrastructure
-or library bugs, not a completed science run. try09's fix is the first one with a real
-chance of producing an actual ranking for both diseases; resubmission is next.
+Zero science results yet, but for the first time both diseases have trained fully and
+only fail at the very last metric-computation step, with a verified (not assumed) fix
+in place. try10's resubmission is the first one with a real chance of producing an
+actual final ranking for both diseases.
