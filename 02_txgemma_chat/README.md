@@ -20,13 +20,15 @@ downstream pipeline by design)?
    interpolation. Failed immediately on a `BatchEncoding` vs. list bug in the training
    batch builder (same class of transformers-version issue as try01/try02, missed in a
    different function).
-4. **try04 (current)** — bug fixed, ran to completion: **0/4 folds correct**. Training
-   loss collapsed hard in every fold (thin 36-example base), and the `attr` fold
-   reverted to the same generic "complex-molecule" heuristic seen in try02's zero-shot
-   test — the fine-tune suppressed that heuristic for in-distribution mechanisms but
-   didn't replace it with real transferable reasoning.
+4. **try04 (current)** — bug fixed, ran to completion: **0/4 folds correct**. Diffing
+   the model's generated reasoning against the authored training templates showed it
+   was reciting other targets' fixed reasoning paragraphs near-verbatim (e.g. CF's
+   template applied to the Gaucher prompt) rather than reasoning fresh from the
+   presented SMILES — because `REASONING_CHAINS` has exactly one hand-authored
+   paragraph per target, making verbatim memorization the easiest fit.
 
 ## Current state
-First completed run, and it's a clean negative: leave-one-target-out fine-tuning on 3
-held-in mechanisms (36 examples) does not generalize to a 4th, unseen mechanism class.
-Not a bug — an honest result about how much mechanism diversity this approach needs.
+First completed run, and it's a clean negative, with a verified root cause: one
+authored reasoning example per target is too little diversity to force genuine
+structure-grounded reasoning instead of memorization. The fix implied is not "add more
+targets" but multiple independently-worded reasoning chains per target.

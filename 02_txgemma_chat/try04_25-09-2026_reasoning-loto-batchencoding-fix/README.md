@@ -30,19 +30,39 @@ compounds.
 | cf       | lumacaftor    | cf_analog_2              | No      |
 | attr     | tafamidis     | aspirin                  | No      |
 
-Training loss collapsed hard within each fold (epoch 0 ~1.9-2.1 -> epoch 2 ~0.01-0.02),
-consistent with the model memorizing surface patterns in that fold's 36 examples rather
-than learning transferable mechanism reasoning — the same overfitting signature as the
-numeric-predict track's memorization failure (see `01_txgemma_predict/try04`), but here
-showing up as a genuine cross-mechanism generalization failure rather than a
-same-target near-neighbor confusion.
+Training loss collapsed hard within each fold (epoch 0 ~1.9-2.1 -> epoch 2 ~0.01-0.02).
 
-The `attr` fold is the clearest tell: the model reverted to picking aspirin, the same
-"complex/generic-looking molecule" heuristic failure documented back in try02's
-zero-shot double-blind test — the fine-tune didn't durably replace that heuristic, it
-just suppressed it for the 3 mechanisms it was trained on.
+**Correction (26-09-2026):** an earlier version of this note claimed the model "reverted
+to a complex-molecule heuristic" on the `attr` fold, by pattern-matching to try02's
+different (zero-shot, unrelated) failure mode without actually re-checking this run's
+text. That claim was wrong. The real, verified mechanism, found by diffing the model's
+generated reasoning against `author_reasoning_examples.py`'s `REASONING_CHAINS` dict:
 
-This is an honest, clean negative, not a bug: 3 held-in mechanisms / 36 examples total
-is a thin base for teaching a 27B model genuine cross-mechanism transfer. The result
-says this specific attempt doesn't generalize, not that reasoning-based generalization
-is impossible for this task.
+`REASONING_CHAINS["cf"]` (fixed, hand-authored training text) says: *"The reference
+compound is a bis-aromatic molecule with a rigid spirocyclopropyl-linked bicyclic core,
+consistent with a scaffold built to wedge into and rigidify a specific **domain
+interface**..."*
+
+The model's actual output on the **Gaucher**-held-out fold (CF was one of its 3
+training targets) says: *"The reference compound is a bis-aromatic molecule with a
+rigid spirocyclopropyl-linked bicyclic core, consistent with a scaffold built to wedge
+into and rigidify a specific **protein-protein-like interface**..."* — a near-verbatim
+recitation of CF's canned paragraph, misapplied to describe ambroxol. Same pattern on
+`attr`: its output blends fixed phrases from Fabry's authored template ("mimicking the
+shape, charge... sugar ring") and Gaucher's ("aminocyclohexanol"), describing neither
+aspirin (what it picked) nor tafamidis (the real answer).
+
+Root cause: `REASONING_CHAINS` has exactly **one fixed, hand-authored paragraph per
+target** — the 12x-per-target augmentation only reshuffles which candidate gets which
+letter label, it never varies the reasoning text itself. With zero diversity in what
+"correct reasoning" looks like for a given target, verbatim memorization of that one
+paragraph is a much easier fit than learning to derive structure-function claims from
+the actual SMILES in the prompt — and that's what happened. On an unseen target at test
+time, there's no matching memorized paragraph, so the model splices together the
+closest-sounding ones it does have.
+
+This is an honest, clean negative, not a bug: one authored reasoning example per target
+gives a fine-tune every incentive to memorize phrasing instead of learning a
+transferable reasoning process. The fix implied by this diagnosis is not "add more
+targets" but **multiple independently-worded authored reasoning chains per target**, so
+memorizing one fixed paragraph stops being a viable shortcut.
