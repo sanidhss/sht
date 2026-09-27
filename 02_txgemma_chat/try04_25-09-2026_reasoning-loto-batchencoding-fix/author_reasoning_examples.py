@@ -1,23 +1,38 @@
 """
 Authors the reasoning-chain training examples for the txgemma-chat leave-one-target-out
 fine-tune. This is hand-written content, not generated or scraped -- each mechanism
-description and reasoning chain is grounded in the real assay evidence gathered and
+description and reasoning fact is grounded in the real assay evidence gathered and
 verified earlier (ChEMBL activity records, assay descriptions naming the actual
 mechanism), the same standard of diligence used to verify ambroxol/lumacaftor/tafamidis
 before trusting them as references.
 
 Candidate pool per target = own real reference + own real hard negatives (from
 eval_set.json) + the OTHER THREE targets' real reference drugs as cross-mechanism
-distractors + two fixed easy negatives (aspirin, caffeine). The cross-mechanism
-distractors are the important addition: they test whether the model can recognize that
-a real, potent chaperone for a DIFFERENT mechanism is wrong here -- a much sharper test
-than unrelated drugs, and it directly probes the thing we actually care about
-(mechanism-specific reasoning, not "does this look drug-like").
+distractors + two fixed easy negatives (aspirin, caffeine).
+
+v2 (26-09-2026) -- redesigned after try04 showed the model was memorizing the single
+fixed REASONING_CHAINS paragraph per target near-verbatim (confirmed by diffing its
+generated text against the templates) rather than reasoning from the candidate SMILES.
+Two changes:
+  1. The completion is no longer one holistic paragraph about the top choice. It states
+     an explicit NECESSARY CONDITION for the mechanism, then gives an explicit
+     satisfies/fails/partial verdict + reason for EVERY candidate in the pool, checked
+     against that condition -- the textual analogue of a link-prediction model checking
+     a candidate embedding against a relation-specific compatibility criterion (what
+     TxGNN does geometrically for indication/contraindication), but expressed so the
+     model must apply a compositional rule (scaffold class x mechanism condition ->
+     verdict) instead of reciting a memorized block. Because which candidates appear
+     varies per augmented instance, the completion's actual content differs every time
+     even for the same target -- verbatim block memorization stops being viable.
+  2. Where try04 had exactly one hand-authored reasoning paragraph per target, the
+     per-class WHY_CLASS_FAILS reasons are combinatorial (built from NECESSARY_CONDITION
+     x SCAFFOLD_CLASS, ~12 pairs) rather than 4 monolithic strings, so there is no
+     single fixed block long enough to memorize wholesale.
 
 Output: one JSON file per target with the blinded prompt (sequence + mechanism
 description + candidate list, disease/gene name never mentioned) and the authored
-completion (ranking + reasoning chain + self-contradiction check). This is raw
-material for the leave-one-target-out training harness (not built yet).
+completion (necessary_condition + candidate_verdicts + ranking + self-contradiction
+check). This is raw material for the leave-one-target-out training harness.
 """
 import json
 import os
@@ -178,95 +193,188 @@ MECHANISM_PARAPHRASES = {
 }
 
 # -----------------------------------------------------------------------------------
-# Reasoning chains -- authored, grounded in the mechanism above and the real structural
-# facts of each reference compound. Each explicitly cites the STATED mechanism (not an
-# assumed disease identity) and includes a self-contradiction check.
+# The logical-elimination core (v2). Everything below is decomposed from the same
+# facts try04's REASONING_CHAINS already established -- nothing new is being claimed,
+# it's restructured into a checkable, compositional form: state the mechanism's
+# necessary condition, classify each candidate's real scaffold, then check scaffold
+# against condition. This is deliberately built the way a knowledge-graph model checks
+# a candidate against a relation-specific compatibility criterion, so the transformer
+# has to apply the same rule to each candidate rather than recite one fixed narrative.
 # -----------------------------------------------------------------------------------
-REASONING_CHAINS = {
-    "fabry": (
-        "The stated mechanism requires mimicking the shape, charge, and exact "
-        "stereochemistry of a single small sugar ring at its reaction transition state "
-        "-- not the size or complexity of the whole natural substrate, whose lipid "
-        "portion the enzyme never contacts. The reference compound is a small "
-        "six-membered ring with a basic nitrogen in place of the sugar's ring oxygen "
-        "(protonated at lysosomal pH, mimicking the transition state's developing "
-        "positive charge) decorated with hydroxyls matching the natural sugar's "
-        "stereochemistry -- exactly the profile the stated mechanism calls for. Larger, "
-        "more aromatic candidates rely on ring-stacking and hydrophobic pocket-filling, "
-        "a strategy suited to open hydrophobic pockets (e.g. kinase ATP sites), not the "
-        "compact, highly polar transition-state pocket described here. "
-        "Self-contradiction check: this reasoning would be wrong if the binding pocket "
-        "were shown to be large and hydrophobic rather than compact and polar, or if the "
-        "mechanism did not depend on transition-state charge mimicry -- neither applies "
-        "to the mechanism as stated."
-    ),
-    "gaucher": (
-        "The stated mechanism describes the same broad enzyme class as a terminal-sugar "
-        "glycosidase, but explicitly notes the real chaperone's activity is reported as "
-        "modulation rather than simple sugar-mimicry occupation, and that its potency is "
-        "only modest -- this is a harder case than one where the correct answer is a "
-        "textbook small iminosugar. The reference compound is not itself a sugar-ring "
-        "mimic: it is a simple aminocyclohexanol with a dihalogenated aniline group, "
-        "consistent with a distinct, secondary chaperone contact rather than direct "
-        "transition-state occupation, which matches the stated evidence more closely "
-        "than a candidate built to be a perfect sugar mimic would. Candidates built "
-        "specifically to mimic a DIFFERENT enzyme's sugar transition state (small "
-        "polyhydroxylated rings with a ring nitrogen at a different position) are "
-        "plausible-looking but are shaped for a different, specific sugar stereochemistry "
-        "and pocket, and the evidence here does not describe that same clean mimicry "
-        "mechanism. Self-contradiction check: this would be wrong if stronger evidence "
-        "showed direct competitive occupation of the sugar site with high potency -- the "
-        "stated evidence instead describes modest, modulatory activity, which is the "
-        "basis for preferring this candidate over a cleaner but unsupported sugar-mimic "
-        "alternative."
-    ),
-    "cf": (
-        "This mechanism has no catalytic pocket or transition state to imitate at all -- "
-        "the defect is a kinetic folding/trafficking problem, and the corrector's job is "
-        "to stabilize a domain-domain interface of the full-length misfolded protein "
-        "during biogenesis. Neither 'small and polar' nor 'mimics a small metabolite' is "
-        "relevant here; what matters is size and shape complementarity to a specific "
-        "protein-protein-like interface, which typically requires a larger, more rigid, "
-        "multi-ring scaffold than a transition-state mimic. The reference compound is a "
-        "bis-aromatic molecule with a rigid spirocyclopropyl-linked bicyclic core, "
-        "consistent with a scaffold built to wedge into and rigidify a specific "
-        "domain interface -- not merely 'complex-looking' in a generic sense, but sized "
-        "for this specific structural role. Small polyhydroxylated sugar-mimic-type "
-        "candidates are poorly matched here: their small size and polarity, an advantage "
-        "for filling a compact sugar-binding pocket, is irrelevant to stabilizing a large "
-        "multi-domain interface with no sugar-binding function at all. "
-        "Self-contradiction check: this would be wrong if the defect described were "
-        "instead a catalytic or substrate-turnover problem rather than a folding defect "
-        "-- but the mechanism explicitly describes a folding/trafficking defect, not "
-        "substrate turnover."
-    ),
-    "attr": (
-        "This mechanism requires binding an existing interfacial pocket that normally "
-        "accommodates a specific small hormone-like ligand, at the junction between two "
-        "protein subunits -- not a catalytic site, since the protein has no catalytic "
-        "activity to begin with. The reference compound is a halogenated aromatic "
-        "carboxylic-acid scaffold sized for a small hydrophobic hormone-binding channel "
-        "with a polar anchor at the entrance, consistent with occupying this specific "
-        "interfacial site and locking the two subunits together. Small polyhydroxylated "
-        "sugar-mimic candidates are shaped and sized for an entirely different job -- a "
-        "monosaccharide-binding glycosidase pocket -- not a hydrophobic hormone channel "
-        "between two folded protein subunits, and there is no catalytic transition state "
-        "here to mimic in the first place. Self-contradiction check: this would be wrong "
-        "if the described defect were instead a catalytic or trafficking problem rather "
-        "than oligomer dissociation -- but the mechanism explicitly describes a stable "
-        "tetramer dissociating into monomers, which calls for a stabilizer, not a "
-        "chaperone or corrector."
-    ),
+NECESSARY_CONDITION = {
+    "fabry": "the candidate must mimic the shape, charge, and exact stereochemistry of "
+             "a single small sugar ring at its reaction transition state -- compact, "
+             "highly polar, with a ring position capable of carrying positive charge",
+    "gaucher": "the candidate must act as a secondary/modulatory chaperone contact "
+               "rather than a clean sugar-transition-state mimic -- the evidence here "
+               "specifically describes modulation and modest potency, not direct "
+               "high-potency sugar-site occupation",
+    "cf": "the candidate must have size and shape complementarity to a "
+          "protein-protein-like domain-domain interface -- a larger, rigid, "
+          "multi-ring scaffold, not a compact polar transition-state-mimicking ring",
+    "attr": "the candidate must mimic the shape, charge distribution, and size of a "
+            "small hormone-like ligand at a hydrophobic interfacial pocket between two "
+            "protein subunits, with a polar anchor at the entrance",
 }
 
+# What each reference compound's real scaffold actually looks like -- used both to
+# describe "the reference" and to classify that same compound when it shows up as a
+# cross-mechanism distractor in another target's candidate pool.
+SCAFFOLD_CLASS = {
+    "fabry": "a small six-membered ring with a basic ring nitrogen in place of the "
+             "sugar's ring oxygen, decorated with hydroxyls matching the natural "
+             "sugar's stereochemistry (an iminosugar)",
+    "gaucher": "a simple aminocyclohexanol bearing a dihalogenated aniline group -- "
+               "not itself a sugar-ring mimic",
+    "cf": "a bis-aromatic molecule with a rigid spirocyclopropyl-linked bicyclic core",
+    "attr": "a halogenated aromatic carboxylic-acid scaffold sized for a small "
+            "hydrophobic channel with a polar anchor",
+    "aspirin": "a small aromatic acetate ester (acetylsalicylic acid) with no ring "
+               "nitrogen, no sugar-mimicking hydroxylation, and no rigid multi-ring "
+               "interfacial scaffold",
+    "caffeine": "a small planar xanthine (fused bicyclic purinedione) with no basic "
+                "ring nitrogen positioned for transition-state charge mimicry and no "
+                "interfacial anchoring group",
+}
 
-def split_reasoning(chain_text):
-    """Splits an authored REASONING_CHAINS entry into (reasoning, self_check) to match
-    the 4-field schema the prompt actually asks for -- every chain ends with a
-    'Self-contradiction check: ...' sentence."""
-    marker = "Self-contradiction check:"
-    idx = chain_text.index(marker)
-    return chain_text[:idx].strip(), chain_text[idx + len(marker):].strip()
+# Pairwise: why a compound belonging to scaffold class X fails target T's necessary
+# condition. This is the explicit "contraindication" logic table -- the textual
+# analogue of what a link-prediction model encodes geometrically as an incompatible
+# drug-disease embedding. Every entry restates facts already established in
+# NECESSARY_CONDITION/SCAFFOLD_CLASS above; nothing here is a new biochemical claim.
+WHY_CLASS_FAILS = {
+    "fabry": {
+        "gaucher":  "an aminocyclohexanol-dihalogenated-aniline scaffold lacks the "
+                    "sugar-ring hydroxylation pattern and transition-state charge "
+                    "geometry this condition requires",
+        "cf":       "a large rigid bis-aromatic bicyclic scaffold is sized for a "
+                    "domain-domain interface, not the compact polar transition-state "
+                    "pocket this condition requires",
+        "attr":     "a halogenated aromatic carboxylic acid is sized for a hydrophobic "
+                    "interfacial channel, not the compact polar sugar-mimicking pocket "
+                    "this condition requires",
+        "aspirin":  "a simple aromatic acetate ester has no ring nitrogen and no "
+                    "sugar-like hydroxylation pattern to mimic the transition state",
+        "caffeine": "a planar xanthine has no ring nitrogen positioned for charge "
+                    "mimicry and no sugar-like hydroxylation",
+    },
+    "gaucher": {
+        "fabry":    "a classic iminosugar is a textbook transition-state mimic, but "
+                    "the evidence for this enzyme specifically describes modulatory "
+                    "activity rather than clean sugar-site occupation, so a perfect "
+                    "sugar mimic is a plausible-looking but evidentially unsupported "
+                    "answer here",
+        "cf":       "a large rigid bis-aromatic bicyclic scaffold does not resemble the "
+                    "simple aminocyclohexanol contact chemistry the evidence describes",
+        "attr":     "a halogenated aromatic carboxylic acid does not resemble the "
+                    "simple aminocyclohexanol contact chemistry the evidence describes",
+        "aspirin":  "a simple aromatic acetate ester has no aminocyclohexanol-type "
+                    "contact chemistry",
+        "caffeine": "a planar xanthine has no aminocyclohexanol-type contact chemistry",
+    },
+    "cf": {
+        "fabry":    "a small polar iminosugar is built to fill a compact "
+                    "transition-state pocket, irrelevant to stabilizing a large "
+                    "multi-domain interface with no sugar-binding function",
+        "gaucher":  "a small aminocyclohexanol is sized for a compact secondary "
+                    "contact site, not a large rigid domain-domain interface",
+        "attr":     "a halogenated aromatic carboxylic acid is sized for a "
+                    "hormone-binding channel between two folded subunits, not the "
+                    "interdomain interface of a single misfolded protein this "
+                    "condition requires",
+        "aspirin":  "a small planar acetate ester is far too small and flexible to "
+                    "wedge into and rigidify a domain-domain interface",
+        "caffeine": "a small planar xanthine is far too small and flexible to wedge "
+                    "into and rigidify a domain-domain interface",
+    },
+    "attr": {
+        "fabry":    "a small polar iminosugar is shaped and sized for a "
+                    "monosaccharide-binding glycosidase pocket, not the hydrophobic "
+                    "hormone-binding channel between two folded subunits this "
+                    "condition requires",
+        "gaucher":  "a small aminocyclohexanol lacks the halogenated-aromatic "
+                    "hydrophobic bulk needed to occupy a hormone-binding channel",
+        "cf":       "a bis-aromatic spirocyclopropyl scaffold is built for a "
+                    "domain-domain interface within a single misfolded protein, not "
+                    "the inter-subunit hormone-binding channel this condition requires",
+        "aspirin":  "a small aromatic acetate ester lacks the halogenation and "
+                    "hydrophobic bulk to occupy the hormone-binding channel",
+        "caffeine": "a small planar xanthine lacks the halogenation and hydrophobic "
+                    "bulk to occupy the hormone-binding channel",
+    },
+}
+
+# Own hard negatives are real, structurally near-identical analogs of the reference
+# (same broad scaffold class) with a genuinely different measured potency -- a
+# deliberately harder case than a wrong scaffold class entirely: they PARTIALLY satisfy
+# the condition (coarse scaffold match) but the mechanism's dependence on exact
+# stereochemistry/substitution is what would need independent confirmation. This is
+# templated from SCAFFOLD_CLASS, not a per-compound claim about which exact atom
+# differs (that isn't something to assert without the specific structural diff verified).
+def own_hard_negative_reason(target):
+    return (f"same broad scaffold class as the reference -- {SCAFFOLD_CLASS[target]} -- "
+            f"so it coarsely satisfies the condition; it is a real, distinct "
+            f"stereoisomer/analog, and the mechanism's dependence on exact "
+            f"stereochemistry or substitution pattern (not just the general scaffold) "
+            f"is what would need independent confirmation before ranking it above the "
+            f"reference")
+
+
+SELF_CHECK_TEMPLATES = [
+    "This would be wrong if the necessary condition above were not actually "
+    "\"{cond}\", or if the top choice's scaffold turned out not to satisfy it after "
+    "all -- neither applies given the stated mechanism.",
+    "This reasoning fails if the stated mechanism does not really require that {cond}, "
+    "or if the top-ranked candidate's scaffold class were misidentified above -- "
+    "neither is the case here.",
+]
+
+
+def classify_candidate(target, name):
+    """Returns (scaffold_key, satisfies) for a candidate `name` in target `target`'s
+    pool. scaffold_key indexes into SCAFFOLD_CLASS / WHY_CLASS_FAILS (except for the
+    target's own hard negatives, handled separately). satisfies is True / False /
+    "partial"."""
+    if name == REFERENCE_NAMES[target]:
+        return target, True
+    if name.startswith(f"{target}_analog"):
+        return "own_hard_negative", "partial"
+    for other, ref in REFERENCE_NAMES.items():
+        if other != target and name == ref:
+            return other, False
+    if name in EASY_NEGATIVES:
+        return name, False
+    raise ValueError(f"unrecognized candidate {name!r} for target {target!r}")
+
+
+def build_candidate_verdicts(target, names_list, name_to_label):
+    verdicts = {}
+    for name in names_list:
+        scaffold_key, satisfies = classify_candidate(target, name)
+        label = name_to_label[name]
+        if scaffold_key == "own_hard_negative":
+            reason = own_hard_negative_reason(target)
+        elif satisfies is True:
+            reason = (f"matches {SCAFFOLD_CLASS[target]}, exactly the profile the "
+                      f"necessary condition calls for")
+        else:
+            reason = WHY_CLASS_FAILS[target][scaffold_key]
+        verdicts[label] = {"satisfies_condition": satisfies, "reason": reason}
+    return verdicts
+
+
+def build_completion(target, names_list, name_to_label, rng):
+    ref_label = name_to_label[REFERENCE_NAMES[target]]
+    ranking = [ref_label] + [name_to_label[n] for n in names_list if n != REFERENCE_NAMES[target]]
+    verdicts = build_candidate_verdicts(target, names_list, name_to_label)
+    self_check = rng.choice(SELF_CHECK_TEMPLATES).format(cond=NECESSARY_CONDITION[target])
+    return {
+        "necessary_condition": NECESSARY_CONDITION[target],
+        "candidate_verdicts": verdicts,
+        "ranking": ranking,
+        "top_choice": ref_label,
+        "self_contradiction_check": self_check,
+    }
 
 
 def blinded_labels(seed_key, names):
@@ -290,10 +398,10 @@ Biochemical context:
 Candidate compounds (SMILES):
 {compound_lines}
 
-Task: using ONLY the biochemical reasoning above (mechanism, pocket type, shape/charge complementarity) -- not any memorized drug or brand name association -- rank the candidates from most to least likely to be the real pharmacological agent for this specific protein, and explain why. Explicitly state what evidence would contradict your top choice.
+Task: first state the ONE necessary structural/physicochemical condition a candidate must satisfy given this mechanism (not any memorized drug or brand name association). Then, for EVERY candidate listed above, check its real structure against that condition and give an explicit verdict: does it satisfy the condition, fail it, or only partially satisfy it (e.g. same broad scaffold class but a specific point unconfirmed) -- with a one-line structural reason for each. Only after checking every candidate individually, rank them from most to least likely to be the real pharmacological agent, and state what evidence would contradict your top choice.
 
 Respond with strict JSON only, no other text, in this exact schema:
-{{"ranking": ["<label>", "..."], "top_choice": "<label>", "reasoning": "...", "self_contradiction_check": "..."}}
+{{"necessary_condition": "...", "candidate_verdicts": {{"<label>": {{"satisfies_condition": true|false|"partial", "reason": "..."}}, "...": {{...}}}}, "ranking": ["<label>", "..."], "top_choice": "<label>", "self_contradiction_check": "..."}}
 """
 
 
@@ -324,15 +432,8 @@ if __name__ == "__main__":
         name_to_label = {v: k for k, v in label_to_name.items()}
 
         prompt = build_prompt(seq, MECHANISM_DESCRIPTIONS[name], label_to_name, candidates)
-        reasoning, self_check = split_reasoning(REASONING_CHAINS[name])
-        completion = {
-            "ranking": [name_to_label[REFERENCE_NAMES[name]]] + [
-                name_to_label[n] for n in names if n != REFERENCE_NAMES[name]
-            ],
-            "top_choice": name_to_label[REFERENCE_NAMES[name]],
-            "reasoning": reasoning,
-            "self_contradiction_check": self_check,
-        }
+        rng = random.Random(zlib.crc32(f"{name}_held_out_eval".encode()))
+        completion = build_completion(name, names, name_to_label, rng)
 
         out = {
             "target": name,

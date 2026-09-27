@@ -20,15 +20,36 @@ downstream pipeline by design)?
    interpolation. Failed immediately on a `BatchEncoding` vs. list bug in the training
    batch builder (same class of transformers-version issue as try01/try02, missed in a
    different function).
-4. **try04 (current)** — bug fixed, ran to completion: **0/4 folds correct**. Diffing
-   the model's generated reasoning against the authored training templates showed it
-   was reciting other targets' fixed reasoning paragraphs near-verbatim (e.g. CF's
+4. **try04** — bug fixed, ran to completion: **0/4 folds correct**. Diffing the
+   model's generated reasoning against the authored training templates showed it was
+   reciting other targets' fixed reasoning paragraphs near-verbatim (e.g. CF's
    template applied to the Gaucher prompt) rather than reasoning fresh from the
    presented SMILES — because `REASONING_CHAINS` has exactly one hand-authored
    paragraph per target, making verbatim memorization the easiest fit.
+5. **try05 (current)** — redesigned the completion format entirely: instead of one
+   fixed paragraph, the model must state an explicit necessary condition for the
+   mechanism, then give every individual candidate a satisfies/fails/partial verdict
+   checked against it, built compositionally from a (scaffold class x condition)
+   table — the textual analogue of the compatibility check a knowledge-graph model
+   like TxGNN applies geometrically, but expressed so the transformer has to apply a
+   rule per candidate instead of reciting a block. Verified before submitting that
+   augmented instances now produce genuinely different completion JSON, not just
+   re-labeled copies of one fixed text. Added a second eval metric,
+   `logic_consistency` (fraction of per-candidate verdicts matching ground truth),
+   independent of whether the final ranking was correct. Submitted as job 22454842.
 
 ## Current state
-First completed run, and it's a clean negative, with a verified root cause: one
-authored reasoning example per target is too little diversity to force genuine
-structure-grounded reasoning instead of memorization. The fix implied is not "add more
-targets" but multiple independently-worded reasoning chains per target.
+try04 was a clean negative with a verified root cause (one memorizable reasoning
+example per target). try05 directly targets that cause with a compositional,
+per-candidate verdict structure instead of just adding more targets or more wording
+variants. Result pending.
+
+## Open question, raised mid-project
+"Bare TxGemma" (what every try in this project runs — a single `generate()` call, no
+retrieval) is not the same system as Google's benchmarked "Agentic-Tx" (Gemini 2.0 Pro
+orchestrating 18 tools, of which bare TxGemma is only one; the other 17 include
+PubMed/Wikipedia/web search and gene/protein/molecular database tools, via a ReAct
+loop). The published rare-disease/complex-reasoning benchmark results are Agentic-Tx's,
+not bare TxGemma's. This project has only ever tested the no-retrieval configuration —
+worth deciding explicitly whether closing the gap requires tool-augmentation rather
+than (or in addition to) further fine-tuning.
