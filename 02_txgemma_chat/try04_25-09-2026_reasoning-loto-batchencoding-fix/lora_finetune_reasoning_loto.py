@@ -18,22 +18,8 @@ anti-memorization principle as the SMILES augmentation used for the numeric task
 random subset of that target's own real hard negatives, a random subset of the OTHER
 training targets' real reference drugs as cross-mechanism distractors (never the held-
 out target's), a random subset of easy negatives, and a fresh random blind-label
-ordering.
-
-v2 (26-09-2026): the completion itself is no longer a single fixed paragraph per
-target (author_reasoning_examples.py's docstring has the full root-cause writeup --
-the model was memorizing that one paragraph verbatim and reciting it, even when it
-didn't fit the held-out prompt). The completion now states an explicit necessary
-condition for the mechanism, then gives every individual candidate a
-satisfies/fails/partial verdict checked against that condition, built compositionally
-from (scaffold class x mechanism condition) rather than from one fixed narrative --
-so which exact verdicts appear varies by which candidates got sampled into a given
-augmented instance, and there's no single block left to memorize wholesale. Cold-eval
-scoring now reports a second metric alongside top-choice correctness:
-logic_consistency, the fraction of the model's own per-candidate verdicts that agree
-with ground truth -- this is the more direct test of whether it can apply the
-compositional rule to an unseen target, independent of whether the final ranking
-happened to come out right.
+ordering. The underlying facts (correct answer, reasoning, self-check) never change --
+only the surface prompt varies.
 
 Honest caveat, stated here so it travels with the results: 4 verified mechanism-class
 examples is a thin base to draw 3 from per fold. A pass here is suggestive evidence of
@@ -51,8 +37,8 @@ from peft import LoraConfig, get_peft_model
 
 sys.path.insert(0, os.path.dirname(__file__))
 from author_reasoning_examples import (
-    REFERENCE_NAMES, MECHANISM_DESCRIPTIONS, MECHANISM_PARAPHRASES,
-    FASTA_PATHS, EASY_NEGATIVES, read_fasta, build_prompt, build_completion,
+    REFERENCE_NAMES, MECHANISM_DESCRIPTIONS, MECHANISM_PARAPHRASES, REASONING_CHAINS,
+    FASTA_PATHS, EASY_NEGATIVES, read_fasta, build_prompt, split_reasoning,
 )
 
 MODEL = "google/txgemma-27b-chat"
@@ -70,6 +56,14 @@ LORA_CONFIG = LoraConfig(
 
 def load_eval_sets():
     return {name: json.load(open(os.path.join(DATA_DIR, name, "eval_set.json"))) for name in TARGETS}
+
+
+def build_completion(name, names_in_candidates, name_to_label):
+    reasoning, self_check = split_reasoning(REASONING_CHAINS[name])
+    ref = REFERENCE_NAMES[name]
+    ranking = [name_to_label[ref]] + [name_to_label[n] for n in names_in_candidates if n != ref]
+    return {"ranking": ranking, "top_choice": name_to_label[ref],
+            "reasoning": reasoning, "self_contradiction_check": self_check}
 
 
 def make_augmented_instance(name, eval_sets, reference_smiles, allowed_cross_targets, aug_idx):
@@ -106,7 +100,7 @@ def make_augmented_instance(name, eval_sets, reference_smiles, allowed_cross_tar
     name_to_label = {v: k for k, v in label_to_name.items()}
 
     prompt = build_prompt(seq, mechanism, label_to_name, candidates)
-    completion = build_completion(name, names_list, name_to_label, rng)
+    completion = build_completion(name, names_list, name_to_label)
     return prompt, json.dumps(completion)
 
 
@@ -223,29 +217,13 @@ if __name__ == "__main__":
         top_name = held_out_example["label_to_name"].get(top_label) if top_label else None
         correct = top_name == REFERENCE_NAMES[held_out]
 
-        # Logic-consistency check: independent of whether the final ranking was correct,
-        # did the model's own per-candidate satisfies/fails/partial verdicts agree with
-        # the ground-truth verdicts (built from the same scaffold-class-vs-condition
-        # table used in training)? This is the thing this redesign is actually meant to
-        # test -- can it apply the compositional rule per candidate, not just recite a
-        # memorized final answer.
-        gt_verdicts = held_out_example["completion"]["candidate_verdicts"]
-        model_verdicts = parsed.get("candidate_verdicts", {}) if parsed else {}
-        n_matched = sum(
-            1 for label, gt in gt_verdicts.items()
-            if label in model_verdicts and model_verdicts[label].get("satisfies_condition") == gt["satisfies_condition"]
-        )
-        logic_consistency = n_matched / len(gt_verdicts)
-
         print(f"  expected: {REFERENCE_NAMES[held_out]} ({[l for l, n in held_out_example['label_to_name'].items() if n == REFERENCE_NAMES[held_out]][0]})")
         print(f"  model top_choice: {top_label} -> {top_name} | correct: {correct}")
-        print(f"  logic consistency: {n_matched}/{len(gt_verdicts)} candidate verdicts matched ground truth ({logic_consistency:.2f})")
         print(f"  raw reply: {reply}")
 
         fold_results[held_out] = {
             "expected": REFERENCE_NAMES[held_out], "top_choice_label": top_label,
-            "top_choice_name": top_name, "correct": correct,
-            "logic_consistency": logic_consistency, "raw_reply": reply,
+            "top_choice_name": top_name, "correct": correct, "raw_reply": reply,
             "n_training_instances": len(examples),
         }
         with open(os.path.join(fold_dir, "result.json"), "w") as f:
@@ -259,13 +237,8 @@ if __name__ == "__main__":
 
     print("\n=== LOTO SUMMARY ===")
     for held_out, r in fold_results.items():
-        print(f"held out {held_out}: expected={r['expected']} got={r['top_choice_name']} "
-              f"correct={r['correct']} logic_consistency={r['logic_consistency']:.2f}")
+        print(f"held out {held_out}: expected={r['expected']} got={r['top_choice_name']} correct={r['correct']}")
     n_correct = sum(1 for r in fold_results.values() if r["correct"])
-    avg_logic = sum(r["logic_consistency"] for r in fold_results.values()) / len(fold_results)
     print(f"\n{n_correct}/{len(fold_results)} folds correct. "
-          f"Average logic consistency: {avg_logic:.2f} (fraction of per-candidate "
-          f"satisfies/fails/partial verdicts matching ground truth, independent of "
-          f"whether the final top choice was correct). "
           f"(Caveat: each fold trains on just 3 examples' worth of augmented scenarios -- "
           f"a thin base. Treat this as suggestive, not conclusive.)")
