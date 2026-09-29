@@ -5,4 +5,4 @@
 #SBATCH -J txgnn
 #SBATCH -o /work/hdd/bisa/sshah21/results/txgnn/%x_%j.out
 
-/work/hdd/bisa/sshah21/envs/txgnn2/bin/python /projects/bisa/sshah21/library/03_txgnn/try09_25-09-2026_pretrain-skip-fix/txgnn_fabry.py
+/work/hdd/bisa/sshah21/envs/txgnn2/bin/python /projects/bisa/sshah21/library/03_txgnn/try10_26-09-2026_test-eval-etype-fix/txgnn_fabry.py

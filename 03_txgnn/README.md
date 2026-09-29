@@ -34,19 +34,25 @@ provably blind to the true answer during training?
    worked under this fix (both diseases trained to completion) but both jobs crashed
    at the final **test-evaluation** step: `KeyError: ('drug', 'contraindication',
    'disease')` in `evaluate_fb()`.
-9. **try10 (current)** — verified (against PrimeKG directly, not assumed) that this is
-   a library gap, not a rare-disease data gap: PrimeKG has 30,675 real
-   `contraindication` edges and both diseases have some, but TxGNN's own `disease_eval`
-   split correctly puts only `indication`/`rev_indication` edges into each disease's
-   test set (by design, for a single-disease zero-shot split) — `evaluate_fb()` just
-   hardcoded an assumption that all 3 relation types are always present in test, an
-   assumption that only held for the `complex_disease` split style. Patched
-   `evaluate_fb()` to filter to relation types actually present, matching a tolerance
-   the function's own per-relation AUROC loop already had. Resubmitted both jobs
-   (22454275 fabry, 22454276 gaucher).
+9. **try10 (current)** — verified (against PrimeKG directly, not assumed) that the
+   `evaluate_fb` crash was a library gap, not a rare-disease data gap, and patched it.
+   Resubmission trained and evaluated fully for the first time (22454275/22454276),
+   but hit a second bug in this project's own `rank_of()`: it assumed
+   `out['prediction']` is keyed by TxGNN's internal disease index, but it's actually
+   keyed by PrimeKG's raw disease id (a different value/format per disease, one of
+   them a merged multi-id string). Also caught and fixed a path-drift bug where
+   `txgnn_fabry.sb` was still silently pointing at try09's script. Computed the real
+   result directly from the already-saved `eval.pkl` files rather than waiting on a
+   resubmission, then resubmitted for an official clean log (22544783/22544784).
 
-## Current state
-Zero science results yet, but for the first time both diseases have trained fully and
-only fail at the very last metric-computation step, with a verified (not assumed) fix
-in place. try10's resubmission is the first one with a real chance of producing an
-actual final ranking for both diseases.
+## Result (computed 29-09-2026, from a real completed training+eval run)
+**Fabry: migalastat ranks a mean of 17.7 / 7,957 drugs** (12th/22nd/19th across 3
+seeds) — strong, consistent, top-0.2%. A large improvement over try03's early
+`attention=False` result (2,863rd).
+
+**Gaucher: weak and mixed** across 7 real historical drugs — best is miglustat
+(mean rank 1251, but wildly seed-variable: 7th to 3724th) and eliglustat (consistent,
+~top 19%); the 3 enzyme-replacement biologics (alglucerase, imiglucerase, taliglucerase
+alfa) all score exactly 0.0 identically across all 3 seeds, which looks like a
+missing-embedding artifact rather than genuine signal — not yet root-caused, treat
+those 3 specifically as unverified. Full breakdown in try10's README.

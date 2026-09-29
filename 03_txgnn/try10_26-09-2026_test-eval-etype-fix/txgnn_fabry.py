@@ -94,7 +94,16 @@ def run_disease_eval(name, idx, split_kwargs, seed, result_dir):
 
 
 def rank_of(out, disease_idx, drug_id):
-    preds = out['prediction'][str(disease_idx)]
+    # out['prediction'] is keyed by the disease's raw PrimeKG node id/id-string (e.g.
+    # '10526.0', or a merged multi-id string like '9266_9265_9267_18150' for diseases
+    # PrimeKG folds together from multiple source ontologies) -- NOT by disease_idx,
+    # which is TxGNN's internal per-type graph index used only to SELECT the disease
+    # via eval_disease_centric(disease_idxs=[...]). Confirmed by inspecting the actual
+    # saved eval.pkl for both fabry and gaucher: str(disease_idx) never matches. Since
+    # eval_disease_centric was called with exactly one disease_idx, exactly one key is
+    # guaranteed to be present regardless of its format -- verified across all 6
+    # saved seed x disease pkls before relying on this.
+    (preds,) = out['prediction'].values()
     ranked = sorted(preds.items(), key=lambda x: -x[1])
     for i, (drug, score) in enumerate(ranked):
         if drug == drug_id:

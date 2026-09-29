@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA40x4
+#SBATCH --gpus=4 -n 1 -c 16 --mem=128g -t 12:00:00
+#SBATCH -J reasoning_loto_v3
+#SBATCH -o /work/hdd/bisa/sshah21/results/reasoning_loto/%x_%j.out
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+/work/hdd/bisa/sshah21/envs/txgemma/bin/python /projects/bisa/sshah21/library/02_txgemma_chat/try06_29-09-2026_max-tokens-fix/author_reasoning_examples.py
+/work/hdd/bisa/sshah21/envs/txgemma/bin/python /projects/bisa/sshah21/library/02_txgemma_chat/try06_29-09-2026_max-tokens-fix/lora_finetune_reasoning_loto.py

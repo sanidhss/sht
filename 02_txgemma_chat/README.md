@@ -26,23 +26,25 @@ downstream pipeline by design)?
    template applied to the Gaucher prompt) rather than reasoning fresh from the
    presented SMILES — because `REASONING_CHAINS` has exactly one hand-authored
    paragraph per target, making verbatim memorization the easiest fit.
-5. **try05 (current)** — redesigned the completion format entirely: instead of one
-   fixed paragraph, the model must state an explicit necessary condition for the
-   mechanism, then give every individual candidate a satisfies/fails/partial verdict
-   checked against it, built compositionally from a (scaffold class x condition)
-   table — the textual analogue of the compatibility check a knowledge-graph model
-   like TxGNN applies geometrically, but expressed so the transformer has to apply a
-   rule per candidate instead of reciting a block. Verified before submitting that
-   augmented instances now produce genuinely different completion JSON, not just
-   re-labeled copies of one fixed text. Added a second eval metric,
-   `logic_consistency` (fraction of per-candidate verdicts matching ground truth),
-   independent of whether the final ranking was correct. Submitted as job 22454842.
+5. **try05** — redesigned the completion format entirely: instead of one fixed
+   paragraph, the model must state an explicit necessary condition for the mechanism,
+   then give every individual candidate a satisfies/fails/partial verdict checked
+   against it, built compositionally from a (scaffold class x condition) table — the
+   textual analogue of the compatibility check a knowledge-graph model like TxGNN
+   applies geometrically, but expressed so the transformer has to apply a rule per
+   candidate instead of reciting a block. Ran to completion (job 22454842) but every
+   fold came back `top_choice: None` — not a model failure, a harness bug: the new
+   schema is far more verbose (9 per-candidate verdicts) and `max_new_tokens=500`
+   (sized for try04's one-paragraph schema) silently truncated every completion
+   mid-JSON, so nothing parsed.
+6. **try06 (current)** — one-line fix: `max_new_tokens=500` -> `2048`. Submitted as
+   job 22544773.
 
 ## Current state
 try04 was a clean negative with a verified root cause (one memorizable reasoning
-example per target). try05 directly targets that cause with a compositional,
-per-candidate verdict structure instead of just adding more targets or more wording
-variants. Result pending.
+example per target). try05's redesign is directionally right but never got a real
+test — its own generation budget cut off the model before it could finish an answer.
+try06 is the first run that should actually test the redesign. Result pending.
 
 ## Open question, raised mid-project
 "Bare TxGemma" (what every try in this project runs — a single `generate()` call, no
