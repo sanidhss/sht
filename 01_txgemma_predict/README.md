@@ -19,6 +19,16 @@ near-identical decoys, for orphan disease targets?
    (shared target list with the chat-reasoning project) caused this run to also attempt
    2 unintended targets and time out before finishing.
 
+5. **try06 (current)** — fixed the scope-coupling bug (`TARGETS_TO_RUN` env var, both
+   scripts) and ran CF/TTR as their own deliberate, isolated run through the
+   *unmodified* pipeline — the real test of whether the general approach extrapolates
+   beyond lysosomal-enzyme chaperones. Submitted as job 22546141, result pending.
+
 ## Current state
-Gaucher: passing. Fabry: not yet. Scope-decoupling fix and a clean rerun are the next
-step (see try05's README for detail).
+Gaucher: passing. Fabry: fails its hard-negative test (collapses on diastereomers,
+traced to a 13.5x data gap vs. Gaucher, see try05's Analysis). Decided *not* to keep
+deepening Fabry-specific stereochemistry fixes — no evidence they'd extrapolate to a
+disease with a different receptor profile. try06 tests CF/TTR under the existing
+general pipeline instead. See `NEXT_PHASE_diverse_structural_training.md` for the
+planned next phase (diverse multi-disease + RDKit-computable structural-awareness
+training) if try06 shows the general approach needs more than chemistry alone.
