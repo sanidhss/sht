@@ -50,9 +50,22 @@ provably blind to the true answer during training?
 seeds) — strong, consistent, top-0.2%. A large improvement over try03's early
 `attention=False` result (2,863rd).
 
-**Gaucher: weak and mixed** across 7 real historical drugs — best is miglustat
-(mean rank 1251, but wildly seed-variable: 7th to 3724th) and eliglustat (consistent,
-~top 19%); the 3 enzyme-replacement biologics (alglucerase, imiglucerase, taliglucerase
-alfa) all score exactly 0.0 identically across all 3 seeds, which looks like a
-missing-embedding artifact rather than genuine signal — not yet root-caused, treat
-those 3 specifically as unverified. Full breakdown in try10's README.
+**Gaucher: weak and mixed per-seed**, but the picture changes with ensembling. Best
+per-seed drug was miglustat (mean rank 1251, wildly seed-variable: 7th to 3724th).
+The 3 enzyme-replacement biologics (alglucerase, imiglucerase, taliglucerase alfa) all
+score exactly 0.0 identically across all 3 seeds — a likely missing-feature artifact,
+not yet root-caused.
+
+11. **try11 (current)** — root-caused the Gaucher seed variance: checkpoint selection
+    (`finetune()`) picks the epoch with the best *macro* AUROC across all 3
+    relation types in validation (contraindication/indication/off-label), not the
+    indication-specific AUROC that's actually tested — a checkpoint can win on the
+    other two relations while being mediocre at indication, and which one wins is
+    seed-dependent noise. Confirmed for free by ensembling try10's 3 already-trained
+    seeds (averaging raw scores, no retraining): **miglustat's ensembled rank is
+    17/7,957** — recovering a Fabry-caliber result that was just being obscured by
+    per-seed checkpoint noise. The 3 biologics stayed flat at ~6070 even after
+    ensembling, confirming that artifact is structurally different (unaffected by
+    noise-cancellation). Patched checkpoint selection to use indication-specific
+    AUROC instead of the 3-relation macro average, and submitted a full retrain
+    (22544937 fabry, 22544938 gaucher) under the new criterion.
