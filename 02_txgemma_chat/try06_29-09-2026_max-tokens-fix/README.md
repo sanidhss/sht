@@ -29,4 +29,46 @@ One line in `generate_completion()`: `max_new_tokens=500` -> `max_new_tokens=204
 isn't in question here, only the generation budget).
 
 ## Status
-Submitted as job **22544773**. Result pending.
+Submitted as job **22544773**. COMPLETED (3:34:36). The fix worked -- every fold now
+parses, with real `logic_consistency` scores (0.56-0.78) well above the ~0.33 chance
+level for a 3-way true/false/partial verdict. Still 0/4 folds correct on final
+ranking, but this is a real result now, not an infra failure.
+
+## Result: coherent per-candidate logic, but necessary_condition bleeds across targets
+Looked at the raw `necessary_condition` the model stated for each held-out fold
+(the thing it's supposed to derive fresh from the prompt, never having seen this
+target's own authored condition):
+
+| held out | stated necessary_condition | matches |
+|---|---|---|
+| fabry | "mimic shape/charge/stereochemistry of a sugar transition state... secondary/contact... di-metal-binding hexose..." | blend of Fabry's real condition + confabulated phrasing not in any authored text |
+| gaucher | "size/shape complementarity to a hydrophobic channel... hydrophobic anchor at entrance, polar anchor at bottom" | blend of TTR's phrasing ("polar anchor at the entrance") + generic "channel" language |
+| cf | "secondary/modulatory chaperone contact... domain-domain interface... transport protein, no metal-dependent activity" | blend of Gaucher's framing + CF's real facts + a confabulated "metal-binding cofactor" detail in neither |
+| attr | "size/shape complementarity to a protein-protein-like interface -- larger, rigid, multi-ring scaffold..." | **verbatim CF's condition**, word-for-word |
+
+Despite never reconstructing the true held-out condition cleanly, **3 of 4 folds
+still picked a candidate from the held-out target's own correct structural family**
+(fabry_analog_2, gaucher_analog_3, cf_analog_2 -- each a real hard-negative analog of
+that fold's own true reference, not a random or cross-target compound). That's
+partial, genuine evidence of transfer: the model is recognizing "this family of
+compounds belongs to this mechanism" cold, even without training on that family --
+it just can't yet resolve the fine distinction within the family (reference vs. its
+own near-miss analog), the same soft-fail pattern already seen in the numeric-predict
+track's own hard-negative problem.
+
+The `attr` fold is the one clean miss: it fully defaulted to CF's answer (lumacaftor,
+a real cross-target compound, not even one of TTR's own candidates), driven by
+borrowing CF's condition wholesale rather than a blend. The common thread across all
+4: whenever two authored conditions share surface vocabulary (CF's and TTR's are both
+about "a larger rigid scaffold fitting an interface between two protein-like things"),
+the model struggles to keep them separate when generalizing cold. Fabry's condition
+(sugar/transition-state/stereochemistry) is lexically distinct enough from the others
+that it never gets fully overwritten by another target's text, even if it gets
+blended with confabulated detail.
+
+Worth noting for the diverse-training-phase doc (`01_txgemma_predict/NEXT_PHASE_
+diverse_structural_training.md` has the analogous rationale for the numeric track):
+this suggests the authored conditions' *phrasing distinctiveness*, not just their
+factual correctness, matters for compositional transfer -- two genuinely different
+mechanisms worded similarly are harder for the model to keep apart than two different
+mechanisms worded distinctly, independent of how many targets are in the training set.

@@ -53,5 +53,37 @@ under the *old* (macro-AUROC) criterion. Reusing them would silently defeat the 
 point of this fix. This means a full retrain, not a fast reuse-checkpoint run.
 
 ## Status
-Submitted: fabry = job **22544937**, gaucher = job **22544938**.
-Expect ~7-8h each (full retrain), matching try09/try10's actual training time.
+Submitted: fabry = job **22544937**, gaucher = job **22544938**. Both COMPLETED
+(7:41h / 7:54h). Confirmed the patch actually ran (log shows "Best Indication AUROC",
+not the old "Best Macro AUROC" label) before trusting the result.
+
+## Result: hypothesis rejected by the data (01-10-2026)
+**The fix did not change the outcome.** Fabry: migalastat mean rank 17.3 (12/21/19 --
+essentially identical to try10's 17.7/12-22-19). Gaucher: miglustat mean rank 1233.7
+(3669/7/25 -- essentially identical to try10's 1251.3/3724-7-23). Same variance,
+same pattern, under the corrected checkpoint-selection criterion.
+
+Checked seed 1 vs. seed 2's own validation trajectories directly rather than just
+accept the negative result: seed 1's final indication AUROC is **0.8079**, seed 2's
+is **0.7960** -- seed 1's aggregate indication-discrimination quality is comparable
+to, even slightly *better than*, seed 2's. If checkpoint selection (or overall
+indication-AUROC quality) were the cause, the "bad" seed should show worse validation
+metrics. It doesn't.
+
+**Conclusion: the original hypothesis was wrong.** This isn't a training/
+selection bug -- it's inherent stochasticity in the learned embedding space itself.
+Aggregate indication AUROC is averaged across every disease-drug indication edge in
+the validation graph (hundreds of diseases); it says nothing about whether one
+specific (miglustat, Gaucher) pair lands in a good relative position in a given
+training run's particular embedding geometry. Two seeds can have equally good
+*overall* discrimination ability while placing one specific drug very differently,
+because the random initialization/sampling trajectory shapes the embedding space
+itself, not just which checkpoint gets picked from it.
+
+This means the checkpoint-selection patch is a harmless, arguably-more-correct change
+(it does align selection with what's actually tested) but it does **not** solve the
+variance problem it was built for. The validated mitigation remains what was already
+found for free in try10: **ensembling scores across multiple independently-trained
+seeds** (miglustat 17/7,957 after averaging). That -- not this patch -- is the actual
+adopted fix going forward. Keeping the patch in the installed library since it's not
+wrong, just insufficient on its own.

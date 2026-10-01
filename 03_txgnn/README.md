@@ -45,6 +45,13 @@ provably blind to the true answer during training?
    result directly from the already-saved `eval.pkl` files rather than waiting on a
    resubmission, then resubmitted for an official clean log (22544783/22544784).
 
+## Adopted mitigation for seed variance
+**Ensembling (averaging raw scores across the 3 seeds)**, not a training/selection
+fix — try11 showed the variance is inherent embedding-space stochasticity, not a bug.
+This is the validated path forward for reporting results on any target going
+forward: train 3 seeds, average scores, report the ensembled rank, not any single
+seed's.
+
 ## Result (computed 29-09-2026, from a real completed training+eval run)
 **Fabry: migalastat ranks a mean of 17.7 / 7,957 drugs** (12th/22nd/19th across 3
 seeds) — strong, consistent, top-0.2%. A large improvement over try03's early
@@ -56,16 +63,15 @@ The 3 enzyme-replacement biologics (alglucerase, imiglucerase, taliglucerase alf
 score exactly 0.0 identically across all 3 seeds — a likely missing-feature artifact,
 not yet root-caused.
 
-11. **try11 (current)** — root-caused the Gaucher seed variance: checkpoint selection
-    (`finetune()`) picks the epoch with the best *macro* AUROC across all 3
-    relation types in validation (contraindication/indication/off-label), not the
-    indication-specific AUROC that's actually tested — a checkpoint can win on the
-    other two relations while being mediocre at indication, and which one wins is
-    seed-dependent noise. Confirmed for free by ensembling try10's 3 already-trained
-    seeds (averaging raw scores, no retraining): **miglustat's ensembled rank is
-    17/7,957** — recovering a Fabry-caliber result that was just being obscured by
-    per-seed checkpoint noise. The 3 biologics stayed flat at ~6070 even after
-    ensembling, confirming that artifact is structurally different (unaffected by
-    noise-cancellation). Patched checkpoint selection to use indication-specific
-    AUROC instead of the 3-relation macro average, and submitted a full retrain
-    (22544937 fabry, 22544938 gaucher) under the new criterion.
+11. **try11** — hypothesized the Gaucher seed variance was a checkpoint-selection
+    artifact (macro AUROC across 3 relation types vs. the indication-specific AUROC
+    actually tested) and patched it. **Result: hypothesis rejected.** The retrain
+    under the corrected criterion gave essentially identical numbers to try10
+    (migalastat 17.3 vs 17.7 mean rank; miglustat 1233.7 vs 1251.3, same 7/25-ish vs.
+    3669-3724 per-seed spread). Checked seed 1 vs. seed 2's actual validation AUROC
+    trajectories: seed 1 (0.8079) is comparable to, even slightly better than, seed 2
+    (0.7960) — if checkpoint selection were the cause, the "bad" seed should show
+    worse validation metrics, and it doesn't. Real conclusion: this is inherent
+    stochasticity in the learned embedding space itself (aggregate indication AUROC,
+    averaged across hundreds of diseases, doesn't predict where one specific
+    (drug, disease) pair lands), not a fixable training bug.

@@ -37,14 +37,23 @@ downstream pipeline by design)?
    schema is far more verbose (9 per-candidate verdicts) and `max_new_tokens=500`
    (sized for try04's one-paragraph schema) silently truncated every completion
    mid-JSON, so nothing parsed.
-6. **try06 (current)** — one-line fix: `max_new_tokens=500` -> `2048`. Submitted as
-   job 22544773.
+6. **try06** — one-line fix: `max_new_tokens=500` -> `2048`. Worked: every fold now
+   parses, logic_consistency 0.56-0.78 (well above the ~0.33 chance level). Still
+   0/4 on final ranking, but 3 of 4 folds correctly localized to the held-out
+   target's own structural family cold (picked a real hard-negative analog of the
+   true answer, not a random/cross-target compound) — partial, genuine transfer
+   evidence. The failures trace to the model blending/confusing different targets'
+   authored necessary-conditions when they share surface vocabulary (CF's and TTR's
+   conditions are both "rigid scaffold fits an interface," and the `attr` fold fully
+   borrowed CF's condition verbatim as a result).
 
 ## Current state
 try04 was a clean negative with a verified root cause (one memorizable reasoning
-example per target). try05's redesign is directionally right but never got a real
-test — its own generation budget cut off the model before it could finish an answer.
-try06 is the first run that should actually test the redesign. Result pending.
+example per target). try06's redesign shows real, partial transfer — family-level
+recognition cold, but fine discrimination within a family (and keeping two
+similarly-worded mechanisms separate) still fails. Next lever implied by this result:
+make the authored conditions more lexically distinct from each other, not just more
+numerous — a phrasing problem, not purely a data-volume one.
 
 ## Open question, raised mid-project
 "Bare TxGemma" (what every try in this project runs — a single `generate()` call, no
