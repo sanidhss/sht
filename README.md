@@ -73,3 +73,4 @@ session home with a `CLAUDE.md` briefing: `$PROJ/txgemma_predict`, `txgemma_chat
 `txgnn`, `setup`. Start there for that project's context; this file plus each
 project's own README remain the authoritative, versioned record of what actually
 happened.
+<!-- hook test Thu Oct  1 23:48:12 CDT 2026 -->
