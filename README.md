@@ -69,7 +69,7 @@ general pipeline (01) is the real test of extrapolation breadth.
 
 ## For a fresh Claude Code session
 Each project has its own dedicated, local-only (not pushed to GitHub) Claude Code
-session home with a `CLAUDE.md` briefing: `$PROJ/cc_01_txgemma_predict`,
-`cc_02_txgemma_chat`, `cc_03_txgnn`, `cc_04_setup`. Start there for that project's
-context; this file plus each project's own README remain the authoritative, versioned
-record of what actually happened.
+session home with a `CLAUDE.md` briefing: `$PROJ/txgemma_predict`, `txgemma_chat`,
+`txgnn`, `setup`. Start there for that project's context; this file plus each
+project's own README remain the authoritative, versioned record of what actually
+happened.
