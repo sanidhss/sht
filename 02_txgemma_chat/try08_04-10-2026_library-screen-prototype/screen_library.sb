@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA40x4
+#SBATCH --gpus=4 -n 1 -c 16 --mem=128g -t 01:30:00
+#SBATCH -J screen_fabry
+#SBATCH -o /work/hdd/bisa/sshah21/results/reasoning_screen/%x_%j.out
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+TRY=/projects/bisa/sshah21/library/02_txgemma_chat/try08_04-10-2026_library-screen-prototype
+PY=/work/hdd/bisa/sshah21/envs/txgemma/bin/python
+
+# Smoke test on a small subset first (keeps the true drug and analogs in the subset).
+# If padding/template/scoring is broken, the job dies here instead of after the full run.
+echo "########## SMOKE TEST (64 candidates) ##########"
+$PY $TRY/screen_library.py --target fabry --limit 64 --batch-size 16 || exit 1
+
+echo
+echo "########## FULL LIBRARY ##########"
+$PY $TRY/screen_library.py --target fabry --batch-size 16
