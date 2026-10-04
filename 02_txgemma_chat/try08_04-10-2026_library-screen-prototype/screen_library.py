@@ -103,7 +103,18 @@ def score_batch(model, tok, prompts, yes_ids, no_ids):
                                      add_generation_prompt=True, tokenize=False)
              for p in prompts]
     enc = tok(texts, return_tensors="pt", padding=True, add_special_tokens=False).to(model.device)
-    logits = model(**enc).logits[:, -1, :].float()
+
+    # Index the last REAL token per row rather than assuming position -1. SMILES lengths
+    # vary widely across the library, so batches genuinely pad; if padding landed on the
+    # right, reading [:, -1] would score a pad token and emit plausible-looking garbage
+    # for most candidates. Locating the final 1 in the attention mask is correct under
+    # either padding side.
+    mask = enc["attention_mask"]
+    last = mask.shape[1] - 1 - mask.flip(1).argmax(dim=1)
+    assert mask.gather(1, last.unsqueeze(1)).all(), "last-token index landed on padding"
+
+    logits = model(**enc).logits
+    logits = logits[torch.arange(logits.shape[0], device=logits.device), last, :].float()
     logprobs = torch.log_softmax(logits, dim=-1)
     lp_yes = torch.logsumexp(logprobs[:, yes_ids], dim=-1)
     lp_no = torch.logsumexp(logprobs[:, no_ids], dim=-1)
@@ -206,6 +217,17 @@ def main():
 
     yes_ids, no_ids = yes_no_token_ids(tok)
     print(f"yes token ids {yes_ids} | no token ids {no_ids}", flush=True)
+    assert not (set(yes_ids) & set(no_ids)), "yes/no token sets overlap"
+
+    # add_special_tokens=False is only safe if the chat template's literal <bos> is
+    # parsed back into the bos token id. Gemma degrades noticeably without BOS, so fail
+    # loudly here rather than silently scoring 3.4k candidates on a malformed prompt.
+    probe = tok.apply_chat_template([{"role": "user", "content": "probe"}],
+                                    add_generation_prompt=True, tokenize=False)
+    probe_ids = tok(probe, add_special_tokens=False)["input_ids"]
+    n_bos = probe_ids.count(tok.bos_token_id)
+    print(f"bos id {tok.bos_token_id} appears {n_bos}x in templated prompt", flush=True)
+    assert n_bos == 1, f"expected exactly one BOS, got {n_bos}"
 
     scored = []
     for i in range(0, len(candidates), args.batch_size):
