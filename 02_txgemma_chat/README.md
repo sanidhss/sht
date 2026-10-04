@@ -47,13 +47,56 @@ downstream pipeline by design)?
    conditions are both "rigid scaffold fits an interface," and the `attr` fold fully
    borrowed CF's condition verbatim as a result).
 
+7. **try07** — grounding-vs-retrieval diagnostic, no retraining (reuses try06's saved
+   `holdout_fabry` adapter). Job 22607104, COMPLETED 04-10-2026. Clean separation: on
+   an **in-training** target (gaucher) the model restates the authored
+   necessary_condition character-for-character and reasons coherently from it; **cold**
+   on the held-out target (fabry) it emits a splice of the right idea plus a training
+   target's framing plus a confabulated descriptor present in no authored text, then
+   describes every candidate in the training target's scaffold vocabulary. So the
+   try06 redesign is sound in distribution — the failure is specifically
+   retrieval-over-derivation under distribution shift. Caveat: n=1 per arm, and the
+   verbatim in-distribution match is itself a memorization signal.
+8. **try08** — stage-2 library-screen prototype (job 22664818, pending). Drops the
+   9-candidate multiple-choice format for rank-of-true-drug over 3417 ChEMBL approved
+   drugs plus the authored analogs spiked in, and hands the model the authored
+   condition so condition-*application* is measured separately from
+   condition-*derivation*. Scores by yes/no logprob margin in one forward pass per
+   candidate rather than a 2048-token generation, which is what makes a pool that size
+   affordable.
+
 ## Current state
 try04 was a clean negative with a verified root cause (one memorizable reasoning
 example per target). try06's redesign shows real, partial transfer — family-level
 recognition cold, but fine discrimination within a family (and keeping two
-similarly-worded mechanisms separate) still fails. Next lever implied by this result:
-make the authored conditions more lexically distinct from each other, not just more
-numerous — a phrasing problem, not purely a data-volume one.
+similarly-worded mechanisms separate) still fails. try07 then localized *why*: the
+model grounds fine on targets it trained on and only substitutes a memorized condition
+when the target is genuinely unseen.
+
+**Superseded:** an earlier reading of try06 suggested the next lever was making the
+authored conditions more lexically distinct from each other. try07 contradicts that —
+the model grounds correctly in distribution *despite* CF and TTR sharing
+interface-stabilizer vocabulary, so lexical overlap is not the mechanism of failure.
+Forcing artificial distinctness would also teach a false lesson, since those mechanisms
+genuinely are related. The indicated lever is instead a grounding/citation requirement
+in the task prompt, forcing the stated condition to cite spans of the mechanism
+description it was given.
+
+Two measurement problems surfaced alongside this, both eval-design rather than model
+failures, and both addressed in try08:
+- **The 9-candidate format is far easier than the deployment task** (true drug + 3
+  authored analogs + the 3 other folds' drugs + caffeine/aspirin), and top-1 over 4
+  folds is only 4 bits of signal, so 0/4 vs 1/4 is unreadable. Rank over a real library
+  is continuous and readable at n=1 disease. Since docking verification lives
+  downstream, **recall@k is the metric that matches the role; top-1 never was** — which
+  reframes try06's "right structural family 3 of 4 times" as a partial pass.
+- **Condition-derivation and condition-application were fused** into one number, so a
+  wrong answer could come from either. try08 isolates the second.
+
+Note on scaling: expanding the *candidate pool* needs only SMILES and is free, but
+expanding the *training* side needs hand-authored mechanism text per disease, and there
+are only on the order of tens of well-documented pharmacological chaperone mechanisms.
+That asymmetry is why the pool can scale now while the disease count cannot.
 
 ## Open question, raised mid-project
 "Bare TxGemma" (what every try in this project runs — a single `generate()` call, no
