@@ -22,13 +22,31 @@ near-identical decoys, for orphan disease targets?
 5. **try06 (current)** — fixed the scope-coupling bug (`TARGETS_TO_RUN` env var, both
    scripts) and ran CF/TTR as their own deliberate, isolated run through the
    *unmodified* pipeline — the real test of whether the general approach extrapolates
-   beyond lysosomal-enzyme chaperones. Submitted as job 22546141, result pending.
+   beyond lysosomal-enzyme chaperones. Job 22546141 COMPLETED: **CF passes** (beats
+   all 3 real structural analogs), **TTR fails** (same one-score collapse as Fabry,
+   and additionally loses to easy negatives). See try06's Result for the diagnosis.
 
 ## Current state
-Gaucher: passing. Fabry: fails its hard-negative test (collapses on diastereomers,
-traced to a 13.5x data gap vs. Gaucher, see try05's Analysis). Decided *not* to keep
-deepening Fabry-specific stereochemistry fixes — no evidence they'd extrapolate to a
-disease with a different receptor profile. try06 tests CF/TTR under the existing
-general pipeline instead. See `NEXT_PHASE_diverse_structural_training.md` for the
-planned next phase (diverse multi-disease + RDKit-computable structural-awareness
-training) if try06 shows the general approach needs more than chemistry alone.
+Passing: **Gaucher** and **CF**. Failing: **Fabry** (collapses on diastereomers) and
+**TTR** (collapses on analogs *and* loses to unrelated drugs).
+
+CF's pass is the significant one — CF is a folding/trafficking corrector with no
+active-site mimicry, so the *unmodified* pipeline demonstrably extrapolates past
+lysosomal-enzyme chaperones. That hypothesis is retired.
+
+The live hypothesis is now **training-data volume, not mechanism**. Pass/fail is
+monotonic in n_training across all four targets (CF 1,427 pass, Gaucher 1,208 pass,
+TTR 493 fail, Fabry 89 fail), with a clean break between ~1,200 and ~500. Caveat:
+n=4, and volume is confounded with how well-studied each target is. The decisive
+cheap test is downsampling Gaucher to ~490 and seeing whether it reproduces TTR's
+collapse — same target and mechanism, volume as the only varied factor. If it holds,
+Fabry and TTR become one data-sufficiency finding rather than two mechanism-specific
+failures.
+
+Consequently `NEXT_PHASE_diverse_structural_training.md` (RDKit structural-awareness
+training) is **pending re-justification** — it was scoped for "chemistry alone isn't
+enough," and CF's pass is evidence against that premise on the mechanism axis.
+
+Also open: the top-K reframing. Note it cannot be applied uniformly to Fabry and TTR
+— a top-K bar could excuse Fabry's tie with its own diastereomers, but not TTR
+scoring worse than caffeine.

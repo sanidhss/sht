@@ -4,7 +4,7 @@
 **Scripts:** `prep_orphan_target_data.py` (target-scoping fix) +
 `lora_finetune_orphan_targets.py` (target-scoping fix) +
 `lora_finetune_orphan_targets.sb`
-**Job:** see below.
+**Job:** 22546141 (COMPLETED) -- CF passes, TTR fails; see Result below.
 
 ## Why this try exists
 CF and TTR were added to the shared `TARGETS` dict back in try05, originally for the
@@ -46,5 +46,88 @@ Also bumped the time budget to 12h (from try05's 8h) since CF alone has 1,427 re
 compounds -- more than Gaucher's 1,208 -- and CF+TTR together is comparable to or
 larger than what caused the 8h budget to be exceeded before.
 
-## Status
-Submitted as job **22546141**. Result pending.
+## Result
+Job **22546141**, COMPLETED 02-10-2026 17:52, elapsed 07:04:41 (inside the raised 12h
+budget; the 8h budget that killed try05 would have been marginal, not sufficient).
+
+The target-scoping fix worked as intended: only `cf,attr` ran, and the merged
+`coverage_report.json` kept Fabry's and Gaucher's entries intact rather than
+overwriting them. That part of the try is settled -- `TARGETS_TO_RUN` does what it
+was built to do.
+
+**Split decision on the actual question.** Note scores here are potency-like, so
+*lower is better*; CF's reference at 411 beating easy negatives at 633-926 is what
+establishes the direction.
+
+| Target | n_train | Reference (real label) | Beats easy | Beats hard | Verdict |
+|---|---|---|---|---|---|
+| CF (lumacaftor) | 1,427 | 411 (584) | yes | yes | **PASS** |
+| TTR (tafamidis) | 493 | 781 (552) | no | no | **FAIL** |
+
+CF hard negatives: 661 (real 684), 584 (real 584), 661 (real 663) -- reference beats
+all three. Easy negatives 633-926.
+TTR hard negatives: 781, 781, 781 (real 781 / 759 / 774). Easy negatives 660-994.
+Training converged normally for both (CF loss 1.0214 -> 0.5030 -> 0.3668; TTR
+1.1200 -> 0.4487 -> 0.2871), so neither outcome is an under-training artifact.
+
+### Diagnosis: CF's pass is the load-bearing result
+CF is a folding/trafficking corrector with no active-site mimicry whatsoever --
+mechanistically about as distant from a lysosomal-enzyme chaperone as the four
+targets get. The *unmodified* general pipeline handled it and beat all three real
+structural analogs. **This retires the "the pipeline only works for lysosomal
+enzymes" hypothesis**, which was the main thing this try was built to test.
+
+### Diagnosis: TTR fails the same way Fabry does, only worse
+Two specifics worth recording:
+
+1. **Identical collapse signature to Fabry** -- one score (781) emitted for tafamidis
+   and all three analogs alike. And 781 is *exactly* the real label of hard negative
+   #1 (sim=0.43). That is near-neighbour label memorization: the model is reciting a
+   training-set neighbour's label instead of reasoning over structure. This is
+   precisely the failure mode SMILES augmentation was introduced in try05 to fix, and
+   augmentation did run here (5.0x, 2,463 lines from 493 compounds). **Augmentation
+   alone does not prevent it at this data volume.**
+2. **TTR fails easy negatives too, which Fabry does not.** Caffeine (720) and
+   ibuprofen (660) both score better than tafamidis (781). Fabry at least keeps its
+   reference ahead of unrelated drug classes. This is a floor-level failure, and it
+   matters for the pending top-K reframing: a generous top-K reading could plausibly
+   excuse Fabry's 4-way tie with its own diastereomers, but it cannot excuse losing
+   to caffeine. **The two failures should not be re-scored under the same rule.**
+
+### The cross-target pattern this exposes
+Sorted by training volume, pass/fail is perfectly monotonic across all four targets:
+
+    CF      1,427  PASS
+    Gaucher 1,208  PASS
+    TTR       493  FAIL
+    Fabry      89  FAIL
+
+Clean break between ~1,200 and ~500. This is a simpler explanation than anything
+mechanism-specific, and it is consistent with the already-verified Fabry root cause
+(89 compounds, read directly from `coverage_report.json`). Caveat, stated plainly so a
+future session does not over-read it: **n=4 targets, and training volume is confounded
+with how well-studied each target is** -- a better-studied target has both more data
+and possibly cleaner data. This is a hypothesis with suggestive support, not an
+established training floor.
+
+If it holds, it reframes Fabry and TTR as *one* finding (insufficient real
+bioactivity data) rather than two separate mechanism-specific failures -- a
+substantially stronger and more generalizable thesis claim than either alone. The
+cheapest decisive test: downsample Gaucher's 1,208 to ~490 and check whether it
+reproduces TTR's collapse. Same target, same mechanism, same pipeline, volume as the
+only varied factor -- which breaks the confound.
+
+### Consequence for the planned next phase
+`NEXT_PHASE_diverse_structural_training.md` (RDKit-descriptor physics/steric
+awareness) was scoped as the fix for "the general pipeline needs more than chemistry
+alone." CF's pass is evidence against that premise on the mechanism-breadth axis.
+The evidence now points at data sufficiency instead, which is a cheaper and more
+direct fix. **That doc should be treated as pending re-justification, not as the
+agreed next step.**
+
+### Operational note
+A CUDA OOM warning fired on device 0 during CF's training setup (`memory allocation
+failed with OOM ... free: 87293952, total: 42405855232`). The allocator recovered and
+training completed and converged normally, so results are not suspect -- but the
+9B + CF's 7,135 training lines configuration is running near the memory ceiling and
+a larger target could tip it.
