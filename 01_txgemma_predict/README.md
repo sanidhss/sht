@@ -26,11 +26,20 @@ near-identical decoys, for orphan disease targets?
    all 3 real structural analogs), **TTR fails** (same one-score collapse as Fabry,
    and additionally loses to easy negatives). See try06's Result for the diagnosis.
 
-6. **try07 (current)** — tests whether the Fabry/TTR failures are about training-data
+6. **try07** — tests whether the Fabry/TTR failures are about training-data
    volume by retraining **Gaucher** (passes at 1,208) on a random **493**-compound
    subset, matching TTR's count exactly. Same target, mechanism, pipeline, reference
    and hard negatives; volume is the only variable, which breaks the confound in the
    4-target pattern. 3 seeds. Job 22660248, result pending.
+
+7. **try08 (current)** — output-resolution probe. A measurement, not a fix: loads the
+   four already-saved adapters and counts how many *distinct* scores each can emit
+   across ~310 molecules (200 MaxMin-diverse and novel, 50 held-in as a memorization
+   control, 50 reference-neighbours, 9 eval anchors). The 9-molecule hard-negative test
+   cannot distinguish "those molecules really are similar" from "the model only has a
+   few output values." If the score scale is coarse, small gaps like Gaucher's 691-vs-661
+   are rounding, library ranking collapses into a few tie-groups, and more data cannot
+   fix it. Inference only, no training. Job 22660579, result pending.
 
 ## Current state
 Passing: **Gaucher** and **CF**. Failing: **Fabry** (collapses on diastereomers) and

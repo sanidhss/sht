@@ -2,7 +2,7 @@
 
 **Date:** 04-10-2026
 **Scripts:** `output_resolution_probe.py` + `output_resolution_probe.sb`
-**Job:** see Status below.
+**Job:** 22660579 (submitted 04-10-2026) -- result pending; see Status below.
 
 **This is a measurement, not a fix.** It trains nothing, changes no training data, and
 adds no new eval criterion. It loads the four already-saved adapters and asks how many
@@ -127,4 +127,23 @@ attractor value" would become the same observation, which is worth knowing befor
 interpreting try07.
 
 ## Status
-Not yet submitted — see Result below once it has run.
+Submitted as job **22660579** (6h budget, gpuA100x4, 1 GPU, inference only). Result
+pending.
+
+Pre-submission dry-run passed:
+- pool novel to Gaucher = **2,000** compounds (2,030 pooled distinct, 30 overlapping)
+- MaxMin picked **200** diverse compounds, **mean pairwise Tanimoto 0.105** — genuinely
+  dissimilar. This is what makes the probe well-powered: if few distinct values come
+  back, it cannot be attributed to the inputs being alike.
+- all four prompt templates substitute cleanly with **four different** target sequences
+  preserved — `MEFSSPSREECP` (GBA1), `MQRSPLEKASVV` (CFTR), `MQLRNPELHLGC` (GLA),
+  `MASHRLLLLCLA` (TTR). Prompt lengths track protein size as expected (CFTR longest at
+  2,412 chars; TTR shortest at 1,079, a 147-residue protein), confirming each adapter
+  is probed against its own target rather than a borrowed sequence.
+
+Incidental finding from the dry-run, not chased here: CF's training file yields **1,450**
+distinct canonical compounds, while `coverage_report.json` records 1,427 (7,135 lines
+÷ 5 = 1,427 exactly). So ~23 CF compounds did not receive a full 5x augmentation, or
+canonicalization splits some differently than prep did. Irrelevant to this probe, but
+CF's compound count anchors the top of the volume ordering that try07 is testing, so
+it is worth knowing that the number is slightly soft.
