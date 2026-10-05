@@ -4,7 +4,7 @@
 chemistry at all) correctly identify the right drug for Fabry/Gaucher while being
 provably blind to the true answer during training?
 
-## Arc (9 tries, the longest debugging arc of the three projects)
+## Arc (12 tries, the longest debugging arc of the three projects)
 1. **try01-02** — old environment (`envs/txgnn`, dgl 0.9.1): two different crashes, one
    from a wrong disease-index bug (see try03), one from a DGL API version mismatch after
    trying to fix the first by upgrading dgl in-place. Motivated building a fresh,
@@ -60,8 +60,10 @@ seeds) — strong, consistent, top-0.2%. A large improvement over try03's early
 **Gaucher: weak and mixed per-seed**, but the picture changes with ensembling. Best
 per-seed drug was miglustat (mean rank 1251, wildly seed-variable: 7th to 3724th).
 The 3 enzyme-replacement biologics (alglucerase, imiglucerase, taliglucerase alfa) all
-score exactly 0.0 identically across all 3 seeds — a likely missing-feature artifact,
-not yet root-caused.
+score exactly 0.0 identically across all 3 seeds — root-caused in try12: their only
+PrimeKG edge is the held-out Gaucher indication, so they are isolated nodes in the
+training graph and get a zero embedding (no self-loop). Not evaluable; excluded from
+the Gaucher reference set (now 4 drugs).
 
 11. **try11** — hypothesized the Gaucher seed variance was a checkpoint-selection
     artifact (macro AUROC across 3 relation types vs. the indication-specific AUROC
@@ -75,3 +77,12 @@ not yet root-caused.
     stochasticity in the learned embedding space itself (aggregate indication AUROC,
     averaged across hundreds of diseases, doesn't predict where one specific
     (drug, disease) pair lands), not a fixable training bug.
+12. **try12** — root-caused the exact-0.0 scores (CPU-only diagnostic, no training).
+    Every exact-0.0 drug, in all 6 disease×seed runs, has exactly one edge in all of
+    PrimeKG (a single indication) and zero edges in the training split; the
+    zero-score set and zero-train-degree set are identical. The RGCN layers have no
+    self-loop, so an isolated node gets an all-zero representation and DistMult
+    scores it exactly 0. The "biologics lack chemistry features" guess was wrong —
+    velaglucerase alfa (same drug class, one extra drug_protein edge) scores normally.
+    The 3 Gaucher ERTs are structurally unscoreable under a blind split; reported as
+    not evaluable, not as misses. No library change.
