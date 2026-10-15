@@ -106,6 +106,87 @@ rather than a model one.
 
 ## Status
 
-Submitted as job **22664818**. The `.sb` runs a 64-candidate smoke test first (subset
-always retains the true drug and the analogs) and exits non-zero if it fails, then the
-full 3420-candidate screen. Result pending.
+Job **22664818** COMPLETED 06-10-2026 03:05 (37m30s, exit 0). Both the 64-candidate
+smoke test and the full 3420-candidate screen ran.
+Log: `/work/hdd/bisa/sshah21/results/reasoning_screen/screen_fabry_22664818.out`
+Ranked output: `.../screen_fabry_base.json`
+
+Asserts passed: exactly one BOS survives `add_special_tokens=False` (`bos id 2 appears
+1x`), yes/no token sets disjoint, and the last-real-token index never landed on padding
+across 3420 candidates.
+
+## Result: class-level screening works, within-class discrimination does not
+
+**The screening half works.** Base model, no adapter, authored condition handed in:
+
+| metric | value |
+|---|---|
+| migalastat rank | **3 / 3420** (top 0.09%) |
+| recall@10 / @50 / @100 | HIT / HIT / HIT |
+| enrichment over random | 570x |
+| distinct scores | 2742 / 3420 (not degenerate) |
+| candidates leaning yes | 12 / 3420 (0.4%) |
+
+The cleanest statement of the result: **the model's entire positive set is 12 compounds
+out of 3420, and migalastat is in it.** The yes-set (margin > 0) is exactly the top 12 —
+a 285x reduction of the library that retains the true drug. For the intended role
+(narrow a library so downstream docking has something affordable to verify) that is a
+genuinely useful result, and it is the first positive quantitative signal this track has
+produced.
+
+Mechanistically wrong compounds are correctly dumped: lumacaftor rank 2361, caffeine
+2436, tafamidis 2835 — so the model is applying the stated condition, not ranking by
+generic drug-likeness.
+
+**But the discrimination is at the class level only, and three independent pieces of
+evidence say so.**
+
+1. **No stereochemical discrimination at all.** migalastat and `fabry_analog_2` — same
+   constitution, differing only in `@`/`@@` — score `0.748397231` and `0.748397052`.
+   A separation of **1.8e-7**, which is bf16 numerical noise, not a judgement. The
+   rank-3-vs-4 ordering between them is a coin flip, and `analog_1` and `analog_3` sit
+   at ranks 6 and 7. This confirms the caveat pre-registered in this README before the
+   run: the condition demands "exact stereochemistry" and the model cannot act on that
+   clause.
+2. **The yes-set is mostly plain sugars that fail the condition's decisive clause.**
+   Ascorbic acid, choline, glucosamine, xylose, lactitol, gluconolactone, isosorbide
+   mononitrate, nitroglycerin. The condition requires "a ring position capable of
+   carrying positive charge" — the iminosugar ring nitrogen that makes migalastat
+   (1-deoxygalactonojirimycin) work. Almost none of the other 11 have a ring nitrogen;
+   glucosamine's amine is exocyclic, and xylose/lactitol/gluconolactone have no nitrogen
+   at all. So the model matched the easy surface half of the condition ("compact, highly
+   polar, single small sugar ring") and ignored the half that actually discriminates.
+3. **Scores are sensitive to pharmacologically irrelevant SMILES features.**
+   `MIGALASTAT HYDROCHLORIDE` is byte-identical to migalastat apart from a leading
+   `Cl.`, and scores **-0.250 against +0.748** — a ~1.0 margin swing from a spectator
+   counterion, larger than the entire spread across the top 12. (It also means
+   canonical-SMILES dedup does not collapse salt forms; a future run should strip
+   counterions. It did not affect this rank, but it inflates the pool.)
+
+## How this reads against the rest of the track
+
+This is the same pattern try06 found — family-level recognition, no fine discrimination
+— but now measured on a continuous scale instead of reported as 0/4. Reframed in these
+terms, try06's "wrong drug but right structural family 3 of 4 times" was never a flat
+failure; it was this same partial competence, hidden by a top-1 metric over 9 candidates.
+
+It also means the **two-stage split is the right architecture**, and the division of
+labour is now explicit: the model narrows thousands to roughly a dozen by mechanism
+class, and stereochemistry — the thing it demonstrably cannot do from text — is exactly
+what the downstream docking stage resolves geometrically. Nothing here argues for
+teaching the model stereochemical discrimination; it argues for not asking it to.
+
+## Caveats
+
+- **"Rank 3" is more fortunate than it looks.** The top-12 margins are tightly packed
+  (+0.999 down to +0.122) and the migalastat/analog separation is noise, so a small
+  perturbation reorders that block freely. The robust claim is "inside the 12-compound
+  yes-set", not "rank 3". Treat recall@12 as the real measurement and top-1 as unstable.
+- **n=1 disease, and it is the hardest fold** for the ranking half (pure-stereoisomer
+  hard negatives). CF or TTR is the more informative second run, since their analogs are
+  constitutional and therefore *should* be discriminable from text — if the model fails
+  to separate those too, the limitation is broader than stereochemistry.
+- **Stage 1 is untested here.** The condition was handed in. This says nothing about
+  whether the model can derive it, which is try07's problem and remains unsolved.
+- A CUDA OOM warning appeared mid-run at batch 16; the caching allocator recovered and
+  the run completed, but batch 16 is near the ceiling on a 4xA40 node.

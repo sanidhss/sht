@@ -57,13 +57,20 @@ downstream pipeline by design)?
    try06 redesign is sound in distribution — the failure is specifically
    retrieval-over-derivation under distribution shift. Caveat: n=1 per arm, and the
    verbatim in-distribution match is itself a memorization signal.
-8. **try08** — stage-2 library-screen prototype (job 22664818, pending). Drops the
-   9-candidate multiple-choice format for rank-of-true-drug over 3417 ChEMBL approved
-   drugs plus the authored analogs spiked in, and hands the model the authored
+8. **try08** — stage-2 library-screen prototype. Job 22664818, COMPLETED 06-10-2026.
+   Drops the 9-candidate multiple-choice format for rank-of-true-drug over 3417 ChEMBL
+   approved drugs plus the authored analogs spiked in, and hands the model the authored
    condition so condition-*application* is measured separately from
    condition-*derivation*. Scores by yes/no logprob margin in one forward pass per
    candidate rather than a 2048-token generation, which is what makes a pool that size
-   affordable.
+   affordable. **First positive quantitative result in this track:** base model, no
+   adapter, migalastat ranks **3 / 3420** (top 0.09%, 570x enrichment), and the model's
+   entire positive set is **12 compounds** with the true drug inside it — a 285x library
+   reduction. Cross-target drugs correctly rejected (lumacaftor 2361, tafamidis 2835).
+   But discrimination is **class-level only**: migalastat and its own stereoisomer differ
+   by 1.8e-7 (numerical noise), the yes-set is mostly plain sugars lacking the ring
+   nitrogen the condition explicitly requires, and the same molecule as an HCl salt
+   swings ~1.0 in margin.
 
 ## Current state
 try04 was a clean negative with a verified root cause (one memorizable reasoning
@@ -97,6 +104,24 @@ Note on scaling: expanding the *candidate pool* needs only SMILES and is free, b
 expanding the *training* side needs hand-authored mechanism text per disease, and there
 are only on the order of tens of well-documented pharmacological chaperone mechanisms.
 That asymmetry is why the pool can scale now while the disease count cannot.
+
+try08 then split the metric and got the track's first positive number: handed the
+authored condition, the base model reduces 3420 approved drugs to a 12-compound positive
+set containing migalastat (rank 3, 570x enrichment), and correctly dumps the other
+folds' drugs. So **condition-application works at the class level** — and the earlier
+0/4 results were partly a fused, low-resolution metric rather than pure model failure.
+
+What try08 also establishes is a hard limit: the model does **no** within-class
+discrimination. migalastat vs its own stereoisomer separates by 1.8e-7, and the yes-set
+is populated by plain sugars that fail the condition's decisive clause (a ring position
+able to carry positive charge). This is not a gap to close by fine-tuning — it is the
+boundary where the textual stage should hand off to downstream docking, which resolves
+stereochemistry geometrically. The two-stage split is therefore the right architecture,
+with the division of labour now measured rather than assumed.
+
+Open and unsolved: **stage 1**. try08 handed the condition in, so it says nothing about
+deriving one. try07's retrieval-under-shift failure is still the live problem, and the
+grounding/citation requirement is still the untested fix.
 
 ## Open question, raised mid-project
 "Bare TxGemma" (what every try in this project runs — a single `generate()` call, no
