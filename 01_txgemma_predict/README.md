@@ -45,6 +45,15 @@ near-identical decoys, for orphan disease targets?
    ceiling** (min_gap=1 everywhere), but the memorization control fired on all four
    adapters, and it surfaced that **all 12 hard negatives are in their training sets**.
 
+8. **try09 (current)** — leak-free eval harness. Rebuilds the measurement rather than the
+   model: hard negatives held out **by scaffold** (so near-copies cannot stand in for
+   them), scaffold-split validation set with best-epoch selection (there was previously no
+   validation set at all), a 500-decoy **enrichment percentile** replacing the unstable
+   5-drug test, and 3 seeds reported as a distribution. Separates the two questions that
+   were conflated in one pass/fail: *category* (enrichment) vs *within-family* (hard
+   negatives) — the four targets fail at different levels. CF and TTR first, one job each.
+   Jobs 22996487 / 22996488, results pending.
+
 ## Current state
 
 **Read this before trusting any earlier pass/fail claim in this repo.** try07 and try08
@@ -102,10 +111,12 @@ Note resolution does **not** track pass/fail: TTR fails while out-resolving Gauc
 passes.
 
 ### Next steps, in order
-1. **Fix the eval before any more training.** Hold hard negatives out of training, and
-   report multi-seed distributions instead of single-run verdicts. Everything downstream
-   depends on this, and more training runs under the current test produce more unreliable
-   single draws.
+1. **Fix the eval before any more training.** → **try09 is this**, submitted 18-10-2026
+   as jobs 22996487 (CF) and 22996488 (TTR). Holds hard negatives out by scaffold,
+   scaffold-splits a validation set, keeps the best epoch by validation loss, replaces the
+   5-drug easy test with a 500-decoy enrichment percentile, and runs 3 seeds. Verified
+   pre-submission: hard negatives 3/3 in training before the fix, 0/3 after, and zero
+   train/val scaffold overlap.
 2. **Decide whether `beat_easy` should gate the verdict.** Currently it is computed,
    printed, saved and ignored — which is how Gaucher printed "trust this target adapter for
    broader DrugBank-wide screening" while scoring worse than metformin. Open question: is a

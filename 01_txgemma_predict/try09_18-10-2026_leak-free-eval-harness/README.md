@@ -2,7 +2,7 @@
 
 **Date:** 18-10-2026
 **Scripts:** `leak_free_eval.py` + `leak_free_eval_cf.sb` + `leak_free_eval_attr.sb`
-**Jobs:** see Status below.
+**Jobs:** 22996487 (CF) + 22996488 (TTR) -- results pending; see Status below.
 
 **Goal: make the test trustworthy.** Nothing here tries to make the model better. It
 rebuilds the measurement so that a future "CF passes" can be believed.
@@ -127,5 +127,22 @@ Read it against try08's leaky numbers for the same target, not against zero.
 | Wide spread across seeds | Even the fixed harness is underpowered; more seeds needed before any verdict. |
 
 ## Status
-Written, with a pre-submission validation of the leak fix and scaffold split. Job IDs
-recorded below once submitted.
+Submitted 18-10-2026 as **22996487** (CF, 12h) and **22996488** (TTR/attr, 10h), one
+target per job, 3 seeds each. Results pending.
+
+Pre-submission validation passed on both targets — this is the evidence that the harness
+actually does what it claims:
+
+| Check | CF | TTR | wanted |
+|---|---|---|---|
+| reference in training file | False | False | False |
+| hard negatives in training **before** fix | **3/3** | **3/3** | — (this is the leak) |
+| hard negatives in training **after** fix | **0/3** | **0/3** | 0 |
+| compounds removed by scaffold holdout | 26 (1.8%) | 17 (3.4%) | small |
+| trainable compounds remaining | 1,424 | 476 | — |
+| train/val compound overlap | 0 | 0 | 0 |
+| **train/val scaffold overlap** | **0** | **0** | 0 |
+
+The last row is the one that matters for claim 2: validation contains no skeleton present
+in training, so validation loss measures generalization to unseen frameworks rather than
+recall. Splits: CF 1,196 train / 228 val across 487 scaffolds; TTR 399 / 77 across 166.
