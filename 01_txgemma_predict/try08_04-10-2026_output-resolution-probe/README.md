@@ -126,24 +126,94 @@ has to be read against that ceiling: "collapsed" and "merely rounded to the same
 attractor value" would become the same observation, which is worth knowing before
 interpreting try07.
 
+## Result
+Job **22660579**, COMPLETED 06-10-2026, elapsed 01:34:00 (faster than the ~3h estimate;
+the 6h budget was ample). Probe-set diversity as built: mean pairwise Tanimoto **0.105**
+on the diverse stratum, so none of the findings below can be attributed to similar inputs.
+
+### Headline: there is no quantization ceiling, but there is severe degeneracy
+| Adapter | distinct / 309 | novel stratum | held-in stratum | min_nonzero_gap |
+|---|---|---|---|---|
+| CF | 134 (43.4%) | **49.0%** | 72.0% | 1 |
+| TTR (attr) | 123 (39.9%) | **47.2%** | 78.0% | 1 |
+| Gaucher | 93 (30.1%) | **27.5%** | 74.0% | 1 |
+| Fabry | 57 (18.4%) | **23.0%** | 62.0% | 1 |
+
+**`min_nonzero_gap` is 1 for every adapter.** The models are perfectly capable of
+emitting fine-grained values, so the worry that "691 vs 661 is rounding" is **not**
+correct at the instrument level. The score scale is not quantized. That part of the
+hypothesis is disproved.
+
+### But the memorization control fired on every single adapter
+Resolution on compounds the model trained on is far higher than on novel chemistry:
+
+    Gaucher  held-in 74.0%  vs novel 27.5%   (2.7x)
+    Fabry    held-in 62.0%  vs novel 23.0%   (2.7x)
+    TTR      held-in 78.0%  vs novel 47.2%   (1.65x)
+    CF       held-in 72.0%  vs novel 49.0%   (1.5x)
+
+This is exactly the branch the control was built to detect: **fine resolution on trained
+compounds, coarse on unseen ones is recall, not learned structure-activity reasoning.**
+Every adapter shows it; Gaucher and Fabry worst.
+
+### The attractor values are memorized hard-negative labels
+Most frequent predictions across the 200 diverse *novel* compounds:
+
+    Gaucher   791 x102 (51% of all novel compounds!), 679 x17
+    TTR       994 x57  (29%),  687 x9
+    Fabry     630 x49  (25%),  541 x17
+    CF        727 x13  (6.5%), 615 x10   <- flat by comparison
+
+**Gaucher emits 791 for half of all novel molecules.** And 791 is the real label of one
+of its own hard negatives. 679, its second most common output, is the real label of
+another. So Gaucher's "pass" amounts to ambroxol (691) landing below the default value
+the model emits for most of chemical space -- not to discrimination between ambroxol and
+the analogs.
+
+CF is the outlier in the good direction: its most common output covers only 6.5% of novel
+compounds, and it has the highest novel-compound resolution (49.0%). CF's pass looks
+genuine in a way Gaucher's does not.
+
+### The leak that explains all of it
+Checked directly while interpreting this run: **all 12 hard negatives, across all four
+targets, are present in their training sets.** Only the reference is held out.
+
+    gaucher  reference in training? False | all 3 hard negatives: True
+    cf       reference in training? False | all 3 hard negatives: True
+    fabry    reference in training? False | all 3 hard negatives: True
+    attr     reference in training? False | all 3 hard negatives: True
+
+The script docstring only ever claimed the *reference* was held out ("reference drug held
+out entirely"), so this is an omission in the test's design rather than a code bug. But it
+voids the test's stated purpose -- `lora_finetune_orphan_targets.py` describes the
+hard-negative check as "the test that actually indicates the model learned the right
+structure-activity signal." It cannot be that, because it pits a **generalization** task
+(predict a held-out drug) against a **memorization** task (recall three trained analogs).
+
+It also explains the "collapse" signature that drove the Fabry and TTR diagnoses. TTR
+emitting 781 for the reference *and* all three analogs is the model applying analog #1's
+memorized label (real 781) to the whole structural family. Fabry's 436-for-everything is
+the same mechanism. That is not a stereochemistry-resolution failure, which is how Fabry
+was diagnosed for weeks.
+
+### Resolution does not track pass/fail
+The pass/fail ordering (CF pass, Gaucher pass, TTR fail, Fabry fail) does **not** match
+the novel-resolution ordering (CF 49.0%, TTR 47.2%, Gaucher 27.5%, Fabry 23.0%). TTR
+*fails* while resolving novel chemistry nearly as well as CF, which *passes*; Gaucher
+*passes* with substantially worse resolution than TTR. So the verdict is not measuring
+model quality on unseen compounds.
+
+### Incidental
+- Fabry's reference-neighbour stratum reached Tanimoto **1.0**, i.e. a molecule with an
+  identical Morgan fingerprint to migalastat. Default Morgan fingerprints ignore
+  stereochemistry, so migalastat's diastereomers are fingerprint-identical. Worth knowing
+  for any future similarity-based work on Fabry: `useChirality=True` would be required.
+- Fabry's held-in and neighbour strata both bottom out at exactly 436 -- the collapse
+  value -- consistent with 436 being an attractor rather than a computed score.
+- CF emitted 0 as a value on the novel stratum, and Fabry did too; worth a glance if CF's
+  numbers are ever used quantitatively.
+
 ## Status
-Submitted as job **22660579** (6h budget, gpuA100x4, 1 GPU, inference only). Result
-pending.
-
-Pre-submission dry-run passed:
-- pool novel to Gaucher = **2,000** compounds (2,030 pooled distinct, 30 overlapping)
-- MaxMin picked **200** diverse compounds, **mean pairwise Tanimoto 0.105** — genuinely
-  dissimilar. This is what makes the probe well-powered: if few distinct values come
-  back, it cannot be attributed to the inputs being alike.
-- all four prompt templates substitute cleanly with **four different** target sequences
-  preserved — `MEFSSPSREECP` (GBA1), `MQRSPLEKASVV` (CFTR), `MQLRNPELHLGC` (GLA),
-  `MASHRLLLLCLA` (TTR). Prompt lengths track protein size as expected (CFTR longest at
-  2,412 chars; TTR shortest at 1,079, a 147-residue protein), confirming each adapter
-  is probed against its own target rather than a borrowed sequence.
-
-Incidental finding from the dry-run, not chased here: CF's training file yields **1,450**
-distinct canonical compounds, while `coverage_report.json` records 1,427 (7,135 lines
-÷ 5 = 1,427 exactly). So ~23 CF compounds did not receive a full 5x augmentation, or
-canonicalization splits some differently than prep did. Irrelevant to this probe, but
-CF's compound count anchors the top of the volume ordering that try07 is testing, so
-it is worth knowing that the number is slightly soft.
+COMPLETED. Both objectives met: the quantization-ceiling hypothesis is disproved
+(`min_gap=1` everywhere), and the memorization control fired on all four adapters,
+surfacing the hard-negative training leak that reframes the project's existing verdicts.

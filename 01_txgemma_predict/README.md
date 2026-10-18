@@ -30,48 +30,94 @@ near-identical decoys, for orphan disease targets?
    volume by retraining **Gaucher** (passes at 1,208) on a random **493**-compound
    subset, matching TTR's count exactly. Same target, mechanism, pipeline, reference
    and hard negatives; volume is the only variable, which breaks the confound in the
-   4-target pattern. 3 seeds. Job 22660248, result pending.
+   4-target pattern. 3 seeds. Job 22660248 COMPLETED: **0/3 collapsed, 2/3 passed**
+   — the volume hypothesis is dead. Exposed instead that the reference prediction swings
+   785/408/480 across seeds (real 685), i.e. single-run verdicts are noise-dominated.
 
-7. **try08 (current)** — output-resolution probe. A measurement, not a fix: loads the
+7. **try08** — output-resolution probe. A measurement, not a fix: loads the
    four already-saved adapters and counts how many *distinct* scores each can emit
    across ~310 molecules (200 MaxMin-diverse and novel, 50 held-in as a memorization
    control, 50 reference-neighbours, 9 eval anchors). The 9-molecule hard-negative test
    cannot distinguish "those molecules really are similar" from "the model only has a
    few output values." If the score scale is coarse, small gaps like Gaucher's 691-vs-661
    are rounding, library ranking collapses into a few tie-groups, and more data cannot
-   fix it. Inference only, no training. Job 22660579, result pending.
+   fix it. Inference only, no training. Job 22660579 COMPLETED: **no quantization
+   ceiling** (min_gap=1 everywhere), but the memorization control fired on all four
+   adapters, and it surfaced that **all 12 hard negatives are in their training sets**.
 
 ## Current state
-Passing: **Gaucher** and **CF**. Failing: **Fabry** (collapses on diastereomers) and
-**TTR** (collapses on analogs *and* loses to unrelated drugs).
 
-CF's pass is the significant one — CF is a folding/trafficking corrector with no
-active-site mimicry, so the *unmodified* pipeline demonstrably extrapolates past
-lysosomal-enzyme chaperones. That hypothesis is retired.
+**Read this before trusting any earlier pass/fail claim in this repo.** try07 and try08
+(both COMPLETED 05-06/10/2026) invalidated two framings and found a flaw in the test
+itself.
 
-The live hypothesis is now **training-data volume, not mechanism**. Pass/fail is
-monotonic in n_training across all four targets (CF 1,427 pass, Gaucher 1,208 pass,
-TTR 493 fail, Fabry 89 fail), with a clean break between ~1,200 and ~500. Caveat:
-n=4, and volume is confounded with how well-studied each target is. **try07 is testing
-this directly** (job 22660248) by downsampling Gaucher to 493 — same target and
-mechanism, volume as the only varied factor. If it collapses, Fabry and TTR become one
-data-sufficiency finding rather than two mechanism-specific failures; if it still
-passes, volume is not a sufficient explanation and the failures need a mechanism or
-data-quality account instead. Either outcome is decisive.
+### 1. The hard-negative test is not measuring what it says it measures
+**All 12 hard negatives, across all four targets, are in their training sets.** Only the
+reference drug is held out (verified directly against each `train_blind.jsonl`). So the
+test compares a **generalization** task (predict a held-out drug) against a
+**memorization** task (recall three trained analogs). The script describes this check as
+"the test that actually indicates the model learned the right structure-activity signal";
+it cannot be that.
 
-Caveat on the anchor, found while building try07: Gaucher's hard-negative **real**
-labels are 791/679/839, not the 791/791/839 quoted in places (those are *predicted*
-scores). Analog #2's real 679 is slightly more potent than ambroxol's real 685, so
-"reference beats all hard negatives" is not strictly ground truth for Gaucher — the
-full-size model is scored as passing while ranking against the real labels on that one
-pair. Gaucher's PASS is therefore a softer claim than it has been treated as, and
-Gaucher anchors the volume hypothesis. Not silently "fixed" — what the hard-negative
-test should count as success is a judgement call. See try07's README.
+This explains the "collapse" signature that drove the Fabry and TTR diagnoses. TTR
+emitting 781 for the reference and all three analogs is the model applying analog #1's
+memorized label (real label 781) to the whole structural family — not a stereochemistry
+or mechanism failure. **Fabry's diastereomer diagnosis, carried for weeks, was most
+likely an artifact of this.**
 
-Consequently `NEXT_PHASE_diverse_structural_training.md` (RDKit structural-awareness
-training) is **pending re-justification** — it was scoped for "chemistry alone isn't
-enough," and CF's pass is evidence against that premise on the mechanism axis.
+### 2. Training-data volume is not the driver
+Gaucher retrained on 493 compounds — exactly TTR's count — **did not collapse and passed
+2 of 3 seeds**. The monotonic n_training pattern (CF 1,427 / Gaucher 1,208 / TTR 493 /
+Fabry 89) is confounded or coincidental. Do not resurrect the volume framing without new
+evidence.
 
-Also open: the top-K reframing. Note it cannot be applied uniformly to Fabry and TTR
-— a top-K bar could excuse Fabry's tie with its own diastereomers, but not TTR
-scoring worse than caffeine.
+### 3. Single-run verdicts are noise-dominated
+The same target, data size, pipeline and hyperparameters — varying only *which* 493
+compounds were drawn — predicted ambroxol at **785, 408, and 480** (real label 685,
+full-size run 691). A 377-point swing on a 0-1000 scale. Every existing verdict in this
+project is one draw from an unmeasured distribution, and two of the three seeds above
+land on opposite sides of pass/fail.
+
+### 4. There is no quantization ceiling, but there is severe output degeneracy
+`min_nonzero_gap = 1` for all four adapters, so the score scale is fine-grained and small
+gaps are not rounding artifacts. However, every adapter resolves *trained* compounds far
+better than novel ones (held-in vs novel: Gaucher 74%/27.5%, Fabry 62%/23%, TTR
+78%/47.2%, CF 72%/49%) — recall, not learned reasoning. And the attractor values are
+memorized hard-negative labels: **Gaucher emits 791 for 51% of 200 diverse novel
+compounds**, and 791 is the real label of one of its own hard negatives.
+
+### Where each target actually stands
+- **CF** — the only target that looks genuinely good. Highest novel-compound resolution
+  (49.0%), flattest output distribution (most common value covers just 6.5% of novel
+  compounds), passes both easy and hard checks.
+- **Gaucher** — recorded as passing; the pass is largely an artifact. Ambroxol (691) landed
+  below the 791 value the model emits for half of chemical space. It also loses to
+  metformin (691 vs 661), and `beat_easy` is computed but never used in the verdict.
+- **TTR** — recorded as failing, but resolves novel chemistry nearly as well as CF (47.2%
+  vs 49.0%). Its failure is the memorized-label mechanism, not weak learning.
+- **Fabry** — weakest on every resolution measure (23.0% novel). Its diastereomer
+  diagnosis needs re-testing against a leak-free eval before being believed.
+
+Note resolution does **not** track pass/fail: TTR fails while out-resolving Gaucher, which
+passes.
+
+### Next steps, in order
+1. **Fix the eval before any more training.** Hold hard negatives out of training, and
+   report multi-seed distributions instead of single-run verdicts. Everything downstream
+   depends on this, and more training runs under the current test produce more unreliable
+   single draws.
+2. **Decide whether `beat_easy` should gate the verdict.** Currently it is computed,
+   printed, saved and ignored — which is how Gaucher printed "trust this target adapter for
+   broader DrugBank-wide screening" while scoring worse than metformin. Open question: is a
+   hard-negative pass alone ever sufficient?
+3. **Re-run the four targets under the fixed eval** before interpreting any of them.
+4. `NEXT_PHASE_diverse_structural_training.md` remains **pending re-justification**, now on
+   two counts: CF's pass already undercut its mechanism premise, and the failures it was
+   designed to address may be eval artifacts.
+
+### Caveats on earlier numbers
+- Gaucher's analog real labels are 791/**679**/839, not the 791/791/839 quoted in places
+  (those are *predicted*). Analog #2's real 679 is more potent than ambroxol's real 685, so
+  "reference beats all hard negatives" is not strictly ground truth for Gaucher.
+- CF's training file yields **1,450** distinct canonical compounds vs `coverage_report.json`'s
+  1,427, so CF's compound count is slightly soft.

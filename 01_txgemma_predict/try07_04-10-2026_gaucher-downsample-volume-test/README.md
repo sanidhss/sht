@@ -119,11 +119,72 @@ Gaucher is the anchor of the whole volume hypothesis. Flagging rather than silen
 fixing, since re-examining what the hard-negative test should count as success is a
 judgement call, not a correction.
 
-## Status
-Submitted as job **22660248** (12h budget, gpuA100x4, 1 GPU). Result pending.
+## Result
+Job **22660248**, COMPLETED 05-10-2026, elapsed 04:20:33 (well inside the 12h budget).
 
-Pre-submission checks that did pass: RDKit regrouping recovers exactly 1,208 groups of
-exactly 5 with one consistent label each and 0 unparseable lines; Gaucher's
-`eval_set.json` schema is identical to the one try06's validation consumed (same keys,
-5 easy / 3 hard negatives), so the reused eval path will not KeyError after a 35-minute
-model load.
+**0 of 3 seeds collapsed. 2 of 3 passed the hard-negative test.**
+
+| Run | n | reference (ambroxol) | analogs predicted | beats_hard | collapsed |
+|---|---|---|---|---|---|
+| try05 baseline | 1,208 | 691 | 791 / 791 / 839 | yes | no |
+| seed 0 | 493 | **785** | 791 / 679 / 861 | **no** | no |
+| seed 1 | 493 | **408** | 791 / 952 / 839 | yes | no |
+| seed 2 | 493 | **480** | 952 / 679 / 839 | yes | no |
+
+Real labels for reference: ambroxol 685; analogs 791 / 679 / 839. Training converged
+normally on all three seeds (loss ~1.19 -> ~0.26), so nothing here is under-training.
+
+### The volume hypothesis is dead
+Gaucher at **493 compounds -- exactly TTR's count -- does not reproduce TTR's
+collapse.** It never emitted one value for the reference and all three analogs, and it
+passed the hard-negative test in 2 of 3 draws. Under the interpretation guide written
+before the run, 0/3 collapsed means volume is **not** a sufficient explanation, and the
+monotonic n_training pattern across the four targets (CF 1,427 / Gaucher 1,208 / TTR 493
+/ Fabry 89) is confounded or coincidental.
+
+So the earlier framing -- "Fabry and TTR fail because they are data-starved" -- does not
+survive. Do not resurrect it without new evidence.
+
+### What the run exposed instead: the verdict is dominated by noise
+The three seeds predicted ambroxol at **785, 408, and 480**. Same target, same
+mechanism, same pipeline, same hyperparameters, same compound count -- only *which* 493
+compounds were sampled differed, and the prediction for a single held-out drug swung
+**377 points** on a 0-1000 scale (real label 685). The full-size run said 691.
+
+That magnitude of seed variance means a single run's pass/fail is one draw from a wide
+distribution, not a property of the target. **Every existing single-run verdict in this
+project -- Gaucher's pass, CF's pass, TTR's fail, Fabry's fail -- is a sample from a
+distribution nobody has measured.** Seed 0 vs seed 1 differ only by the subset draw and
+land on opposite sides of the verdict.
+
+### Why pass/fail flipped between seeds -- and why that is not about chemistry
+Gaucher's analogs have real labels 791 / 679 / 839, and 679 is the binding constraint:
+the reference has to come in below it.
+
+- seed 0 predicted 679 for that analog (recalling its real label) and ambroxol at 785 -> **fail**
+- seed 1 predicted 952 for it (no recall) -> ambroxol at 408 passes easily
+- seed 2 predicted 679 for it (recall) but ambroxol landed at 480, still below -> pass
+
+So the verdict turns on two unstable things: whether the model happens to recall one
+analog's memorized label, and where the reference's noisy prediction lands. Neither is
+a measure of structure-activity reasoning.
+
+### Related finding from try08, which reframes all of this
+try08 (job 22660579) found that **all 12 hard negatives across all four targets are in
+their training sets** -- only the reference is held out. See try08's Result. That makes
+the hard-negative test a comparison between a *generalization* task (the held-out
+reference) and a *memorization* task (the trained analogs), and it is the mechanism
+behind the recall behaviour above. It also explains the "collapse" signature directly:
+emitting one value for a reference and all its analogs is the model applying a
+memorized neighbour's label to the whole structural family.
+
+### Consequences
+1. **Volume is not the lever.** Dropping Gaucher by 60% of its compounds barely moved it.
+2. **Fix the test before running more training.** Hold the hard negatives out too, and
+   report multi-seed distributions rather than one run's verdict. Otherwise further
+   training runs produce more unreliable single draws.
+3. **The matched-compute follow-up arm described above is no longer worth building.** It
+   was contingent on this run collapsing; it did not.
+4. The known confound recorded before the run (493 x 5 means ~2.4x fewer gradient steps)
+   turned out not to matter -- the run passed 2/3 anyway, so reduced compute did not
+   break it either.
