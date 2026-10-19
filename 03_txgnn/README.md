@@ -4,7 +4,7 @@
 chemistry at all) correctly identify the right drug for Fabry/Gaucher while being
 provably blind to the true answer during training?
 
-## Arc (12 tries, the longest debugging arc of the three projects)
+## Arc (13 tries, the longest debugging arc of the three projects)
 1. **try01-02** — old environment (`envs/txgnn`, dgl 0.9.1): two different crashes, one
    from a wrong disease-index bug (see try03), one from a DGL API version mismatch after
    trying to fix the first by upgrading dgl in-place. Motivated building a fresh,
@@ -86,3 +86,9 @@ the Gaucher reference set (now 4 drugs).
     velaglucerase alfa (same drug class, one extra drug_protein edge) scores normally.
     The 3 Gaucher ERTs are structurally unscoreable under a blind split; reported as
     not evaluable, not as misses. No library change.
+13. **try13** — extends to CF and TTR. Precheck (try12's degree check) flags dornase
+    alfa (CF) as isolated/unscoreable in advance. TTR needed care: PrimeKG's
+    hereditary/wild-type ATTR nodes have no indications; tafamidis is labelled only
+    on ATTRV122I plus 3 generic/sibling amyloidosis nodes, so all are held out
+    together to prevent sibling-node leakage. Jobs 22996974 (CF) / 22996975 (TTR)
+    submitted 18-10-2026; results pending.

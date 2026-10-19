@@ -1,0 +1,27 @@
+
+===== CF  holdout=[16250.0] =====
+held-out nodes: ['cystic fibrosis']
+eval nodes:     ['cystic fibrosis']
+  Ivacaftor            DB08820  train-degree=499   {'drug_drug': 493, 'drug_protein': 6} 
+  Lumacaftor           DB09280  train-degree=611   {'drug_drug': 603, 'drug_protein': 8} 
+  Tezacaftor           DB11712  train-degree=440   {'drug_drug': 435, 'drug_protein': 5} 
+  Elexacaftor          DB15444  train-degree=640   {'drug_drug': 627, 'drug_protein': 13} 
+  Dornase alfa         DB00003  train-degree=0     {} ISOLATED -> unscoreable
+  Acetylcysteine       DB06151  train-degree=110   {'drug_drug': 55, 'drug_effect': 28, 'drug_protein': 12, 'indication': 7, 'contraindication': 6, 'off-label use': 2} 
+  Cysteine             DB00151  train-degree=32    {'drug_protein': 14, 'contraindication': 9, 'indication': 7, 'off-label use': 2} 
+  Mannitol             DB00742  train-degree=1367  {'drug_drug': 1282, 'drug_effect': 54, 'contraindication': 26, 'indication': 5} 
+  Adenosine phosphate  DB00131  train-degree=20    {'drug_protein': 18, 'contraindication': 2} 
+  Nafamostat           DB12598  train-degree=720   {'drug_drug': 712, 'drug_protein': 8} 
+
+===== TTR  holdout=[6669.0, 6361.0, 6665.0, 6008.0, 4803.0, 5528.0] =====
+held-out nodes: ['ATTRV122I amyloidosis', 'amyloidosis (disease)', 'AL amyloidosis', 'AH amyloidosis', 'hereditary ATTR amyloidosis', 'wild type ATTR amyloidosis']
+eval nodes:     ['ATTRV122I amyloidosis', 'hereditary ATTR amyloidosis', 'wild type ATTR amyloidosis']
+  Tafamidis            DB11644  train-degree=171   {'drug_drug': 167, 'drug_protein': 4} 
+  Diflunisal           DB00861  train-degree=1612  {'drug_drug': 1538, 'drug_effect': 45, 'contraindication': 15, 'drug_protein': 7, 'indication': 4, 'off-label use': 3} 
+  Patisiran            DB14582  train-degree=3     {'drug_protein': 3} 
+  Inotersen            DB14713  train-degree=989   {'drug_drug': 987, 'contraindication': 2} 
+  Vutrisiran           NOT A PrimeKG DRUG NODE
+  Acoramidis           NOT A PrimeKG DRUG NODE
+  Eplontersen          NOT A PrimeKG DRUG NODE
+  Acetylcysteine       DB06151  train-degree=108   {'drug_drug': 55, 'drug_effect': 28, 'drug_protein': 12, 'contraindication': 6, 'indication': 5, 'off-label use': 2} 
+  Cysteine             DB00151  train-degree=30    {'drug_protein': 14, 'contraindication': 9, 'indication': 5, 'off-label use': 2} 
