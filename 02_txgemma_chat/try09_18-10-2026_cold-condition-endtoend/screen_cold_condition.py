@@ -174,9 +174,11 @@ def report(scored, chain, target, batch_size, adapter, condition, tag):
 
     print("\ntop 20 by margin:")
     for i, r in enumerate(ranked[:20], 1):
-        tag = " <-- TRUE DRUG" if (r["name"] or "").upper() == true_drug.upper() else \
-              " (authored analog)" if r["source"] == "authored_analog" else ""
-        print(f"  {i:3d}. {r['margin']:+.3f}  {str(r['name'])[:44]:44s}{tag}")
+        # NB: named `marker`, not `tag` -- `tag` is the condition label parameter, and
+        # shadowing it here silently blanked the output filename on the first run.
+        marker = " <-- TRUE DRUG" if (r["name"] or "").upper() == true_drug.upper() else \
+                 " (authored analog)" if r["source"] == "authored_analog" else ""
+        print(f"  {i:3d}. {r['margin']:+.3f}  {str(r['name'])[:44]:44s}{marker}")
 
     out = os.path.join(OUT_DIR, f"screen_{target}_{tag}{'_adapter' if adapter else '_base'}.json")
     with open(out, "w") as f:

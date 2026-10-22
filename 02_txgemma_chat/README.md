@@ -57,6 +57,15 @@ downstream pipeline by design)?
    try06 redesign is sound in distribution — the failure is specifically
    retrieval-over-derivation under distribution shift. Caveat: n=1 per arm, and the
    verbatim in-distribution match is itself a memorization signal.
+9. **try09** — end-to-end composition test (job 22994689, COMPLETED 18-10-2026). Reruns
+   try08's screen with one variable changed: the condition is the one the model itself
+   derived cold on fabry, lifted verbatim from try07's log. **Negative and decisive:**
+   migalastat falls from rank 3 to **991 / 3420**, recall@50 HIT -> miss, enrichment 570x
+   -> **1.7x** (random = 1.0x). The confabulated phrase "di-metal-binding hexose" steers
+   rather than dilutes — top-50 goes to 46% metal-counterion compounds vs an 8.7% library
+   baseline. Stage 2 is not broken (cross-target drugs still rejected); it faithfully
+   applies a corrupted specification.
+
 8. **try08** — stage-2 library-screen prototype. Job 22664818, COMPLETED 06-10-2026.
    Drops the 9-candidate multiple-choice format for rank-of-true-drug over 3417 ChEMBL
    approved drugs plus the authored analogs spiked in, and hands the model the authored
@@ -72,7 +81,7 @@ downstream pipeline by design)?
    nitrogen the condition explicitly requires, and the same molecule as an HCl salt
    swings ~1.0 in margin.
 
-## Current state
+### History
 try04 was a clean negative with a verified root cause (one memorizable reasoning
 example per target). try06's redesign shows real, partial transfer — family-level
 recognition cold, but fine discrimination within a family (and keeping two
@@ -119,9 +128,41 @@ boundary where the textual stage should hand off to downstream docking, which re
 stereochemistry geometrically. The two-stage split is therefore the right architecture,
 with the division of labour now measured rather than assumed.
 
-Open and unsolved: **stage 1**. try08 handed the condition in, so it says nothing about
-deriving one. try07's retrieval-under-shift failure is still the live problem, and the
-grounding/citation requirement is still the untested fix.
+try09 then composed the two stages and the result is **negative and decisive**: feeding
+stage 2 the condition the model itself derived cold (lifted from try07's log) drops
+migalastat from rank 3 to **991 / 3420**, recall@50 from HIT to miss, and enrichment from
+570x to **1.7x** against a random baseline of 1.0x. The stages do not compose.
+
+Worse than the magnitude is the mechanism. The cold condition's confabulated phrase
+"di-metal-binding hexose" **steered** the screen rather than merely degrading it: the
+top-50 went to 46% metal-counterion-bearing compounds against an 8.7% library baseline
+(esomeprazole magnesium, strontium ranelate, bacitracin zinc, calcium salts,
+tetracyclines), a 5.3x enrichment traceable to one invented phrase. Stage 2 is not
+broken — cross-target drugs are still correctly rejected — it applies a corrupted
+specification faithfully. The failure is confident, internally coherent and wrong, and
+produces a shortlist indistinguishable from a good one without already knowing the
+answer. A self-check seen in try09's smoke test (empty positive set) did **not**
+replicate on the full library and is withdrawn.
+
+## Current state
+
+What this track can honestly claim, and what it cannot:
+
+- **Supported:** given a correct mechanism description, bare `txgemma-27b-chat` screens a
+  realistic drug library well — 3420 approved drugs reduced to 12 with the true drug
+  retained, 570x enrichment, no tools and no retrieval (try08). Useful as a
+  human-in-the-loop screen where the mechanism condition is supplied.
+- **Not supported:** end-to-end identification for an unseen disease. try09 fails this by
+  ~330x in rank.
+- **Also established:** the model does no within-class discrimination (try08 —
+  migalastat vs its own stereoisomer separate by 1.8e-7), which is the natural handoff
+  point to the downstream docking stage rather than a gap to fine-tune away.
+
+Open and unsolved: **stage 1**, and it is now the only thing that matters. No screening
+refinement — bigger libraries, salt-form dedup, more folds, better metrics — changes
+anything while the derived condition is hallucinated. The untested lever is still
+try07's conclusion: require the stated condition to quote or cite spans of the provided
+mechanism description, so a memorized or invented one cannot be substituted.
 
 ## Open question, raised mid-project
 "Bare TxGemma" (what every try in this project runs — a single `generate()` call, no

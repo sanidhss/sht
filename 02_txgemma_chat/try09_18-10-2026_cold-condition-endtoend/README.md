@@ -101,5 +101,99 @@ the wildcard; it could pull the ranking toward metal chelators.
 
 ## Status
 
-Submitted as job **22994689**. Smoke test on 64 candidates first (exits non-zero on
-failure), then the full 3420-candidate screen. Result pending.
+Job **22994689** COMPLETED 18-10-2026 17:44 (50m44s, exit 0).
+Log: `/work/hdd/bisa/sshah21/results/reasoning_screen/screen_cold_22994689.out`
+Ranked output: `.../screen_fabry_cold_base.json`
+
+## Result: the stages do NOT compose — near-total collapse
+
+| metric | authored condition (try08) | cold, model-derived (try09) |
+|---|---|---|
+| migalastat rank | **3 / 3420** | **991 / 3420** (top 29%) |
+| recall@10 / @50 / @100 | HIT / HIT / HIT | **miss / miss / miss** |
+| enrichment over random | 570x | **1.7x** |
+| yes-set size | 12 (contains migalastat) | 3 (**does not** contain migalastat) |
+| margin on migalastat | +0.748 | -4.636 |
+
+Enrichment of 1.7x against a random baseline of 1.0x means the screen is **very nearly
+worthless** once the condition comes from the model instead of from an author. The
+prediction recorded above — partial degradation, on the theory that the model only acts
+on the broad half of a condition — was **wrong**. It acted on the hallucinated half.
+
+## The hallucination steers the screen, it does not merely dilute it
+
+The cold condition's confabulated phrase was "di-metal-binding hexose". The resulting
+top-50 is dominated by compounds carrying **literal metal counterions**: esomeprazole
+magnesium, fosamprenavir calcium, strontium ranelate, bacitracin zinc, esomeprazole
+strontium, levoleucovorin calcium, oxytetracycline calcium, pitavastatin magnesium,
+doxycycline calcium, rifamycin sodium, novobiocin sodium, plus tetracyclines and
+rifamycins, which are classic metal chelators.
+
+Quantified rather than eyeballed (metal-bearing disconnected fragment in the SMILES):
+
+| | metal-containing in top 50 | library baseline |
+|---|---|---|
+| authored condition | 7 / 50 (14%) | 298 / 3420 (8.7%) |
+| cold condition | **23 / 50 (46%)** | 298 / 3420 (8.7%) |
+
+A **5.3x enrichment of metal-containing compounds over baseline**, traceable to a single
+invented phrase. The entire cold yes-set is `['CEFTAROLINE FOSAMIL',
+'ESOMEPRAZOLE MAGNESIUM', 'FOSAMPRENAVIR CALCIUM']`.
+
+So a stage-1 hallucination does not get averaged away by stage 2. Stage 2 applies it
+faithfully and redirects the search to a different chemical class. The failure is
+**confident, internally coherent, and wrong** — the output looks like a clean shortlist
+either way, which is the dangerous property for a pipeline whose shortlist costs months
+of wet-lab time to check.
+
+Note the cross-target drugs are still correctly rejected (lumacaftor 1596, tafamidis
+2625, caffeine 3003), so stage 2 is not broken. It is working correctly on a corrupted
+specification.
+
+## Retraction: there is no cheap self-check here
+
+The 64-candidate smoke test showed a **0-compound** yes-set under the cold condition,
+which suggested "empty positive set = untrustworthy run" as a free warning light. **That
+did not replicate on the full library** — the cold yes-set is 3, not 0, against 12 for
+the authored condition. A 12-vs-3 difference is too weak and too uncalibrated to act on,
+and nothing else separates the two runs from the outside: both produce internally
+coherent, chemically sensible top-50 lists. Telling them apart requires knowing the
+mechanism, which is what the pipeline was supposed to supply.
+
+Treat the earlier smoke-test-based claim as withdrawn.
+
+## What this means for the track
+
+- **An end-to-end claim is not supportable.** "Fine-tuned TxGemma identifies drugs for
+  an unseen disease" fails here by a factor of ~330 in rank.
+- **The stage-2 claim stands and is worth keeping.** Given a correct mechanism condition,
+  bare TxGemma reduces 3420 approved drugs to 12 with the true drug retained, 570x
+  enrichment, no tools and no retrieval. That is a real, defensible, human-in-the-loop
+  result.
+- **Stage 1 is now the only thing that matters.** No screening refinement — bigger
+  libraries, salt dedup, better metrics, more folds — changes anything while the
+  condition is hallucinated. The untested lever remains try07's conclusion: require the
+  stated condition to quote or cite spans of the provided mechanism description.
+
+## Known bug in this run (labeling only)
+
+`report()`'s top-20 print loop used a local named `tag`, shadowing the new
+condition-label parameter of the same name. The filename therefore came out as
+`screen_fabry__base.json` with `condition_tag: ''` instead of `screen_fabry_cold_base.json`
+with `cold`.
+
+Scoring was unaffected — the log confirms the cold condition was used (`condition=cold`,
+provenance line, full condition text printed) and all ranks are valid. By luck the
+mangled name did not collide with try08's `screen_fabry_base.json`, so the baseline
+survived. Fixed after the run by renaming the loop variable to `marker` (with a comment),
+and the output file was copied to the correct name with `condition_tag` corrected. The
+script as committed differs from the one that ran **only** in that variable name.
+
+## Caveats
+
+- n=1: one cold condition, greedy-decoded, on fabry. Worth repeating on CF or TTR to
+  confirm the collapse is general rather than an artifact of this particular
+  hallucination. The metal-steering mechanism is specific to the phrase "di-metal-binding";
+  a different hallucination would misdirect differently, possibly less severely.
+- Deliberate mismatch retained from the design: condition from the adapter, scoring by
+  the base model, so that the only changed variable versus try08 is the condition.
