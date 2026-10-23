@@ -2,7 +2,7 @@
 
 **Date:** 23-10-2026
 **Scripts:** `distribution_scoring.py` + `distribution_scoring.sb`
-**Job:** 23129822 — result pending; see Status below.
+**Job:** 23130595 — result pending; see Status below. (23129822 cancelled pre-start, see Status.)
 
 **No training.** Reuses the four already-saved adapters and try08's exact molecule set, and
 changes only *how* a score is read out of the model.
@@ -40,7 +40,7 @@ Three scoring methods, same models, same molecules. The only variable is the rea
 |---|---|---|
 | **A — greedy** | current method | Also a **reproduction check** against try08 |
 | **B — sampling mean** | K=16 completions at T=0.8, parse, average | Primary. Tokenization-agnostic |
-| **C — digit-logit expectation** | probability-weighted expected digit per position | Deterministic; only runs if the tokenizer splits numbers per-digit, checked at runtime |
+| **C — digit-logit expectation** | probability-weighted expected digit per position | Deterministic. Tokenizer confirmed per-digit, so this **does** run |
 
 **Method A doubles as a validity check.** If greedy here doesn't reproduce try08's recorded
 values on the same molecules and adapters, something else is wrong and the comparison is
@@ -90,7 +90,19 @@ could go from 20% to 12%, or barely move. This is the best-expected-value cheap 
 not a guaranteed fix.
 
 ## Status
-Submitted as job **23129822** (8h budget, gpuA100x4, 1 GPU, inference only). Result pending.
+Submitted as job **23130595** (8h budget, gpuA100x4, 1 GPU, inference only). Result pending.
 
-Confirmed before submission: try08's saved raw generations contain the exact 200-molecule
-novel stratum and 9 eval anchors per target, so the comparison is on identical inputs.
+Confirmed before submission:
+- try08's saved raw generations contain the exact 200-molecule novel stratum and 9 eval
+  anchors per target, so the comparison runs on identical inputs.
+- The tokenizer splits numbers **per digit** (`'791'` → `['7','9','1']`, `'0'` → one token),
+  so Method C is enabled rather than skipped.
+
+**A bug was caught and fixed between submissions.** The first submission (23129822) was
+cancelled before it started executing — no compute wasted — because the tokenizer check
+revealed that `'1000'` is **four** digits (`['1','0','0','0']`) while
+`score_digit_expectation` had `n_digits=3` hardcoded. A true 1000 would have been read as
+~100, a 900-point error, and try08 shows 1000 does occur in the novel stratum for TTR and
+Fabry. The digit width is now taken from the greedy decode for each prompt (clamped to
+1–4), falling back to 3 only if greedy failed to parse. Method B (sampling) was never
+affected, which is one reason it is the primary method.

@@ -32,7 +32,11 @@ variable is the readout.
     Method B  sampling mean (K, T)    -- sample K completions, parse, average
     Method C  digit-logit expectation -- deterministic smooth score from the token
                                          distribution, computed only if the tokenizer
-                                         splits numbers per-digit (checked at runtime)
+                                         splits numbers per-digit (confirmed: it does,
+                                         '791' -> ['7','9','1']). Digit WIDTH is taken from
+                                         the greedy decode per prompt, because the scale
+                                         runs to 1000 = four digits and a fixed width of 3
+                                         would misread it by ~900.
 
 Method A acting as a reproduction check matters: if greedy here does not match try08's
 recorded values on the same molecules and adapters, something else is wrong and the
@@ -153,14 +157,24 @@ def digit_token_map(tok):
 
 
 @torch.no_grad()
-def score_digit_expectation(model, tok, prompt, dmap, n_digits=3):
+def score_digit_expectation(model, tok, prompt, dmap, n_digits=None, greedy_value=None):
     """Deterministic smooth score: walk the greedy prefix, and at each digit position take
     the probability-weighted expected digit over the renormalized digit distribution.
 
     This is an approximation -- E[d0]*100 + E[d1]*10 + E[d2] is not exactly E[number] --
     but it is smooth and monotone in the model's confidence, which is what breaking ties
     requires.
+
+    n_digits MUST match the number the model is actually emitting. This tokenizer splits
+    numbers per digit ('791' -> ['7','9','1']) but the scale runs to 1000, which is FOUR
+    digits ('1','0','0','0'). Hardcoding 3 would read a true 1000 as ~100, a 900-point
+    error, and try08 shows 1000 does occur in the novel stratum for TTR and Fabry. So the
+    width is taken from the greedy decode for this same prompt when available, and only
+    falls back to 3 otherwise.
     """
+    if n_digits is None:
+        n_digits = len(str(greedy_value)) if greedy_value is not None else 3
+        n_digits = max(1, min(4, n_digits))
     ids = tok(prompt, return_tensors="pt").to(model.device)
     cur = ids["input_ids"]
     attn = ids["attention_mask"]
@@ -242,7 +256,8 @@ if __name__ == "__main__":
             sampled_mean.append(sd["mean"] if sd else None)
             sampled_std.append(sd["std"] if sd else None)
             if dmap:
-                digit_exp.append(score_digit_expectation(model, tok, p, dmap))
+                digit_exp.append(score_digit_expectation(model, tok, p, dmap,
+                                                         greedy_value=g))
             if (i + 1) % 50 == 0:
                 print(f"    {i+1}/{len(novel)} molecules", flush=True)
 
@@ -265,7 +280,8 @@ if __name__ == "__main__":
         rs = score_sampled(model, tok, ref_p, K_SAMPLES, TEMPERATURE)
         ref_scores["sampled_mean"] = rs["mean"] if rs else None
         if dmap:
-            ref_scores["digit_expectation"] = score_digit_expectation(model, tok, ref_p, dmap)
+            ref_scores["digit_expectation"] = score_digit_expectation(
+                model, tok, ref_p, dmap, greedy_value=ref_scores["greedy"])
 
         series = {"greedy": greedy, "sampled_mean": sampled_mean}
         if dmap:
