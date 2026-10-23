@@ -126,23 +126,99 @@ Read it against try08's leaky numbers for the same target, not against zero.
 | Best epoch is 0 or 1 | 3 epochs was overfitting all along, and that alone may explain much of the memorization. |
 | Wide spread across seeds | Even the fixed harness is underpowered; more seeds needed before any verdict. |
 
+## Result
+
+**TTR (22996488): COMPLETED**, 07:11:47, all 3 seeds.
+**CF (22996487): TIMED OUT** at 12:00:04 with 1 of 3 seeds finished — my budget estimate
+was wrong. 5 epochs plus per-epoch validation on 1,140 held-out lines costs far more than
+the old 3 epochs with no validation; CF's single seed took ~7h, so 3 seeds needed ~21h.
+
+### The finding that reframes everything: the optimal stopping point is epoch 0
+`best_epoch = 0` in **every one of the 4 completed runs**, and validation loss rises
+essentially monotonically after it:
+
+    TTR seed0  val 2.37 -> 3.10 -> 3.48 -> 3.56 -> 3.77
+    TTR seed1  val 2.36 -> 2.91 -> 3.22 -> 3.40 -> 4.42
+    TTR seed2  val 2.97 -> 4.26 -> 3.87 -> 4.84 -> 4.01
+    CF  seed0  val 2.39 -> 2.62 -> 3.46 -> 2.94 -> 3.58
+
+Meanwhile training loss falls the whole way (1.0 -> 0.19). **The original pipeline trained
+3 epochs with no validation set, so every result this project has produced came from a
+model trained roughly 3x past its optimal stopping point.** That is a complete, mundane
+explanation for the memorization try08 measured, and it needed no architectural theory.
+
+### TTR, leak-free: from "fails everything" to a stable pass
+| | leaky (try06) | leak-free (try09, 3 seeds) |
+|---|---|---|
+| beats hard negatives | no | **2 of 3 seeds** |
+| reference prediction | 781 | 672 / 646 / 687 — **spread 41** |
+| enrichment percentile | 47.7% (~chance) | **25.0 / 19.0 / 23.4** — spread 6.0 |
+| collapsed | yes | 1 of 3 seeds |
+
+Two things stand out. The hard negatives are now genuinely held out, so passing is
+*harder* than before — and TTR passes 2 of 3 anyway. And the stability is a different
+regime entirely: a **41-point** spread across seeds, against the **377-point** spread try07
+measured on the old pipeline. Stopping at epoch 0 appears to remove most of the
+seed-sensitivity along with the memorization.
+
+TTR was diagnosed as the worst target in the project. It is not.
+
+### CF, leak-free: the clean pass does not survive
+    cf_seed0: reference 555 (real 584) | analogs 734, 540, 529 -> beats_hard = FALSE
+              enrichment 21.4 percentile, best_epoch 0
+
+Under the leaky test CF passed cleanly (411 vs 661/584/661). With the analogs actually held
+out, **two of the three beat it** (540 and 529 vs 555). This is exactly the predicted
+signature of a pass that depended on memorized analog labels.
+
+**Caveat: n=1 seed for CF.** Given TTR went 2/3, a single CF seed cannot settle this. CF
+must be re-run before the claim "CF fails" is made.
+
+### The CF-vs-TTR ranking inverted, and the category gap was an artifact
+On enrichment — the category-level gate — the two targets are now indistinguishable:
+
+    CF   21.4 percentile  (n=1)
+    TTR  19.0 / 23.4 / 25.0 percentile
+
+try08's leaky single-seed measurements had CF at 11.5% and TTR at 47.7% (chance), which
+read as a decisive gap. It was not one. (The two numbers are not strictly comparable —
+different decoy sets and sizes — but the within-try09 comparison is valid, and it shows no
+gap.) **"CF good, TTR hopeless" does not survive the fixed harness.**
+
+### What early stopping did NOT fix: output degeneracy
+The attractor behaviour persists. Distinct values among 500 decoys, and the most common:
+
+    TTR seed0   92 distinct | 994 x197  (39% of all decoys)
+    TTR seed1   70 distinct | 994 x165  (33%)
+    TTR seed2   78 distinct | 994 x199  (40%)
+    CF  seed0  111 distinct | 889 x71   (14%)
+
+TTR still assigns 994 to roughly 40% of a diverse 500-compound set. So the degeneracy
+try08 found (Gaucher's 791 on 51% of novel compounds) is **not** merely an overfitting
+artifact and remains an open problem — and it is the one that most directly threatens
+top-K library ranking, since a 40% tie-group makes a shortlist arbitrary.
+
+### Also worth noting
+Validation loss at its *best* is 2.26–2.97 while training loss at the same epoch is ~1.0.
+The model is already overfitting *within* the first epoch. So epoch-level early stopping
+may itself be too coarse — mid-epoch evaluation, a lower learning rate, or fewer steps are
+the obvious things to try next.
+
+### Consequences
+1. **Re-run CF with 3 seeds.** Since `best_epoch=0` is now established across 4 runs,
+   `N_EPOCH` can drop from 5 to 2 — enough to confirm epoch 0 is still the minimum while
+   cutting training time ~60%, which makes 3 seeds fit comfortably.
+2. **Re-run Gaucher and Fabry through this harness.** Their recorded verdicts were produced
+   by over-trained, leaky models and carry no weight now. Gaucher's "pass" and Fabry's
+   stereochemistry diagnosis both need redoing.
+3. **Stop at epoch 0 (or earlier) everywhere**, and never again train without a validation
+   set.
+4. **Output degeneracy is now the main open technical problem**, separate from the eval
+   fixes and not addressed by them.
+
 ## Status
-Submitted 18-10-2026 as **22996487** (CF, 12h) and **22996488** (TTR/attr, 10h), one
-target per job, 3 seeds each. Results pending.
-
-Pre-submission validation passed on both targets — this is the evidence that the harness
-actually does what it claims:
-
-| Check | CF | TTR | wanted |
-|---|---|---|---|
-| reference in training file | False | False | False |
-| hard negatives in training **before** fix | **3/3** | **3/3** | — (this is the leak) |
-| hard negatives in training **after** fix | **0/3** | **0/3** | 0 |
-| compounds removed by scaffold holdout | 26 (1.8%) | 17 (3.4%) | small |
-| trainable compounds remaining | 1,424 | 476 | — |
-| train/val compound overlap | 0 | 0 | 0 |
-| **train/val scaffold overlap** | **0** | **0** | 0 |
-
-The last row is the one that matters for claim 2: validation contains no skeleton present
-in training, so validation loss measures generalization to unseen frameworks rather than
-recall. Splits: CF 1,196 train / 228 val across 487 scaffolds; TTR 399 / 77 across 166.
+TTR complete (3 seeds). CF incomplete (1 of 3 seeds, timed out) and needs a re-run with
+`N_EPOCH=2`. Headline conclusions: optimal stopping is epoch 0 in every run; TTR passes
+2/3 leak-free with tight seed spread; CF's leaky clean pass does not reproduce on its one
+completed seed; the CF/TTR category gap was an artifact; output degeneracy survives all of
+the fixes.

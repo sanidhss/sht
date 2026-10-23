@@ -52,83 +52,76 @@ near-identical decoys, for orphan disease targets?
    5-drug test, and 3 seeds reported as a distribution. Separates the two questions that
    were conflated in one pass/fail: *category* (enrichment) vs *within-family* (hard
    negatives) — the four targets fail at different levels. CF and TTR first, one job each.
-   Jobs 22996487 / 22996488, results pending.
+   Job 22996488 (TTR) COMPLETED, 22996487 (CF) TIMED OUT after 1 of 3 seeds.
+   **`best_epoch = 0` in all 4 completed runs** — the old 3-epoch pipeline, which had no
+   validation set, trained ~3x past optimum, which alone explains the memorization. TTR
+   goes from failing everything to **2/3 seeds passing** with seed spread of 41 points
+   (vs 377 on the old pipeline); CF's leaky clean pass does **not** reproduce. See try09's
+   Result.
 
 ## Current state
 
-**Read this before trusting any earlier pass/fail claim in this repo.** try07 and try08
-(both COMPLETED 05-06/10/2026) invalidated two framings and found a flaw in the test
-itself.
+**Every pass/fail verdict recorded before try09 was produced by a leaky test AND an
+over-trained model. Treat them all as void.** The evidence, in order of importance:
 
-### 1. The hard-negative test is not measuring what it says it measures
-**All 12 hard negatives, across all four targets, are in their training sets.** Only the
-reference drug is held out (verified directly against each `train_blind.jsonl`). So the
-test compares a **generalization** task (predict a held-out drug) against a
-**memorization** task (recall three trained analogs). The script describes this check as
-"the test that actually indicates the model learned the right structure-activity signal";
-it cannot be that.
+### 1. The pipeline trained ~3x too long, with no validation set at all
+`best_epoch = 0` in all 4 completed try09 runs; validation loss rises essentially
+monotonically after the first epoch while training loss keeps falling to ~0.19. The
+original script ran a fixed 3 epochs and never evaluated held-out data. This is a mundane
+and complete explanation for the memorization try08 measured — no architectural theory
+needed. Fix: stop at epoch 0, and never train without a validation set again.
 
-This explains the "collapse" signature that drove the Fabry and TTR diagnoses. TTR
-emitting 781 for the reference and all three analogs is the model applying analog #1's
-memorized label (real label 781) to the whole structural family — not a stereochemistry
-or mechanism failure. **Fabry's diastereomer diagnosis, carried for weeks, was most
-likely an artifact of this.**
+### 2. The hard-negative test leaked
+All 12 hard negatives, across all four targets, were in their training sets; only the
+reference was held out. So the test compared a generalization task against a memorization
+task. This is what produced the "collapse" signature behind the Fabry and TTR diagnoses —
+the model applying a memorized neighbour's label to a whole structural family. **Fabry's
+stereochemistry/diastereomer diagnosis is most likely an artifact of this.**
 
-### 2. Training-data volume is not the driver
-Gaucher retrained on 493 compounds — exactly TTR's count — **did not collapse and passed
-2 of 3 seeds**. The monotonic n_training pattern (CF 1,427 / Gaucher 1,208 / TTR 493 /
-Fabry 89) is confounded or coincidental. Do not resurrect the volume framing without new
-evidence.
+### 3. Under the fixed harness, the target ranking inverts
+| | old (leaky, over-trained) | try09 (leak-free, epoch 0) |
+|---|---|---|
+| **TTR** | fails everything; enrichment 47.7% (~chance); "worst target" | **2/3 seeds pass**; enrichment 19–25%; reference spread **41 points** |
+| **CF** | clean pass; enrichment 11.5%; "only genuine success" | **fails on its 1 completed seed** (555 vs analogs 540/529); enrichment 21.4% |
 
-### 3. Single-run verdicts are noise-dominated
-The same target, data size, pipeline and hyperparameters — varying only *which* 493
-compounds were drawn — predicted ambroxol at **785, 408, and 480** (real label 685,
-full-size run 691). A 377-point swing on a 0-1000 scale. Every existing verdict in this
-project is one draw from an unmeasured distribution, and two of the three seeds above
-land on opposite sides of pass/fail.
+On the category-level gate the two are now indistinguishable (CF 21.4% vs TTR 19–25%), so
+the apparent CF/TTR gap was an artifact. **"CF good, TTR hopeless" does not survive.**
+CF has only n=1 and must be re-run before "CF fails" is asserted.
 
-### 4. There is no quantization ceiling, but there is severe output degeneracy
-`min_nonzero_gap = 1` for all four adapters, so the score scale is fine-grained and small
-gaps are not rounding artifacts. However, every adapter resolves *trained* compounds far
-better than novel ones (held-in vs novel: Gaucher 74%/27.5%, Fabry 62%/23%, TTR
-78%/47.2%, CF 72%/49%) — recall, not learned reasoning. And the attractor values are
-memorized hard-negative labels: **Gaucher emits 791 for 51% of 200 diverse novel
-compounds**, and 791 is the real label of one of its own hard negatives.
+### 4. Seed variance collapses once you stop at epoch 0
+TTR's reference prediction spread across seeds is **41 points**, against the **377 points**
+try07 measured on the old pipeline. Most of the instability was over-training, not the
+task.
 
-### Where each target actually stands
-- **CF** — the only target that looks genuinely good. Highest novel-compound resolution
-  (49.0%), flattest output distribution (most common value covers just 6.5% of novel
-  compounds), passes both easy and hard checks.
-- **Gaucher** — recorded as passing; the pass is largely an artifact. Ambroxol (691) landed
-  below the 791 value the model emits for half of chemical space. It also loses to
-  metformin (691 vs 661), and `beat_easy` is computed but never used in the verdict.
-- **TTR** — recorded as failing, but resolves novel chemistry nearly as well as CF (47.2%
-  vs 49.0%). Its failure is the memorized-label mechanism, not weak learning.
-- **Fabry** — weakest on every resolution measure (23.0% novel). Its diastereomer
-  diagnosis needs re-testing against a leak-free eval before being believed.
+### 5. Output degeneracy survives all of the fixes, and is now the main technical problem
+TTR still assigns **994 to ~40% of a diverse 500-compound decoy set** (70–92 distinct
+values out of 500); CF assigns 889 to 14%. So Gaucher's 791-on-51%-of-novel-compounds is
+not merely an over-training artifact. This is the failure that most directly threatens the
+downstream plan: a 40% tie-group makes any top-K shortlist arbitrary.
 
-Note resolution does **not** track pass/fail: TTR fails while out-resolving Gaucher, which
-passes.
+Related: validation loss at its best (2.26–2.97) is still far above training loss at the
+same epoch (~1.0), so the model overfits *within* epoch 0. Epoch-level early stopping may
+be too coarse — mid-epoch evaluation, lower LR, or fewer steps are the next things to try.
 
 ### Next steps, in order
-1. **Fix the eval before any more training.** → **try09 is this**, submitted 18-10-2026
-   as jobs 22996487 (CF) and 22996488 (TTR). Holds hard negatives out by scaffold,
-   scaffold-splits a validation set, keeps the best epoch by validation loss, replaces the
-   5-drug easy test with a 500-decoy enrichment percentile, and runs 3 seeds. Verified
-   pre-submission: hard negatives 3/3 in training before the fix, 0/3 after, and zero
-   train/val scaffold overlap.
-2. **Decide whether `beat_easy` should gate the verdict.** Currently it is computed,
-   printed, saved and ignored — which is how Gaucher printed "trust this target adapter for
-   broader DrugBank-wide screening" while scoring worse than metformin. Open question: is a
-   hard-negative pass alone ever sufficient?
-3. **Re-run the four targets under the fixed eval** before interpreting any of them.
-4. `NEXT_PHASE_diverse_structural_training.md` remains **pending re-justification**, now on
-   two counts: CF's pass already undercut its mechanism premise, and the failures it was
-   designed to address may be eval artifacts.
+1. **Re-run CF with 3 seeds and `N_EPOCH=2`** (epoch 0 is established as optimal across 4
+   runs, so 5 epochs is wasted compute; this makes 3 seeds fit in budget).
+2. **Re-run Gaucher and Fabry through the try09 harness.** Both of their recorded verdicts
+   are void. Fabry's needs care: the scaffold holdout costs 20% of only 89 compounds.
+3. **Attack output degeneracy** — the one problem none of the eval fixes touched.
+4. **Then** revisit regularization and whether 5x SMILES augmentation still helps. Both
+   were deferred deliberately so the measurement could be fixed first; augmentation's
+   supporting evidence came from the broken test.
+5. `NEXT_PHASE_diverse_structural_training.md` remains **pending re-justification**, now on
+   a third count: the failures it was designed to address were substantially eval and
+   over-training artifacts.
 
 ### Caveats on earlier numbers
 - Gaucher's analog real labels are 791/**679**/839, not the 791/791/839 quoted in places
-  (those are *predicted*). Analog #2's real 679 is more potent than ambroxol's real 685, so
-  "reference beats all hard negatives" is not strictly ground truth for Gaucher.
+  (those are *predicted*). Analog #2's real 679 is more potent than ambroxol's real 685.
 - CF's training file yields **1,450** distinct canonical compounds vs `coverage_report.json`'s
   1,427, so CF's compound count is slightly soft.
+- `beat_easy` is computed, printed, saved and never used in the original script's verdict —
+  which is how Gaucher printed "trust this target adapter for broader DrugBank-wide
+  screening" while scoring worse than metformin. try09 sidesteps this by reporting
+  enrichment separately; the original script still has the flaw.
