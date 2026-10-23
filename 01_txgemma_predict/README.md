@@ -59,6 +59,13 @@ near-identical decoys, for orphan disease targets?
    (vs 377 on the old pipeline); CF's leaky clean pass does **not** reproduce. See try09's
    Result.
 
+9. **try10 (current)** — distribution-based scoring. Tests whether the output degeneracy
+   that survived every try09 fix is a **readout artifact**: all scores to date came from
+   `model.generate(...)` with no sampling argument, i.e. greedy decoding, which returns the
+   *modal* output rather than an estimate. Compares greedy against a K=16 sampling mean and
+   a digit-logit expectation on the same four saved adapters and try08's exact 200-molecule
+   set, so the readout is the only variable. No training. Job 23129822, result pending.
+
 ## Current state
 
 **Every pass/fail verdict recorded before try09 was produced by a leaky test AND an
@@ -104,6 +111,11 @@ same epoch (~1.0), so the model overfits *within* epoch 0. Epoch-level early sto
 be too coarse — mid-epoch evaluation, lower LR, or fewer steps are the next things to try.
 
 ### Next steps, in order
+0. **try10 (running)** — tests whether the degeneracy is a greedy-decoding artifact. Took
+   priority over the CF re-run because it could change how every score in the project is
+   computed, and it needs no training. Note for the future: try09 never saved its epoch-0
+   adapters, so try10 has to use the older over-trained ones; **save adapters in every
+   training run from now on.**
 1. **Re-run CF with 3 seeds and `N_EPOCH=2`** (epoch 0 is established as optimal across 4
    runs, so 5 epochs is wasted compute; this makes 3 seeds fit in budget).
 2. **Re-run Gaucher and Fabry through the try09 harness.** Both of their recorded verdicts
