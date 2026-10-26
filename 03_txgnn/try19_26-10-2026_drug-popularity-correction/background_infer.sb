@@ -1,0 +1,8 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA100x4
+#SBATCH --gpus=1 -n 1 -c 16 --mem=128g -t 12:00:00
+#SBATCH -J txgnn_bg_infer
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgnn/%x_%j.out
+
+/work/hdd/bisa/sshah21/envs/txgnn2/bin/python /projects/bisa/sshah21/library/03_txgnn/try19_26-10-2026_drug-popularity-correction/background_infer.py

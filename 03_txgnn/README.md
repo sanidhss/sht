@@ -4,7 +4,7 @@
 chemistry at all) correctly identify the right drug for Fabry/Gaucher while being
 provably blind to the true answer during training?
 
-## Arc (18 tries, the longest debugging arc of the three projects)
+## Arc (21 tries, the longest debugging arc of the three projects)
 1. **try01-02** — old environment (`envs/txgnn`, dgl 0.9.1): two different crashes, one
    from a wrong disease-index bug (see try03), one from a DGL API version mismatch after
    trying to fix the first by upgrading dgl in-place. Motivated building a fresh,
@@ -133,3 +133,15 @@ the Gaucher reference set (now 4 drugs).
     near-random (cos ≈ 0.03). The prototype neighbours' indications explain most of
     the Fabry/Gaucher vs CF/TTR gap. try16 analysis now records `proto_hit`. Fabry
     needs a re-run holding out the duplicate.
+19. **try19** — option 1: per-drug popularity correction (z-score each drug against
+    the same model's scores over 150 background diseases). The inference-only job
+    23231183 reloads thesis checkpoints and verifies they reproduce saved scores
+    (node input vectors are random/frozen and not checkpointed, so re-seeding
+    matters).
+20. **try20** — option 2: prototype reliability flag (best prototype cosine vs the
+    paper's 0.2). TTR is unreliable under either signature (ATTRV122I 0.035,
+    hereditary 0.000). The richer signature helps Fabry (demotes the leaky
+    duplicate) but hurts CF.
+21. **try21** — option 3: richer similarity signature (`all_nodes_profile_more`) on
+    try16's exact 120-disease split, a paired comparison. Job 23231153. Variants are
+    chosen on the sweep only, never on thesis diseases.
