@@ -91,4 +91,11 @@ the Gaucher reference set (now 4 drugs).
     hereditary/wild-type ATTR nodes have no indications; tafamidis is labelled only
     on ATTRV122I plus 3 generic/sibling amyloidosis nodes, so all are held out
     together to prevent sibling-node leakage. Jobs 22996974 (CF) / 22996975 (TTR)
-    submitted 18-10-2026; results pending.
+    completed 20-10-2026. **Result: both weak.**
+    CF: the 4 CFTR modulators cluster at ensemble ranks 1,208–1,652/7,957 (top 15–21%,
+    above chance every seed, ~70–100x worse than Fabry). TTR: tafamidis 974 at the one
+    labelled node (ATTRV122I); hereditary ATTR node is near-empty (4 edges) and gives
+    no signal. Shared drug-protein-disease target exists in all cases (incl. Fabry and
+    the failures), so it doesn't explain the gap; neighbour dilution is an untested
+    hypothesis. Library AUROC is restricted to indication-bearing drugs and is not
+    comparable to the full-library rank.

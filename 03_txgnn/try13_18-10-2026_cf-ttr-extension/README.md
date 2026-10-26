@@ -81,4 +81,91 @@ means validation-set composition is not varied across seeds.
   flags the exact-0.0 drugs correctly.
 - **Submitted 18-10-2026: 22996974 (`txgnn_cf`), 22996975 (`txgnn_ttr`)**, 12h each,
   logs at `/work/hdd/bisa/sshah21/results/txgnn/txgnn_{cf,ttr}_<jobid>.out`. Expected
-  ~8h each (try11's Fabry/Gaucher took ~7.7h for 3 seeds). Results pending.
+  ~8h each (try11's Fabry/Gaucher took ~7.7h for 3 seeds).
+- **Both completed 20-10-2026** (CF 7h48m, TTR 8h28m, exit 0). Blindness check passed
+  on all 3 seeds of each. Results below.
+
+## Result — CF and TTR are both weak; neither comes close to Fabry
+
+All ranks are out of 7,957 drugs; ENSEMBLE = mean raw score across 3 seeds, then rank
+(adopted method). Chance expectation is ~3,979.
+
+**CF @ cystic fibrosis (16250)**
+| drug | per-seed | ensemble |
+|---|---|---|
+| elexacaftor | 2219 / 1223 / 975 | **1208** |
+| tezacaftor | 2392 / 1091 / 1277 | **1301** |
+| lumacaftor | 2535 / 1504 / 1238 | **1385** |
+| ivacaftor | 2809 / 1556 / 1505 | **1652** |
+| cysteine | 4159 / 995 / 1360 | 1601 |
+| acetylcysteine | 2170 / 1802 / 2106 | 1853 |
+| nafamostat | 3757 / 2896 / 1659 | 2452 |
+| adenosine phosphate | 565 / 5614 / 4190 | 3547 |
+| mannitol | 6615 / 6865 / 7085 | 6878 |
+| dornase alfa | exact 0.0 | not evaluable (predicted by precheck) |
+
+**TTR**
+| drug | @ ATTRV122I (6669, labelled) | @ wild-type ATTR (5528) | @ hereditary ATTR (4803) |
+|---|---|---|---|
+| tafamidis | **974** (982/882/1609) | 980 | 4308 |
+| inotersen | 4080 | 3571 | 7151 |
+| patisiran | 5156 | 5070 | 3638 |
+| diflunisal | 7085 | 7838 | 7884 |
+
+Reading:
+- **CF: weak but coherent signal.** All four CFTR modulators land together in the top
+  15–21% on every seed, and above chance on every seed — not noise, but ~70–100× worse
+  than Fabry's migalastat (17). Mannitol (no protein targets) is near the bottom.
+- **TTR: tafamidis top ~12%** at the one labelled node, and similar at wild-type ATTR.
+  Single labelled drug, so this is one data point. Hereditary ATTR (4803) shows no
+  usable signal — every drug's score there is ~0 (tafamidis mean −0.0002), consistent
+  with a near-empty node (see below).
+- **Exact-0.0 drugs were exactly the isolated ones again**: CF dornase alfa (predicted)
+  + mandelic acid (sole edge landed in valid); TTR 4 drugs, same mechanism (try12).
+- Model training itself was fine: best validation indication AUROC CF 0.823, TTR 0.826
+  (Fabry 0.815, Gaucher 0.810). This is a per-disease placement result, not a failed run.
+
+**Library AUROC is NOT comparable to our rank metric.** `calculate_metrics`
+(`txgnn/utils.py` ~L1209) restricts AUROC to `fixed_keys` = drugs that have an
+indication somewhere in PrimeKG (~1–2k drugs), not all 7,957. So CF's library AUROC
+(0.92/0.87/0.88) and TTR-6669's (0.93/0.97/0.92) look strong while the full-library
+ranks are mediocre. Report the full-library rank; it's the stricter and the one used
+for Fabry/Gaucher.
+
+## Diagnosis so far — what is and isn't the explanation
+
+**Disease-node connectivity in train** (from the split CSVs):
+| node | train edges | of which disease_protein |
+|---|---|---|
+| Fabry (543) | 218 | 23 |
+| Gaucher (16430) | 266 | 5 |
+| CF (16250) | 90 | 11 |
+| ATTRV122I (6669) | **6** | 1 (TTR) |
+| wild-type ATTR (5528) | 50 | 0 |
+| hereditary ATTR (4803) | **4** (all disease_disease) | 0 |
+
+Hereditary ATTR is almost empty — not even linked to the TTR gene — which explains its
+~0 scores. ATTRV122I is extremely sparse (6 edges).
+
+**Shared-target path (drug→protein←disease) is NOT the missing ingredient.** It exists
+for every relevant case: migalastat→GLA←Fabry (rank 17), CFTR modulators→CFTR←CF
+(~1,200–1,650), tafamidis→TTR←ATTRV122I (974), diflunisal→TTR←ATTRV122I (7,085!).
+Gaucher's miglustat has *no* shared target with Gaucher yet reaches 17 ensembled. So
+having the mechanistic path neither guarantees nor is required for a good rank.
+
+**Unverified hypothesis (not tested):** dilution by the drug's other neighbours. The
+CFTR modulators each also target promiscuous metabolism/transport hubs (CYP3A4, ABCB1,
+ALB, several CYP2C*) and carry 435–627 drug_drug edges; diflunisal (worst TTR rank
+despite sharing TTR) has 1,538 drug_drug edges and an NSAID target profile; tafamidis
+(171 edges) does better than diflunisal. But migalastat also had ~770 drug_drug edges
+(try07) and still ranks 17, so this is at best partial. Testing it would need e.g.
+attention-weight inspection on the CFTR/TTR paths, or the same comparison over many
+diseases — not done.
+
+## Cross-track status
+TxGemma-predict's leak-free re-evaluation (its try09) changed its own CF/TTR picture:
+TTR passes 2/3 seeds leak-free; its earlier CF pass did not reproduce on the one seed
+that finished (CF timed out, re-run pending). So the clean "evidence source decides
+the winner" contrast seen for Fabry/Gaucher **cannot yet be claimed for CF/TTR** —
+TxGNN is weak on both, and TxGemma-predict's CF result is unsettled. Revisit once
+TxGemma-predict CF completes.
