@@ -84,9 +84,35 @@ The dominant factor is **what the 3 prototype diseases are indicated for**:
 - try14's audit is superseded on this point: it only checked disease_disease
   neighbours and missed protein-similarity prototypes.
 
+## Framing: the similarity design is sound; these are its caveats
+Borrowing from similar diseases is TxGNN's intended zero-shot design (Huang et al.,
+*Nature Medicine* 2024). It's not a flaw in itself. What it implies:
+1. **Blindness must cover the prototypes.** Hiding the named disease isn't enough: a
+   prototype carrying the answer (a data error like Fabry's duplicate, or a real
+   sibling like Gaucher's Niemann-Pick) breaks blindness. Check the 3 prototypes.
+2. **Inherits data errors.** One mislabelled node can be ~30% of a target's
+   representation.
+3. **Class-level, not drug-level.** Diseases with shared prototypes get near-identical
+   rankings (try17: Fabry–Gaucher 0.957). It can point to a drug class, not
+   discriminate within it.
+4. **Can't surface disease-unique drugs.** If the right drug is approved only for the
+   target, no prototype carries it (CF: CFTR modulators). It favours borrowed over
+   novel answers.
+5. **Sparse diseases get noise silently.** The 0.9 weight applies whether the best
+   cosine is 0.69 (Fabry) or 0.03 (TTR). Report the best prototype cosine as a
+   reliability flag.
+6. **Seed ensembling doesn't fix it.** Prototypes are deterministic given the graph and
+   split, so all seeds share them.
+7. **Depends on what else is held out.** Held-out diseases can't serve as prototypes
+   (try15 changes Gaucher's; in try16 the 120 can't serve for each other).
+
+## Decision (26-10-2026)
+The user decided **not** to run a separate Fabry re-run. try15 (Gaucher without
+Niemann-Pick) tests the same mechanism: does the rank survive when the prototype that
+carries the answer is removed? Fabry's 16 should be reported with the
+leaked-prototype caveat, not as a blind result.
+
 ## Recommended next (not run)
-1. **Re-run Fabry with chylomicron retention disease (+ lysosomal lipid storage
-   disorder) held out.** That gives Fabry's first genuinely blind result. One 3-seed
-   job, ~8h.
+1. ~~Fabry re-run~~: declined by the user, see Decision above.
 2. Add the prototype check to every target's precheck: compute the 3 keys and look
    for the true drug among their indications. It's cheap, CPU only.
