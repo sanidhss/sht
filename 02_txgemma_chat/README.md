@@ -57,6 +57,17 @@ downstream pipeline by design)?
    try06 redesign is sound in distribution — the failure is specifically
    retrieval-over-derivation under distribution shift. Caveat: n=1 per arm, and the
    verbatim in-distribution match is itself a memorization signal.
+10. **try10** — multi-disease validation of the stage-2 screen (job 23114793, COMPLETED
+   24-10-2026). Runs try08's exact protocol on all four folds. **try08 does not
+   generalize:** fabry rank 4/3420 (427x enrichment) but gaucher 1143, cf 993, attr 1774
+   — 1.0-1.7x, at or near chance. Diagnosis: the screen converts a *physicochemical*
+   specification into a ranking, and only fabry's condition is one; gaucher's is
+   pharmacological/negative (yes-set = 38.5% of the library), cf's is applied correctly
+   but is not selective (top-20 is kinase inhibitors and antivirals, all genuinely
+   "large rigid multi-ring"). Also records the RDKit descriptor baseline and fixes a
+   latent bug: ambroxol is absent from ChEMBL `max_phase=4`, so the gaucher fold would
+   have silently had no true drug to rank.
+
 9. **try09** — end-to-end composition test (job 22994689, COMPLETED 18-10-2026). Reruns
    try08's screen with one variable changed: the condition is the one the model itself
    derived cold on fabry, lifted verbatim from try07's log. **Negative and decisive:**
@@ -148,12 +159,25 @@ replicate on the full library and is withdrawn.
 
 What this track can honestly claim, and what it cannot:
 
-- **Supported:** given a correct mechanism description, bare `txgemma-27b-chat` screens a
-  realistic drug library well — 3420 approved drugs reduced to 12 with the true drug
-  retained, 570x enrichment, no tools and no retrieval (try08). Useful as a
-  human-in-the-loop screen where the mechanism condition is supplied.
+- **Narrow and conditional:** given a *crisp physicochemical* condition, the model ranks
+  a realistic library very well — but **on 1 of 4 mechanisms tested** (try10). fabry:
+  rank 4/3420, 427x enrichment. gaucher 1143, cf 993, attr 1774 — 1.0-1.7x enrichment,
+  i.e. at or near chance. try08's headline number was a single-fold result and does not
+  generalize. A three-line RDKit descriptor filter lands within ~2.7x of the model on
+  fabry, the one fold that works.
+- **The dominant variable is condition authoring, not model capability.** The screen
+  converts a *property specification* into a ranking. fabry's condition is one
+  ("compact, highly polar, ring position able to carry positive charge"). gaucher's is
+  pharmacological and negative ("modulatory contact rather than a clean mimic, modest
+  potency") and yields a yes-set of 38.5% of the library. cf's ("larger, rigid,
+  multi-ring") is applied *correctly* but describes hundreds of modern kinase inhibitors
+  and antivirals, so it cannot single out lumacaftor.
 - **Not supported:** end-to-end identification for an unseen disease. try09 fails this by
-  ~330x in rank.
+  ~330x in rank. Nor is a general-purpose mechanism-to-shortlist screen supported, per
+  try10.
+- **No self-check has survived validation.** Two candidate warning lights for a bad run
+  (empty yes-set, try09; small yes-set, try10) each held on one fold and failed on the
+  others. Nothing yet distinguishes a good shortlist from a bad one without ground truth.
 - **Also established:** the model does no within-class discrimination (try08 —
   migalastat vs its own stereoisomer separate by 1.8e-7), which is the natural handoff
   point to the downstream docking stage rather than a gap to fine-tune away.
