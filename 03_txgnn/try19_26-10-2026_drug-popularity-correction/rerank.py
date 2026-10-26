@@ -26,7 +26,8 @@ THESIS = {  # run -> (eval pkl, true drugs to track)
     'cf': ('eval_16250.pkl', ['DB15444', 'DB11712', 'DB09280', 'DB08820', 'DB06151', 'DB00151']),
     'ttr': ('eval_6669.pkl', ['DB11644', 'DB00861', 'DB14582', 'DB14713']),
 }
-SWEEPS = ['connectivity_sweep', 'connectivity_sweep_profile_more']
+SWEEPS = ['connectivity_sweep', 'connectivity_sweep_profile_more',          # try16, try21
+          'connectivity_sweep_learn', 'connectivity_sweep_learn_profile_more']  # try22 arms
 
 
 def ensemble(pred_dicts):

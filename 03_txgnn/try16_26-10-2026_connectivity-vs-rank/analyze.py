@@ -107,7 +107,10 @@ drug_key2idx = dict(zip(kd[kd.x_type == 'drug'].x_id.apply(convert2str), kd[kd.x
 
 # ---- sweep diseases
 sample = pd.read_csv(os.path.join(HERE, 'sample.csv'))
-outs = load(R + 'connectivity_sweep/seed_{s}/eval_all.pkl')
+# SWEEP selects the 2x2 arm (try16 default; try21/try22 arms share the same split)
+SWEEP = os.environ.get('SWEEP', 'connectivity_sweep')
+print(f'== sweep arm: {SWEEP}')
+outs = load(R + SWEEP + '/seed_{s}/eval_all.pkl')
 train = pd.read_csv(P + 'disease_eval_[connectivity_sweep_120]/train.csv', low_memory=False)
 rows = []
 for _, r in sample.iterrows():
@@ -154,7 +157,7 @@ res = res[res.n_pos > 0].copy()
 res['sibling'] = res.n_sibling_paths > 0
 res['proto_hit'] = res.n_proto_hits > 0
 res['log_degree'] = np.log10(res.degree)
-res.to_csv(os.path.join(HERE, 'results_per_disease.csv'), index=False)
+res.to_csv(os.path.join(HERE, f'results_per_disease_{SWEEP}.csv'), index=False)
 
 print(f'diseases analysed: {len(res)} (dropped {len(no_pos)} with no evaluable true drug: '
       f'{list(no_pos.name)})')
