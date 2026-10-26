@@ -4,7 +4,7 @@
 chemistry at all) correctly identify the right drug for Fabry/Gaucher while being
 provably blind to the true answer during training?
 
-## Arc (13 tries, the longest debugging arc of the three projects)
+## Arc (14 tries, the longest debugging arc of the three projects)
 1. **try01-02** — old environment (`envs/txgnn`, dgl 0.9.1): two different crashes, one
    from a wrong disease-index bug (see try03), one from a DGL API version mismatch after
    trying to fix the first by upgrading dgl in-place. Motivated building a fresh,
@@ -99,3 +99,12 @@ the Gaucher reference set (now 4 drugs).
     the failures), so it doesn't explain the gap; neighbour dilution is an untested
     hypothesis. Library AUROC is restricted to indication-bearing drugs and is not
     comparable to the full-library rank.
+14. **try14** — leakage audit, prompted by TxGemma-predict voiding its own pre-try09
+    verdicts (including the Gaucher pass this track's "complementarity" framing relied
+    on). No hard leak: message passing uses train only, and every held-out node is
+    blind. But **Fabry is blind only by luck** at the parent-category level
+    (migalastat → *lysosomal lipid storage disorder* landed in the random validation
+    draw), and **Gaucher has a real 2-hop sibling path in training** (miglustat →
+    Niemann-Pick, which is legitimate knowledge but probably drives the rank of 17).
+    `attention=True` was chosen after seeing Fabry's first result, so Fabry's 17 is
+    optimistic. CF/TTR (try13) are the only fully prospective tests, and both were weak.

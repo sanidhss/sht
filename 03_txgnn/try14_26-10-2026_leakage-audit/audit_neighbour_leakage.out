@@ -1,0 +1,10 @@
+
+===== FABRY
+  @'Fabry disease': Migalastat -indication-> 'lysosomal lipid storage disorder' in VALID  (shares 1: ['sphingolipidosis'])
+
+===== GAUCHER
+  @'Gaucher disease': Miglustat -indication-> 'Niemann-Pick disease' in TRAIN  (shares 4: ['lysosomal disease with epilepsy', 'neurometabolic disease', 'secondary interstitial lung disease specific to childhood associated with a metabolic disease', 'sphingolipidosis'])
+
+===== CF
+
+===== TTR

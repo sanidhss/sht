@@ -165,7 +165,8 @@ diseases — not done.
 ## Cross-track status
 TxGemma-predict's leak-free re-evaluation (its try09) changed its own CF/TTR picture:
 TTR passes 2/3 seeds leak-free; its earlier CF pass did not reproduce on the one seed
-that finished (CF timed out, re-run pending). So the clean "evidence source decides
-the winner" contrast seen for Fabry/Gaucher **cannot yet be claimed for CF/TTR** —
+that finished (CF timed out, re-run pending). So the "evidence source decides the winner" contrast **cannot be claimed for CF/TTR**
+(and, per try14, not for Fabry/Gaucher either: TxGemma-predict's Gaucher pass came from
+its leaky pre-try09 test and is void) —
 TxGNN is weak on both, and TxGemma-predict's CF result is unsettled. Revisit once
 TxGemma-predict CF completes.
