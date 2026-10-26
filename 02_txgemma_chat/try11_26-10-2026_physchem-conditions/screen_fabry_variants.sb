@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA40x4
+#SBATCH --gpus=4 -n 1 -c 16 --mem=128g -t 02:00:00
+#SBATCH -J screen_fabryvar
+#SBATCH -o /work/hdd/bisa/sshah21/results/reasoning_screen/%x_%j.out
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+TRY=/projects/bisa/sshah21/library/02_txgemma_chat/try11_26-10-2026_physchem-conditions
+PY=/work/hdd/bisa/sshah21/envs/txgemma/bin/python
+R=/work/hdd/bisa/sshah21/results/reasoning_screen
+
+# Control for try11's main arm. fabry is the ONLY fold that works (rank 4/3420, try10).
+# Arm A: same disease, pharmacological phrasing  -> does style alone break it?
+# Arm B: same disease, paraphrased physchem      -> does it survive rewording?
+echo "########## ARM A: fabry, PHARMACOLOGICAL phrasing ##########"
+$PY $TRY/screen_physchem.py --targets fabry --conditions-file $R/fabry_pharm_condition.json --batch-size 12 || exit 1
+
+echo
+echo "########## ARM B: fabry, PARAPHRASED physicochemical ##########"
+$PY $TRY/screen_physchem.py --targets fabry --conditions-file $R/fabry_phys2_condition.json --batch-size 12

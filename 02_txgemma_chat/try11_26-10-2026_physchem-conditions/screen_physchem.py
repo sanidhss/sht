@@ -242,7 +242,7 @@ def main():
         authored = chain["completion"]["necessary_condition"]
         if args.conditions_file:
             table = json.load(open(args.conditions_file))
-            condition, tag = table[target], "physchem"
+            condition, tag = table[target], table.get("_tag", "physchem")
             # Guard against silently re-running try10: a rewrite must actually differ.
             assert condition != authored, f"{target}: rewritten condition equals authored"
         elif args.condition_file:
