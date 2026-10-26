@@ -4,7 +4,7 @@
 chemistry at all) correctly identify the right drug for Fabry/Gaucher while being
 provably blind to the true answer during training?
 
-## Arc (14 tries, the longest debugging arc of the three projects)
+## Arc (16 tries, the longest debugging arc of the three projects)
 1. **try01-02** — old environment (`envs/txgnn`, dgl 0.9.1): two different crashes, one
    from a wrong disease-index bug (see try03), one from a DGL API version mismatch after
    trying to fix the first by upgrading dgl in-place. Motivated building a fresh,
@@ -108,3 +108,10 @@ the Gaucher reference set (now 4 drugs).
     Niemann-Pick, which is legitimate knowledge but probably drives the rank of 17).
     `attention=True` was chosen after seeing Fabry's first result, so Fabry's 17 is
     optimistic. CF/TTR (try13) are the only fully prospective tests, and both were weak.
+15. **try15** — Gaucher re-run with Niemann-Pick also held out (removes exactly one
+    training edge: miglustat → Niemann-Pick). Tests whether miglustat's rank of 17
+    depends on that sibling indication. Job 23210548, submitted 26-10-2026.
+16. **try16** — connectivity vs rank across 120 diseases sampled across 6 log-degree
+    bins and held out together (only for this test). Separates "disease node is well
+    connected" from "a true drug already treats a graph-close disease". Job 23210549,
+    submitted 26-10-2026; analyze with `analyze.py`.

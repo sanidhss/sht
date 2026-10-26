@@ -1,0 +1,121 @@
+idx,id,name,degree,n_ind,n_eval_drugs,bin
+13206.0,5645,ancylostomiasis,1,2,2,0
+6116.0,18741,paracetamol poisoning,1,2,2,0
+12399.0,4728,diabetic macular edema,1,2,2,0
+11856.0,44070,candidemia,1,7,7,0
+13504.0,5952,scarlet fever,1,3,3,0
+6215.0,18857,creeping myiasis,1,1,1,0
+5468.0,17944,invasive non-typhoidal salmonellosis,1,2,2,0
+13423.0,5867,Mycoplasma pneumoniae pneumonia,1,18,18,0
+12347.0,4668,fascioliasis,1,1,1,0
+7490.0,2048,thrombocytopenia due to immune destruction,1,1,1,0
+9142.0,24343,pityriasis simplex,1,11,11,0
+14382.0,6862,myofascial pain syndrome,2,3,3,0
+1552.0,1198,acquired thrombocytopenia,2,9,9,0
+13534.0,5983,tinea favosa,2,1,1,0
+12171.0,45030,non-infectious diarrheal disease,2,1,1,0
+9459.0,2527,keratoacanthoma,3,6,6,0
+14174.0,6642,alcohol withdrawal delirium,3,3,3,0
+12213.0,4525,scabies,3,5,5,0
+14516.0,7018,vulvitis,3,8,8,0
+2126.0,1316,streptococcal meningitis,3,7,7,0
+13744.0,6147,"chronic eosinophilic leukemia, not otherwise specified",4,1,1,1
+5179.0,17600,hairy cell leukemia variant,4,4,4,1
+4815.0,17146,sickle cell disease and related diseases,4,1,1,1
+1514.0,1191_24302_24303,hirudiniasis,4,3,3,1
+7408.0,2040,dermatomycosis,4,2,2,1
+12550.0,4896,esotropia,4,1,1,1
+14513.0,7015,viral meningitis,4,9,9,1
+13570.0,6019,yaws,5,17,17,1
+12017.0,4471,bacterial arthritis,5,25,25,1
+9163.0,24376,"sleep disorder, initiating and maintaining sleep",5,2,2,1
+13203.0,5642,atopic conjunctivitis,5,62,62,1
+2123.0,1315,neurocirculatory asthenia,6,9,9,1
+14490.0,6988,sulfhemoglobinemia,6,1,1,1
+14331.0,6812,intracranial vasospasm,6,2,2,1
+3381.0,15445,autosomal dominant coarctation of aorta,6,1,1,1
+14453.0,6939_1110,pyelonephritis,7,8,8,1
+8458.0,2234,vaginitis (disease),7,8,8,1
+1254.0,11479,postural orthostatic tachycardia syndrome,8,2,2,1
+13523.0,5972,streptococcal pneumonia,8,49,49,1
+12966.0,5391,restless legs syndrome,8,5,5,1
+6844.0,1966_1817,closed-angle glaucoma,9,4,4,2
+7929.0,21178,injury,9,4,4,2
+15142.0,7759,"hyperlipidemia, familial combined, LPL related",10,14,14,2
+6275.0,18935,hairy cell leukemia,10,4,4,2
+6700.0,19476,primary cutaneous peripheral T-cell lymphoma not otherwise specified,11,4,4,2
+13124.0,5545,staphylococcus aureus infection,11,45,45,2
+10001.0,3019,potassium deficiency disease,12,7,7,2
+6281.0,18944,gestational trophoblastic neoplasm,12,5,5,2
+12848.0,5247,urinary tract infection (disease),12,49,46,2
+1525.0,11934_23273,dermatofibrosarcoma protuberans,12,1,1,2
+3672.0,15803,wound botulism,13,1,1,2
+1201.0,11385,intervertebral disc degenerative disorder,13,1,1,2
+6965.0,19824,non-acquired pituitary hormone deficiency,13,1,1,2
+12457.0,4796,infectious meningitis,14,2,2,2
+13063.0,5485,psychotic disorder,14,9,9,2
+12452.0,4789_1929_1930_1931,cholangitis,15,6,6,2
+12900.0,5306_20655,ankylosing spondylitis,15,23,23,2
+6530.0,19263,autosomal erythropoietic protoporphyria,16,1,1,2
+7419.0,2041,fungal infectious disease,17,1,1,2
+12927.0,5338,open-angle glaucoma,17,30,29,2
+6727.0,19514,hepatic veno-occlusive disease,18,1,1,3
+10206.0,3240,thyroid gland disease,18,2,2,3
+1312.0,11578,familial papillary thyroid carcinoma with renal papillary neoplasia,19,3,3,3
+7489.0,20479,pituitary gigantism,19,1,1,3
+7122.0,1999_5149,pulmonary hypertension,19,4,4,3
+3274.0,15317,laryngotracheal angioma,20,1,1,3
+6803.0,19617,pituitary deficiency due to empty sella turcica syndrome,21,1,1,3
+1669.0,12197,idiopathic aplastic anemia,22,2,2,3
+6185.0,18824,pyoderma gangrenosum,22,1,1,3
+15726.0,8450_15304,arachnoiditis,22,2,2,3
+13111.0,5530,opiate dependence,24,5,5,3
+13129.0,5554,rheumatologic disorder,24,1,1,3
+4515.0,16829,familial visceral myopathy,24,1,1,3
+9260.0,24570_7767_6964_1530_1741_10837_16166_12406_21132,hyperparathyroidism,24,3,2,3
+6601.0,19365,scrub typhus,24,2,2,3
+15809.0,8559_8560_2305,thrombophilia,29,1,1,3
+792.0,10819_11370_19353,Stargardt disease,29,1,1,3
+16028.0,8814,hyperargininemia,31,2,2,3
+3741.0,15908,chromomycosis,33,2,2,3
+3481.0,15564,Castleman disease,34,2,2,3
+15806.0,8554_13794_11173_5029_10301,thrombocythemia,38,1,1,4
+6253.0,18906,follicular lymphoma,39,17,17,4
+12689.0,5060_4510_3591,liposarcoma,39,2,2,4
+4801.0,1713,inherited aplastic anemia,41,9,9,4
+3646.0,15770_16553,congenital hypogonadotropic hypogonadism,41,1,1,4
+15963.0,8733,familial glucocorticoid deficiency,42,8,8,4
+4408.0,16705,angiocentric glioma,42,1,1,4
+486.0,10438_14166_19533_100245_100243_100244,paroxysmal nocturnal hemoglobinuria,46,2,2,4
+15632.0,8345,idiopathic pulmonary fibrosis,47,2,2,4
+4398.0,16696,anaplastic oligodendroglioma,48,1,1,4
+15911.0,8679_11112_14779_11056_8680_8683_6058,Wilms tumor,50,3,3,4
+12319.0,4638,lymphosarcoma,50,26,26,4
+342.0,10204,lysosomal acid lipase deficiency,51,1,1,4
+13113.0,5532,Crohn's colitis,52,16,16,4
+4404.0,16700,anaplastic ependymoma,53,1,1,4
+7073.0,19933,acromegaly,56,5,5,4
+13216.0,5657_240,aspergillosis,59,6,6,4
+14047.0,6500_3096_2323,hemangioma,61,1,1,4
+5711.0,18229,Stevens-Johnson syndrome,67,9,9,4
+2266.0,13433_18646_18647,sclerosing cholangitis,71,6,6,4
+6635.0,19402_16486,beta thalassemia,77,3,3,5
+12892.0,5298,osteoporosis,82,32,32,5
+13019.0,5459,human African trypanosomiasis,84,4,4,5
+2718.0,1438,postinflammatory pulmonary fibrosis,86,1,1,5
+15385.0,8054_16367_1907,dermatomyositis,87,2,2,5
+3635.0,15760_18908_15759,non-Hodgkin lymphoma,102,19,19,5
+6252.0,18905_17601_6117_6268_6428,diffuse large B-cell lymphoma,102,6,6,5
+515.0,10482,X-linked parkinsonism-spasticity syndrome,104,22,22,5
+12648.0,5009,congestive heart failure,115,24,24,5
+15456.0,8143_7704_11923_12893_12894_12568,osteoarthritis susceptibility,122,37,37,5
+12611.0,4967,acute lymphoblastic leukemia (disease),137,21,21,5
+12720.0,5095_43377,spondyloarthropathy,137,24,24,5
+13126.0,5549,renal cell adenocarcinoma,139,11,11,5
+5822.0,18369,immature ovarian teratoma,142,15,15,5
+5663.0,18171,malignant germ cell tumor of ovary,145,15,15,5
+15144.0,7763,nonpapillary renal cell carcinoma,152,11,11,5
+5668.0,18177,glioblastoma (disease),165,2,2,5
+671.0,10674_9659_9660_9661_11093_9662_16316_16315_18937_18938_1586_19249_19302_17171_17172,mucopolysaccharidosis,310,5,3,5
+13800.0,6210_891,fibrolamellar hepatocellular carcinoma,510,3,3,5
+5560.0,18055,pediatric hepatocellular carcinoma,518,3,3,5
