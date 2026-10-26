@@ -47,6 +47,16 @@ siblings**, meaning a true drug is already indicated for a graph-close disease
     for the best of 9 (`best_cal` 0.77), but its median drug is at the 21st
     percentile (chance is 50th). CF's signal is broad-but-shallow, not one standout.
 
+## Added before the job ran (26-10-2026): specificity metric
+try17 showed the model gives near-identical rankings to related diseases and ranks
+every rare-disease drug high for Fabry, so a good own-rank can mean "in the right
+category" rather than "this disease". `analyze.py` now also computes, per disease,
+**`specificity`** = (median percentile of its true drugs in the *other* 119 diseases'
+rankings) − (in its own ranking). >0 means disease-specific; ~0 means generic. It
+reports Spearman(degree, specificity) too. Read connectivity-vs-rank alongside this;
+a degree effect on `median_pct` with no effect on `specificity` would mean
+connectivity buys category placement, not disease-specific knowledge.
+
 ## Status
 - Dry run (26-10-2026): split built under the short folder name, `check_blind` OK on
   all 120, all 120 present in test (933 indication, 1,353 contraindication, 178

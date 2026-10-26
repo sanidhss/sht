@@ -96,6 +96,30 @@ for _, r in sample.iterrows():
              n_sibling_paths=sibling_paths(train, r.idx, pos, drug_key2idx))
     rows.append(o)
 res = pd.DataFrame(rows)
+
+# ---- specificity (added 26-10-2026 after try17): try17 found the model gives near-
+# identical rankings to related diseases (Fabry vs Gaucher Spearman 0.957) and ranks
+# every rare-disease drug high for Fabry -- so a good own-rank can be category
+# membership, not disease-specific knowledge. For each disease D: median percentile
+# of D's true drugs in D's own ranking vs. in every OTHER sampled disease's ranking.
+# specificity = cross_median - own_median (>0 = D's drugs rank better for D than for
+# other diseases; ~0 = the rank is generic, not about D).
+keys = {r.idx: idx2key[r.idx] for _, r in sample.iterrows()}
+pct_by = {}
+for i, k in keys.items():
+    e = {d: np.mean([o['prediction'][k][d] for o in outs]) for d in outs[0]['prediction'][k]}
+    order = sorted(e, key=lambda d: -e[d])
+    pct_by[i] = {d: (j + 1) / len(order) for j, d in enumerate(order)}
+pos_by = {i: [d for d, l in outs[0]['label'][k].items() if l == 1 and pct_by[i].get(d) is not None] for i, k in keys.items()}
+spec = {}
+for i in keys:
+    if not pos_by[i]:
+        continue
+    own = np.median([pct_by[i][d] for d in pos_by[i]])
+    cross = np.median([np.median([pct_by[j][d] for d in pos_by[i]]) for j in keys if j != i])
+    spec[i] = (own, cross, cross - own)
+res['cross_median_pct'] = res.idx.map(lambda i: spec.get(i, (np.nan,) * 3)[1])
+res['specificity'] = res.idx.map(lambda i: spec.get(i, (np.nan,) * 3)[2])
 no_pos = res[res.n_pos == 0]
 res = res[res.n_pos > 0].copy()
 res['sibling'] = res.n_sibling_paths > 0
@@ -108,11 +132,15 @@ print(f'chance reference: median_pct ~0.50, best_cal ~0.50\n')
 for y in ['median_pct', 'best_cal']:
     rho, p = stats.spearmanr(res.degree, res[y])
     print(f'Spearman(degree, {y}) = {rho:+.3f}  p={p:.2g}  n={len(res)}   (negative = better-connected ranks better)')
+rho, p = stats.spearmanr(res.degree, res.specificity)
+print(f'Spearman(degree, specificity) = {rho:+.3f}  p={p:.2g}   (positive = better-connected is MORE disease-specific)')
+print(f'specificity overall: median {res.specificity.median():+.3f}; '
+      f'fraction of diseases with specificity > 0: {(res.specificity > 0).mean():.2f}')
 print()
 res['deg_bin'] = pd.qcut(res.log_degree, 6, labels=False, duplicates='drop')
 print(res.groupby('deg_bin').agg(degree_min=('degree', 'min'), degree_max=('degree', 'max'), n=('idx', 'size'),
                                  median_pct=('median_pct', 'median'), best_cal=('best_cal', 'median'),
-                                 frac_sibling=('sibling', 'mean')).round(3).to_string())
+                                 specificity=('specificity', 'median'), frac_sibling=('sibling', 'mean')).round(3).to_string())
 print()
 print('sibling-path split:')
 for flag, g in res.groupby('sibling'):

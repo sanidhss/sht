@@ -4,7 +4,7 @@
 chemistry at all) correctly identify the right drug for Fabry/Gaucher while being
 provably blind to the true answer during training?
 
-## Arc (16 tries, the longest debugging arc of the three projects)
+## Arc (17 tries, the longest debugging arc of the three projects)
 1. **try01-02** — old environment (`envs/txgnn`, dgl 0.9.1): two different crashes, one
    from a wrong disease-index bug (see try03), one from a DGL API version mismatch after
    trying to fix the first by upgrading dgl in-place. Motivated building a fresh,
@@ -115,3 +115,11 @@ the Gaucher reference set (now 4 drugs).
     bins and held out together (only for this test). Separates "disease node is well
     connected" from "a true drug already treats a graph-close disease". Job 23210549,
     submitted 26-10-2026; analyze with `analyze.py`.
+17. **try17** — specificity check (CPU). **The model ranks by category, not by
+    disease.** Fabry's and Gaucher's full drug rankings correlate 0.957 (41/50 shared
+    top-50); CF's and TTR's 0.926; the two pairs share 0/50. Fabry's list ranks every
+    rare-disease drug high: Gaucher drugs at 15–60, tafamidis at 46, CF modulators at
+    61–69 (~20× better than for CF itself). Migalastat is 16 for Fabry vs 27 for
+    Gaucher. So Fabry/Gaucher are category-level successes, not disease-specific;
+    CF/TTR land in a steroid/chemo ranking mode instead. try16's analysis now includes
+    a specificity metric.
