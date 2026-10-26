@@ -4,7 +4,7 @@
 chemistry at all) correctly identify the right drug for Fabry/Gaucher while being
 provably blind to the true answer during training?
 
-## Arc (17 tries, the longest debugging arc of the three projects)
+## Arc (18 tries, the longest debugging arc of the three projects)
 1. **try01-02** — old environment (`envs/txgnn`, dgl 0.9.1): two different crashes, one
    from a wrong disease-index bug (see try03), one from a DGL API version mismatch after
    trying to fix the first by upgrading dgl in-place. Motivated building a fresh,
@@ -123,3 +123,13 @@ the Gaucher reference set (now 4 drugs).
     Gaucher. So Fabry/Gaucher are category-level successes, not disease-specific;
     CF/TTR land in a steroid/chemo ranking mode instead. try16's analysis now includes
     a specificity metric.
+18. **try18** — prototype-neighbour audit. **Fabry's result is leaked.** With
+    proto=True a held-out disease is scored as 90% the blend of its 3 most similar
+    training diseases. Fabry's #1 (31%) is *chylomicron retention disease*, which in
+    PrimeKG carries all 23 of Fabry's genes (incl. GLA) **and a migalastat
+    indication**. That's a data error (likely an "Anderson disease" name collision)
+    that leaves Fabry's answer in training under another name. Gaucher's #1 (36%) is
+    Niemann-Pick (miglustat). CF's are bronchiectasis (no CFTR modulator). TTR's are
+    near-random (cos ≈ 0.03). The prototype neighbours' indications explain most of
+    the Fabry/Gaucher vs CF/TTR gap. try16 analysis now records `proto_hit`. Fabry
+    needs a re-run holding out the duplicate.

@@ -1,5 +1,11 @@
 # try14 — leakage audit, prompted by TxGemma-predict's voided verdicts
 
+> **Superseded in part by try18 (26-10-2026).** This audit only checked drug edges to
+> disease_disease neighbours. It missed TxGNN's prototype step, which picks
+> neighbours by protein + disease similarity. Through that path **Fabry is NOT blind**:
+> *chylomicron retention disease* carries all of Fabry's genes and a migalastat
+> indication in training, and makes up 31% of Fabry's representation. See try18.
+
 ## Why
 TxGemma-predict's try08/try09 found that every one of its pre-try09 verdicts came from
 a leaky test (all 12 hard negatives were in training) plus an over-trained model (best

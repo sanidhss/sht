@@ -73,6 +73,32 @@ def sibling_paths(train, d, pos_drug_keys, drug_key2idx):
     return hits
 
 
+def proto_hits(train, queries, pos_by_query, k=3):
+    # try18: reproduce TxGNN's prototype step (proto=True, all_nodes_profile, rarity).
+    # A held-out disease's scoring representation is 90% the blend of its top-3
+    # cosine-similar diseases (profile = disease_disease neighbours + proteins, from
+    # the TRAINING graph), among diseases with >=1 training indication. Returns, per
+    # query, how many of its true drugs are indicated for one of those 3 keys -- the
+    # path by which Fabry's answer leaked (near-duplicate node).
+    dd = train[train.relation == 'disease_disease']
+    dp = train[(train.x_type == 'disease') & (train.y_type == 'gene/protein')]
+    prof = {}
+    for i, g in dd.groupby('x_idx'):
+        prof.setdefault(i, set()).update(('d', y) for y in g.y_idx)
+    for i, g in dp.groupby('x_idx'):
+        prof.setdefault(i, set()).update(('p', y) for y in g.y_idx)
+    ind = train[train.relation == 'rev_indication']
+    key_drugs = {kk: set(g.y_idx) for kk, g in ind.groupby('x_idx')}
+    out = {}
+    for q in queries:
+        qp = prof.get(q, set())
+        sims = sorted(((len(qp & prof.get(kk, set())) / np.sqrt(len(qp) * len(prof[kk])), kk)
+                       for kk in key_drugs if prof.get(kk) and qp), reverse=True)[:k]
+        near = set().union(*[key_drugs[kk] for _, kk in sims]) if sims else set()
+        out[q] = sum(drug_key2idx.get(d) in near for d in pos_by_query.get(q, []))
+    return out
+
+
 def load(path_fmt):
     return [pickle.load(open(path_fmt.format(s=s), 'rb')) for s in SEEDS]
 
@@ -96,6 +122,9 @@ for _, r in sample.iterrows():
              n_sibling_paths=sibling_paths(train, r.idx, pos, drug_key2idx))
     rows.append(o)
 res = pd.DataFrame(rows)
+_pos = {r.idx: [d for d, l in outs[0]['label'][idx2key[r.idx]].items() if l == 1] for _, r in sample.iterrows()}
+_ph = proto_hits(train, list(sample.idx), _pos)
+res['n_proto_hits'] = res.idx.map(_ph)
 
 # ---- specificity (added 26-10-2026 after try17): try17 found the model gives near-
 # identical rankings to related diseases (Fabry vs Gaucher Spearman 0.957) and ranks
@@ -123,6 +152,7 @@ res['specificity'] = res.idx.map(lambda i: spec.get(i, (np.nan,) * 3)[2])
 no_pos = res[res.n_pos == 0]
 res = res[res.n_pos > 0].copy()
 res['sibling'] = res.n_sibling_paths > 0
+res['proto_hit'] = res.n_proto_hits > 0
 res['log_degree'] = np.log10(res.degree)
 res.to_csv(os.path.join(HERE, 'results_per_disease.csv'), index=False)
 
@@ -147,17 +177,21 @@ for flag, g in res.groupby('sibling'):
     rho, p = stats.spearmanr(g.degree, g.median_pct) if len(g) > 3 else (np.nan, np.nan)
     print(f'  sibling={flag!s:<5} n={len(g):<4} median of median_pct={g.median_pct.median():.3f}  '
           f'Spearman(degree, median_pct) within group={rho:+.3f} p={p:.2g}')
+print('proto-neighbour split (a true drug is indicated for one of the 3 prototype diseases -- try18):')
+for flag, g in res.groupby('proto_hit'):
+    print(f'  proto_hit={flag!s:<5} n={len(g):<4} median of median_pct={g.median_pct.median():.3f}  '
+          f'median best_cal={g.best_cal.median():.3f}  median specificity={g.specificity.median():+.3f}')
 rho_ds, p_ds = stats.spearmanr(res.degree, res.sibling)
 print(f'  Spearman(degree, has-sibling-path) = {rho_ds:+.3f} p={p_ds:.2g}   (are the two explanations confounded?)')
 # rank regression: median_pct ~ degree + sibling (+ n_pos), all as ranks
 X = np.column_stack([np.ones(len(res)), stats.rankdata(res.degree), res.sibling.astype(float),
-                     stats.rankdata(res.n_pos)])
+                     res.proto_hit.astype(float), stats.rankdata(res.n_pos)])
 yv = stats.rankdata(res.median_pct)
 beta, *_ = np.linalg.lstsq(X, yv, rcond=None)
 resid = yv - X @ beta
 se = np.sqrt(np.diag(np.sum(resid ** 2) / (len(yv) - X.shape[1]) * np.linalg.inv(X.T @ X)))
-print('\nrank regression  rank(median_pct) ~ rank(degree) + sibling + rank(n_pos):')
-for nm_, b, s_ in zip(['intercept', 'rank(degree)', 'sibling', 'rank(n_pos)'], beta, se):
+print('\nrank regression  rank(median_pct) ~ rank(degree) + sibling + proto_hit + rank(n_pos):')
+for nm_, b, s_ in zip(['intercept', 'rank(degree)', 'sibling', 'proto_hit', 'rank(n_pos)'], beta, se):
     print(f'  {nm_:<14} beta={b:+8.3f}  t={b / s_:+.2f}')
 
 # ---- thesis targets on the same scale (from their own runs)
