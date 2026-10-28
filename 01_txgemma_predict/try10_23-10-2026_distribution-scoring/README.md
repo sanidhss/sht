@@ -89,20 +89,91 @@ make the right drug come first — it will spread a weak ranking across more val
 could go from 20% to 12%, or barely move. This is the best-expected-value cheap experiment,
 not a guaranteed fix.
 
+## Result
+Job **23130595**, COMPLETED 24-10-2026, elapsed 03:39:25 (inside the 8h budget).
+
+### Validity check passed first
+**Method A reproduced try08 exactly: 200/200, 199/199, 200/200, 200/200 identical — 100% on
+all four targets.** The comparison is sound; any difference below is the readout, not drift.
+Per-digit tokenization confirmed, so Method C ran.
+
+### Degeneracy WAS largely a readout artifact
+| Target | most-common-value frequency: greedy → sampled → digit-exp | distinct values |
+|---|---|---|
+| Gaucher | 791 **51.0% → 27.5% → 5.5%** | 27.5% → 55.0% → **69.0%** |
+| Fabry | 630 **24.5% → 2.0% → 1.5%** | 23.0% → 79.0% → **82.5%** |
+| TTR | 994 **28.6% → 25.5% → 16.0%** | 47.2% → 63.5% → **68.0%** |
+| CF | 727 6.5% → 2.0% → 2.5% | 49.0% → 75.5% → **77.0%** |
+
+Greedy decoding was collapsing these models onto modal outputs. Gaucher's notorious
+"791 for half of chemical space" falls to **5.5%** under digit-logit expectation, with no
+retraining and no change to the model — the resolution was there all along and the readout
+was discarding it. This confirms the hypothesis and vindicates try08's `min_gap = 1`
+observation.
+
+**Method C (digit expectation) wins on every target** and is also the cheapest (3 forward
+passes, deterministic, no sampling variance). It should become the default scoring method.
+
+### But fixing degeneracy did NOT uniformly improve ranking
+Enrichment percentile (lower is better; 50 = chance):
+
+| Target | greedy | sampled | digit-exp | direction |
+|---|---|---|---|---|
+| Gaucher | 38.5 | 33.0 | **29.0** | improved |
+| TTR | 47.7 | 43.5 | **45.0** | ~unchanged, still ≈chance |
+| CF | **11.5** | 19.0 | 14.0 | slightly worse |
+| Fabry | **15.5** | 74.5 | **83.0** | **catastrophically worse** |
+
+Both pre-registered outcomes occurred, on different targets. That is the honest reading and
+it was written down in advance.
+
+### Fabry: the apparent success was entirely a mode artifact
+This is the single most consequential number in the run. Greedy gave migalastat **436**,
+ranking it in the top 15.5% — which is what made Fabry look like it "passed the category
+test" despite failing within-family. But 436 was Fabry's *collapse value*, the mode it
+emitted for everything. Integrate over the actual distribution and migalastat's expected
+value is **647–660**, ranking **74.5–83.0 percentile — worse than chance**.
+
+Fabry's category-level competence was an accident of its attractor happening to sit at a low
+number. Under honest scoring Fabry is the **worst** of the four targets, not the second best.
+
+### The honest ranking after this run
+    CF       14.0 percentile   best
+    Gaucher  29.0
+    TTR      45.0              ~chance
+    Fabry    83.0              worse than chance
+
+CF survives as the strongest target on this measure. Note these are the **over-trained,
+leak-trained** adapters (try09's epoch-0 models were never saved), so the absolute numbers
+inherit those problems; the readout comparison is what this run establishes.
+
+### Bonus: per-molecule uncertainty, and TTR is confidently wrong
+Mean sampling standard deviation across 200 molecules (min 0.0, max ~290–325 for all):
+
+    TTR      26.8      lowest variance, yet chance-level ranking
+    Gaucher  43.6
+    CF       48.4
+    Fabry    82.2      highest variance, worst ranking
+
+Variance is **not** a quality proxy — TTR is the most *confident* and ranks at chance, i.e.
+confidently wrong, while Fabry is both uncertain and wrong. So uncertainty cannot be used
+alone to filter candidates, though Fabry's 82.2 would have flagged it.
+
+### Consequences
+1. **Adopt digit-logit expectation as the scoring method everywhere.** Best degeneracy
+   reduction on all four targets, cheapest, deterministic. Every historical score in this
+   project was a mode, not an estimate.
+2. **Every enrichment number recorded before this is suspect**, because they were all
+   computed from modes. Fabry's 15.5% → 83.0% is the proof of how badly that can mislead.
+3. **Re-run the try09 harness with the new scoring**, for CF first (3 seeds, `N_EPOCH=2`).
+   The leak-free numbers in try09 were also greedy-decoded.
+4. **Fabry drops to the bottom of the priority list** — it is now the weakest target on the
+   only honest measure available, with 89 compounds and a 20% scaffold-holdout cost.
+5. Scoring alone did not rescue ranking quality: CF 14%, Gaucher 29% means ~28 and ~58 of
+   200 decoys still outrank the real drug. A 10%-shortlist deployment is still not supported.
+
 ## Status
-Submitted as job **23130595** (8h budget, gpuA100x4, 1 GPU, inference only). Result pending.
-
-Confirmed before submission:
-- try08's saved raw generations contain the exact 200-molecule novel stratum and 9 eval
-  anchors per target, so the comparison runs on identical inputs.
-- The tokenizer splits numbers **per digit** (`'791'` → `['7','9','1']`, `'0'` → one token),
-  so Method C is enabled rather than skipped.
-
-**A bug was caught and fixed between submissions.** The first submission (23129822) was
-cancelled before it started executing — no compute wasted — because the tokenizer check
-revealed that `'1000'` is **four** digits (`['1','0','0','0']`) while
-`score_digit_expectation` had `n_digits=3` hardcoded. A true 1000 would have been read as
-~100, a 900-point error, and try08 shows 1000 does occur in the novel stratum for TTR and
-Fabry. The digit width is now taken from the greedy decode for each prompt (clamped to
-1–4), falling back to 3 only if greedy failed to parse. Method B (sampling) was never
-affected, which is one reason it is the primary method.
+COMPLETED. Degeneracy confirmed as largely a greedy-decoding artifact and fixed by
+digit-logit expectation (Gaucher 51% → 5.5%). Ranking quality did not uniformly improve, and
+Fabry's apparent category-level success was revealed as a mode artifact (15.5% → 83.0%,
+worse than chance). Digit expectation adopted as the scoring method going forward.

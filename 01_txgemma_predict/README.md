@@ -64,7 +64,11 @@ near-identical decoys, for orphan disease targets?
    `model.generate(...)` with no sampling argument, i.e. greedy decoding, which returns the
    *modal* output rather than an estimate. Compares greedy against a K=16 sampling mean and
    a digit-logit expectation on the same four saved adapters and try08's exact 200-molecule
-   set, so the readout is the only variable. No training. Job 23129822, result pending.
+   set, so the readout is the only variable. No training. Job 23130595 COMPLETED:
+   **degeneracy was largely a readout artifact** — Gaucher's 791 falls from 51% of novel
+   compounds to **5.5%** under digit-logit expectation, no retraining. But ranking did not
+   uniformly improve, and **Fabry's apparent category-level success was a mode artifact**
+   (15.5 → 83.0 percentile, worse than chance). See try10's Result.
 
 ## Current state
 
@@ -100,7 +104,28 @@ TTR's reference prediction spread across seeds is **41 points**, against the **3
 try07 measured on the old pipeline. Most of the instability was over-training, not the
 task.
 
-### 5. Output degeneracy survives all of the fixes, and is now the main technical problem
+### 5. Output degeneracy was largely a greedy-decoding artifact (try10)
+Every score this project ever produced came from `model.generate(...)` with no sampling
+argument — greedy decoding, which returns the **modal** output rather than an estimate.
+Switching to a digit-logit expectation (3 forward passes, deterministic, no retraining)
+drops Gaucher's most-common value from **51% of novel compounds to 5.5%**, and raises
+distinct values from 27.5% to 69%. Method A reproduced try08 at 100% on all four targets,
+so this is the readout and not drift. **Digit-logit expectation is now the scoring method.**
+
+But fixing the ties did **not** uniformly improve ranking, and one result is a serious
+correction: **Fabry's apparent top-15.5% category performance was entirely an artifact of
+its collapse value (436) happening to be a low number.** Under honest scoring migalastat's
+expected value is 647–660, ranking **83rd percentile — worse than chance.** Fabry is the
+weakest of the four targets, not the second strongest.
+
+Honest ranking under digit-logit expectation (on the old over-trained adapters):
+CF 14.0, Gaucher 29.0, TTR 45.0 (~chance), Fabry 83.0. **Every enrichment number recorded
+before try10 was computed from modes and is suspect.**
+
+Also: per-molecule sampling variance is not a quality proxy — TTR has the *lowest* variance
+(26.8) and chance-level ranking, i.e. confidently wrong, while Fabry has the highest (82.2).
+
+### 6. Ranking quality remains the open problem
 TTR still assigns **994 to ~40% of a diverse 500-compound decoy set** (70–92 distinct
 values out of 500); CF assigns 889 to 14%. So Gaucher's 791-on-51%-of-novel-compounds is
 not merely an over-training artifact. This is the failure that most directly threatens the
@@ -111,12 +136,11 @@ same epoch (~1.0), so the model overfits *within* epoch 0. Epoch-level early sto
 be too coarse — mid-epoch evaluation, lower LR, or fewer steps are the next things to try.
 
 ### Next steps, in order
-0. **try10 (running)** — tests whether the degeneracy is a greedy-decoding artifact. Took
-   priority over the CF re-run because it could change how every score in the project is
-   computed, and it needs no training. Note for the future: try09 never saved its epoch-0
-   adapters, so try10 has to use the older over-trained ones; **save adapters in every
-   training run from now on.**
-1. **Re-run CF with 3 seeds and `N_EPOCH=2`** (epoch 0 is established as optimal across 4
+1. **Re-run CF through the try09 harness with digit-logit scoring**, 3 seeds, `N_EPOCH=2`.
+   try09's leak-free numbers were greedy-decoded too, so they need recomputing — and CF is
+   still the only target with a plausible genuine pass. **Save the adapters this time**:
+   try09 never called `save_pretrained`, which is why try10 had to run on the older
+   over-trained weights. (epoch 0 is established as optimal across 4
    runs, so 5 epochs is wasted compute; this makes 3 seeds fit in budget).
 2. **Re-run Gaucher and Fabry through the try09 harness.** Both of their recorded verdicts
    are void. Fabry's needs care: the scaffold holdout costs 20% of only 89 compounds.
