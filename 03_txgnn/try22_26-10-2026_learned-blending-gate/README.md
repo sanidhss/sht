@@ -58,3 +58,6 @@ to pick a setting. The winner is applied once to them afterwards.
 Submitted 26-10-2026: **23231350** (`learn`), **23231351** (`learn_profile_more`), 24h each.
 The `learn` code path had never been exercised in this env before, so watch the first
 log lines for runtime errors (they'd appear within the first epoch).
+
+## Cancelled (29-10-2026)
+Cancelled at the user's request before producing results: the 120-disease set is mostly common diseases, the wrong set for tuning rare-disease settings. The work moved to the augmented-graph runs (try23).

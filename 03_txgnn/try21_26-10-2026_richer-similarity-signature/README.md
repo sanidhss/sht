@@ -25,3 +25,6 @@ once to the thesis diseases.
 - "2 and 3 together" is covered on the reliability side by try20, which reports the
   flag under both signatures. On the ranking side, try19's correction runs on this
   sweep too.
+
+## Cancelled (29-10-2026)
+Cancelled at the user's request before producing results: the 120-disease set is mostly common diseases, the wrong set for tuning rare-disease settings. The work moved to the augmented-graph runs (try23).
