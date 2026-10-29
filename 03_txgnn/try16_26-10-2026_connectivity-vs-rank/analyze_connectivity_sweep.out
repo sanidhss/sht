@@ -1,0 +1,39 @@
+== sweep arm: connectivity_sweep
+diseases analysed: 120 (dropped 0 with no evaluable true drug: [])
+chance reference: median_pct ~0.50, best_cal ~0.50
+
+Spearman(degree, median_pct) = -0.263  p=0.0036  n=120   (negative = better-connected ranks better)
+Spearman(degree, best_cal) = -0.276  p=0.0022  n=120   (negative = better-connected ranks better)
+Spearman(degree, specificity) = +0.095  p=0.3   (positive = better-connected is MORE disease-specific)
+specificity overall: median +0.332; fraction of diseases with specificity > 0: 0.90
+
+         degree_min  degree_max   n  median_pct  best_cal  specificity  frac_sibling
+deg_bin                                                                             
+0                 1           3  20       0.211     0.208        0.370          0.65
+1                 4           8  20       0.572     0.479        0.232          0.75
+2                 9          17  20       0.451     0.461        0.358          0.80
+3                18          34  20       0.400     0.292        0.317          0.75
+4                38          71  20       0.007     0.024        0.309          0.90
+5                77         518  20       0.151     0.042        0.485          1.00
+
+sibling-path split:
+  sibling=False n=23   median of median_pct=0.792  Spearman(degree, median_pct) within group=-0.022 p=0.92
+  sibling=True  n=97   median of median_pct=0.162  Spearman(degree, median_pct) within group=-0.230 p=0.024
+proto-neighbour split (a true drug is indicated for one of the 3 prototype diseases -- try18):
+  proto_hit=False n=38   median of median_pct=0.792  median best_cal=0.788  median specificity=+0.047
+  proto_hit=True  n=82   median of median_pct=0.074  median best_cal=0.048  median specificity=+0.473
+  Spearman(degree, has-sibling-path) = +0.260 p=0.0041   (are the two explanations confounded?)
+
+rank regression  rank(median_pct) ~ rank(degree) + sibling + proto_hit + rank(n_pos):
+  intercept      beta= +91.429  t=+11.86
+  rank(degree)   beta=  -0.091  t=-1.06
+  sibling        beta= -10.588  t=-1.26
+  proto_hit      beta= -32.771  t=-4.65
+  rank(n_pos)    beta=  +0.091  t=+1.04
+
+thesis targets on the same scale (their own runs, same outcome definitions):
+  Fabry                            degree=109   n_pos=1   median_pct=0.002 best_rank=16 best_cal=0.002
+  Gaucher                          degree=133   n_pos=4   median_pct=0.273 best_rank=17 best_cal=0.009
+  Gaucher, Niemann-Pick held out   (results not available yet)
+  CF                               degree=45    n_pos=9   median_pct=0.208 best_rank=1208 best_cal=0.773
+  TTR (ATTRV122I)                  degree=3     n_pos=1   median_pct=0.122 best_rank=974 best_cal=0.122

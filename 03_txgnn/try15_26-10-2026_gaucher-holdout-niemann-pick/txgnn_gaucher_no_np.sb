@@ -6,4 +6,4 @@
 #SBATCH -o /work/hdd/bisa/sshah21/results/txgnn/%x_%j.out
 
 export DISEASE=gaucher_no_np
-/work/hdd/bisa/sshah21/envs/txgnn2/bin/python /projects/bisa/sshah21/library/03_txgnn/try15_26-10-2026_gaucher-holdout-niemann-pick/txgnn_gaucher_no_np.py
+/work/hdd/bisa/sshah21/envs/txgnn2/bin/python -u /projects/bisa/sshah21/library/03_txgnn/try15_26-10-2026_gaucher-holdout-niemann-pick/txgnn_gaucher_no_np.py

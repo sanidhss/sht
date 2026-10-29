@@ -1,0 +1,46 @@
+==================== THESIS DISEASES (background: 150 diseases, same model) ====================
+
+[fabry]  background diseases: 150
+   Migalastat             raw rank    16  ->  corrected rank    40
+   top 10 raw      : ['Idursulfase', 'Galsulfase', 'Avelumab', 'Selumetinib', 'Elosulfase alfa', 'Vestronidase alfa', 'Roxadustat', 'Mecasermin rinfabate', 'Mecasermin', 'Siltuximab']
+   top 10 corrected: ['Burosumab', 'Cerliponase alfa', 'Carbetocin', 'Uridine triacetate', 'Elosulfase alfa', 'Vestronidase alfa', 'Laronidase', 'Imiglucerase', 'Alglucerase', 'Nusinersen']
+
+[gaucher]  background diseases: 150
+   Miglustat              raw rank    17  ->  corrected rank    21
+   Eliglustat             raw rank   921  ->  corrected rank  4512
+   Velaglucerase alfa     raw rank  3423  ->  corrected rank  2250
+   Voglibose              raw rank  7060  ->  corrected rank  3519
+   top 10 raw      : ['Idursulfase', 'Galsulfase', 'Avelumab', 'Selumetinib', 'Avapritinib', 'Roxadustat', 'Mecasermin', 'Siltuximab', 'Elosulfase alfa', 'Vestronidase alfa']
+   top 10 corrected: ['Elosulfase alfa', 'Vestronidase alfa', 'Idursulfase', 'Galsulfase', 'Laronidase', 'Burosumab', 'Carbetocin', 'Lactose', 'Uridine triacetate', 'Cerliponase alfa']
+
+[gaucher_no_np] not available yet (eval: False, background: False)
+
+[cf]  background diseases: 150
+   Elexacaftor            raw rank  1208  ->  corrected rank  5796
+   Tezacaftor             raw rank  1301  ->  corrected rank  5662
+   Lumacaftor             raw rank  1385  ->  corrected rank  5998
+   Ivacaftor              raw rank  1652  ->  corrected rank  5893
+   Acetylcysteine         raw rank  1853  ->  corrected rank   374
+   Cysteine               raw rank  1601  ->  corrected rank   270
+   top 10 raw      : ['Prednisone', 'Dexamethasone', 'Methylprednisolone', 'Triamcinolone', 'Betamethasone', 'Prednisolone', 'Cortisone acetate', 'Tesamorelin', 'Hydrocortisone acetate', 'Rosiglitazone']
+   top 10 corrected: ['Dexlansoprazole', 'Tridihexethyl', 'Potassium bicarbonate', 'Cisapride', 'Alprazolam', 'Medroxyprogesterone acetate', 'Etretinate', 'Calcifediol', 'Progesterone', 'Magnesium carbonate']
+
+[ttr]  background diseases: 150
+   Tafamidis              raw rank   974  ->  corrected rank  7264
+   Diflunisal             raw rank  7085  ->  corrected rank  2100
+   Patisiran              raw rank  5156  ->  corrected rank  6159
+   Inotersen              raw rank  4080  ->  corrected rank  7829
+   top 10 raw      : ['Cisplatin', 'Prednisone', 'Tretamine', 'Carboplatin', 'Rucaparib', 'Dexamethasone', 'Triamcinolone', 'Methylprednisolone', 'Budesonide', 'Trabectedin']
+   top 10 corrected: ['Prazosin', 'Nebivolol', 'Bupropion', 'Polythiazide', 'Ziprasidone', 'Carvedilol', 'Methantheline', 'Desipramine', 'Nicardipine', 'Isradipine']
+
+==================== 120-DISEASE SWEEPS (leave-one-out background) ====================
+
+[connectivity_sweep]  diseases: 120   (lower = better; chance ~0.50)
+   median_pct median raw 0.247 -> corrected 0.057;  improved for 60% of diseases
+   best_cal   median raw 0.153 -> corrected 0.057;  improved for 63% of diseases
+
+[connectivity_sweep_profile_more] not available yet
+
+[connectivity_sweep_learn] not available yet
+
+[connectivity_sweep_learn_profile_more] not available yet
