@@ -13,12 +13,20 @@ Usage:
   python build_augmented_kg.py --primekg DIR_WITH_kg.csv_node.csv \
       --external DIR_WITH_orphanet/hpo/mondo --out OUT_DIR [--dry-run]
 --dry-run writes the report + added/removed edge lists but not the 1 GB kg.csv.
+--only genes|phenotypes builds an ablation graph with just one source (default: both).
+
+Filters (keep relation types to PrimeKG's existing two, so TxGNN needs no code change):
+  * Orphanet genes: status 'Assessed' and type 'Disease-causing ...' only (causal); modifier,
+    susceptibility, fusion, candidate and biomarker associations are dropped.
+  * HPO phenotypes: aspect P, not NOT-qualified, evidence not IEA (electronic-only), and
+    frequency not 'very rare' (HP:0040284) / 'excluded' (HP:0040285) / below 5% when given
+    as n/m or percent. Annotations with no frequency are kept.
 """
 import argparse
 import json
 import os
 import xml.etree.ElementTree as ET
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 import pandas as pd
 
@@ -27,6 +35,7 @@ ap.add_argument('--primekg', required=True)
 ap.add_argument('--external', required=True)
 ap.add_argument('--out', required=True)
 ap.add_argument('--dry-run', action='store_true')
+ap.add_argument('--only', choices=['both', 'genes', 'phenotypes'], default='both')
 a = ap.parse_args()
 os.makedirs(a.out, exist_ok=True)
 
@@ -51,7 +60,9 @@ pheno_ids = set(nodes[nodes.type == 'effect/phenotype'].id)
 existing = set(zip(kg.relation, kg.x_id, kg.y_id))
 
 # ---------------- MONDO cross-references (Orphanet / OMIM -> MONDO)
-g = json.load(open(os.path.join(a.external, 'mondo', 'mondo.json')))['graphs'][0]['nodes']
+g0 = json.load(open(os.path.join(a.external, 'mondo', 'mondo.json')))['graphs'][0]
+MONDO_VERSION = g0.get('meta', {}).get('version', 'unknown')
+g = g0['nodes']
 xref2mondo = defaultdict(set)
 replaced_by = {}  # obsolete MONDO -> replacement MONDO
 for n in g:
@@ -80,9 +91,14 @@ xref2node = {k: mondo2nodes[next(iter(v))] for k, v in xref2mondo.items()
              if len(v) == 1 and mondo2nodes.get(next(iter(v)))}
 
 # ---------------- Orphanet disease-gene (product 6)
-SKIP_TYPES = {'Candidate gene tested in', 'Biomarker tested in'}
 orpha_pairs = set()
-for _, el in ET.iterparse(os.path.join(a.external, 'orphanet', 'en_product6.xml')):
+orpha_types = Counter()
+ORPHA_VERSION = 'unknown'
+for ev, el in ET.iterparse(os.path.join(a.external, 'orphanet', 'en_product6.xml'), events=('start', 'end')):
+    if ev == 'start':
+        if el.tag == 'JDBOR':
+            ORPHA_VERSION = f"date={el.get('date')} version={el.get('version')}"
+        continue
     if el.tag != 'Disorder':
         continue
     code = el.findtext('OrphaCode')
@@ -91,13 +107,39 @@ for _, el in ET.iterparse(os.path.join(a.external, 'orphanet', 'en_product6.xml'
         status = assoc.findtext('DisorderGeneAssociationStatus/Name')
         atype = assoc.findtext('DisorderGeneAssociationType/Name')
         sym = assoc.findtext('Gene/Symbol')
-        if status == 'Assessed' and atype not in SKIP_TYPES and sym in gene_by_symbol:
+        if status == 'Assessed':
+            orpha_types[atype] += 1
+        if status == 'Assessed' and (atype or '').startswith('Disease-causing') and sym in gene_by_symbol:
             orpha_pairs.update((dnode, gene_by_symbol[sym]) for dnode in dnodes)
     el.clear()
 
 # ---------------- HPO disease-phenotype annotations
-hpoa = pd.read_csv(os.path.join(a.external, 'hpo', 'phenotype.hpoa'), sep='\t', comment='#', dtype=str)
+hpo_path = os.path.join(a.external, 'hpo', 'phenotype.hpoa')
+HPO_VERSION = next((ln.split(':', 1)[1].strip() for ln in open(hpo_path) if ln.startswith('#version')), 'unknown')
+hpoa = pd.read_csv(hpo_path, sep='\t', comment='#', dtype=str)
+n_hpo_raw = len(hpoa)
 hpoa = hpoa[(hpoa.aspect == 'P') & (hpoa.qualifier.fillna('') != 'NOT')]
+
+
+def too_rare(f):
+    if not isinstance(f, str) or not f:
+        return False                      # no frequency given -> keep
+    if f in ('HP:0040284', 'HP:0040285'):  # very rare (1-4%), excluded (0%)
+        return True
+    try:
+        if '/' in f:
+            num, den = f.split('/')
+            return int(den) > 0 and int(num) / int(den) < 0.05
+        if f.endswith('%'):
+            return float(f[:-1]) < 5
+    except ValueError:
+        return False
+    return False
+
+
+hpo_filtered = {'IEA (electronic-only)': int((hpoa.evidence == 'IEA').sum()),
+                'very rare / excluded / <5%': int(hpoa.frequency.apply(too_rare).sum())}
+hpoa = hpoa[(hpoa.evidence != 'IEA') & ~hpoa.frequency.apply(too_rare)]
 hpo_pairs = set()
 for db, hp in zip(hpoa.database_id, hpoa.hpo_id):
     pre, _, val = db.partition(':')
@@ -105,6 +147,12 @@ for db, hp in zip(hpoa.database_id, hpoa.hpo_id):
     pid = str(int(hp.split(':')[1]))
     if pid in pheno_ids:
         hpo_pairs.update((dnode, pid) for dnode in dnodes)
+
+
+if a.only == 'genes':
+    hpo_pairs = set()
+elif a.only == 'phenotypes':
+    orpha_pairs = set()
 
 
 def both_dirs(rel, disp, d, other_type, other_id):
@@ -144,7 +192,11 @@ WATCH = {'Fabry disease': FABRY, 'Gaucher disease': '9266_9265_9267_18150', 'cys
          'ATTRV122I amyloidosis': '19441', 'hereditary ATTR amyloidosis': '17132',
          'wild type ATTR amyloidosis': '18018', 'familial amyloid neuropathy': '7100',
          'chylomicron retention disease': CRD}
-lines = [f'MONDO xrefs usable (unambiguous, in PrimeKG): {len(xref2node)}',
+lines = [f'mode: --only {a.only}',
+         f'versions: HPO {HPO_VERSION} | Orphadata product6 {ORPHA_VERSION} | MONDO {MONDO_VERSION}',
+         f'Orphanet assessed association types (only Disease-causing* kept): {dict(orpha_types)}',
+         f'HPO rows {n_hpo_raw}; dropped by filter: {hpo_filtered}',
+         f'MONDO xrefs usable (unambiguous, in PrimeKG): {len(xref2node)}',
          f'Orphanet disease-gene pairs mapped: {len(orpha_pairs)}; HPO disease-phenotype pairs mapped: {len(hpo_pairs)}',
          f'edges added (both directions): {len(added)}  '
          f'[disease_protein {int((added.relation == "disease_protein").sum())}, '

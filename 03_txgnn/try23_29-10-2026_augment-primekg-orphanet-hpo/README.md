@@ -47,24 +47,28 @@ Note: our current similarity setting (`all_nodes_profile`) uses only genes + rel
 diseases to pick lookalikes. The added symptoms still change every node's learned
 representation, but they affect lookalike choice only under `all_nodes_profile_more`.
 
-## Running it locally (user's machine), then copying to Delta
-Needs Python 3 + pandas and roughly 8–10 GB RAM (kg.csv is ~1 GB).
-```bash
-# 1. get the script
-git pull   # in your local clone of sht
-# 2. get the inputs (same versions as the dry run)
-scp sshah21@login.delta.ncsa.illinois.edu:/work/hdd/bisa/sshah21/primekg/kg.csv ./primekg/
-scp -r sshah21@login.delta.ncsa.illinois.edu:/work/hdd/bisa/sshah21/external ./external
-# 3. build
-python build_augmented_kg.py --primekg ./primekg --external ./external --out ./primekg_aug
-# 4. copy the result back
-ssh sshah21@login.delta.ncsa.illinois.edu mkdir -p /work/hdd/bisa/sshah21/primekg_aug
-scp ./primekg_aug/{kg.csv,report.txt,added_edges.csv,removed_edges.csv} \
-    sshah21@login.delta.ncsa.illinois.edu:/work/hdd/bisa/sshah21/primekg_aug/
-```
-The local `report.txt` should match the dry-run numbers above.
+## Revisions after review (29-10-2026)
+Built on Delta via Slurm (CPU), not locally.
 
-## Next (on Delta, after the copy)
-Link `node.csv`/`edges.csv` from the original folder (the node set is unchanged), let TxGNN
-build `kg_directed.csv`, check the indices are unchanged, run the try18 lookalike check, then
-rerun Fabry/Gaucher/CF/TTR with the original settings and compare.
+| review point | how it's handled |
+|---|---|
+| MONDO as disease layer | ORPHA/OMIM mapped via MONDO xrefs (unambiguous only); no new nodes |
+| enrich, don't duplicate | existing disease–gene / disease–phenotype edges skipped |
+| edge attributes | filtered rather than new relation types: HPO drops IEA (electronic-only) and very rare / excluded / <5% frequency |
+| few relation types | Orphanet keeps only `Disease-causing*` (causal) associations, in PrimeKG's existing `disease_protein` type |
+| leakage | no drug–disease edges added. Fabry also holds out its parent category *lysosomal lipid storage disorder* (6521), whose migalastat link was kept out of the baseline only by luck. `verify_augmented.py` fails the chain on any blindness failure or new lookalike carrying a true drug (Gaucher → Niemann-Pick allowed as a known legitimate sibling) |
+| pipeline / versions | appended in PrimeKG's exact format (not the full PrimeKG rebuild, which would renumber every node); HPO, Orphadata and MONDO versions are written to `build_report.txt` |
+| fair evaluation | same holdouts and model config as baseline; `--only genes|phenotypes` ablation switch exists, combined graph run first |
+
+## Job chain (submitted 29-10-2026)
+1. `build.sb` → **23321609** (CPU): builds `/work/hdd/bisa/sshah21/primekg_aug/kg.csv`, links
+   the unchanged node/edge tables, and copies the report here as `build_report.txt`.
+2. `verify.sb` → **23321610** (CPU, after build): builds TxGNN's processed graph, checks every
+   node index equals the original, builds the 4 thesis splits in parallel, and runs the
+   blindness and lookalike checks. Output in `verify.out`. Exits non-zero on any problem.
+3. `train_aug.sb` × 4 (GPU, only if verify passes): **23321611** fabry, **23321612** gaucher,
+   **23321613** cf, **23321614** ttr. `txgnn_aug.py` is the try13 script, pointed at the
+   augmented graph with results in `txgnn_v3_augmented/`.
+
+Compare against the baseline runs (try11/try13) with the same seed-ensembled ranks.
+
