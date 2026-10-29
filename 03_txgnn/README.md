@@ -4,7 +4,7 @@
 chemistry at all) correctly identify the right drug for Fabry/Gaucher while being
 provably blind to the true answer during training?
 
-## Arc (22 tries, the longest debugging arc of the three projects)
+## Arc (23 tries, the longest debugging arc of the three projects)
 1. **try01-02** — old environment (`envs/txgnn`, dgl 0.9.1): two different crashes, one
    from a wrong disease-index bug (see try03), one from a DGL API version mismatch after
    trying to fix the first by upgrading dgl in-place. Motivated building a fresh,
@@ -151,3 +151,7 @@ the Gaucher reference set (now 4 drugs).
     because `W_gate` is a plain dict (not registered, not trained, not saved).
     Patched `model.py` to wrap it in `nn.ModuleDict` only for 'learn' (other configs
     unchanged); scripts assert the patch is active.
+23. **try23** — build a rare-disease-enriched PrimeKG: Orphanet gene links + HPO symptoms,
+    added only between existing nodes (indices unchanged), no drug–disease edges, plus a
+    fix for the Fabry duplicate. Dry run: +80,710 rows (CF genes 11→25, ATTRV122I symptoms
+    0→21). The user builds kg.csv locally and copies it to `/work/hdd/bisa/sshah21/primekg_aug/`.
