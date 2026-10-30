@@ -90,10 +90,23 @@ N_EPOCH = int(os.environ.get("N_EPOCH", "2"))
 # readable directly off the saved curve.
 LR = float(os.environ.get("LR", str(2e-4 / 3)))
 EVALS_PER_EPOCH = int(os.environ.get("EVALS_PER_EPOCH", "7"))
-# Validation forwards cost the same as training forwards, so frequent evaluation uses a
-# FIXED seeded subsample -- identical at every step, so the curve is comparable step to
-# step. The full val set is measured once at the selected checkpoint.
-VAL_EVAL_LINES = int(os.environ.get("VAL_EVAL_LINES", "400"))
+# Validation forwards cost the same as training forwards, so the frequent step-level
+# evaluations use ONE VARIANT PER VALIDATION COMPOUND rather than a subsample of lines.
+#
+# Why: augmentation is measured at 5.00x (fabry/gaucher/attr) and 4.92x (cf -- a few
+# compounds got fewer than 5 variants where random SMILES generation produced duplicates,
+# which also explains cf's 1,450-vs-1,427 count discrepancy). Subsampling 400 LINES would
+# therefore cover only ~80 distinct molecules, and a curve measured on 80 molecules is
+# nearly meaningless no matter how cleanly it is measured. One variant per compound instead
+# gives the MAXIMUM distinct molecules per unit of compute:
+#     cf 214 molecules | gaucher 181 | attr 72 | fabry 11
+# All are under the old 400-line budget, so no subsampling is needed for any target and the
+# step-level curve covers every validation compound.
+#
+# Augmentation exists to stop the model keying on an exact SMILES string during TRAINING;
+# for measuring generalization one representation per molecule is sufficient. The full
+# all-variants validation set is still measured at the selected and runner-up checkpoints.
+VAL_EVAL_CAP = int(os.environ.get("VAL_EVAL_CAP", "400"))
 N_DECOYS = int(os.environ.get("N_DECOYS", "500"))
 GRAD_ACCUM = 8
 VAL_FRACTION = 0.15
@@ -199,7 +212,14 @@ def train_step_level(model, tok, train_ex, val_eval_ex, n_epoch, lr, evals_per_e
     # the honest zero-shot reference point for this validation set.
     v0 = val_loss(model, tok, val_eval_ex, device)
     curve = [{"step": 0, "epoch": -1, "train_loss": None, "val_loss": v0}]
+    # Top TWO checkpoints are kept, not just the best. The runner-up gets a full
+    # all-variants validation pass at the end: if full-val disagrees with the step-level
+    # val on which of the two is better, the step-level measurement is too noisy to select
+    # on. try09's epoch-level steps differed by ~0.7 in val loss, which any reasonable
+    # validation set resolves -- but the curve INSIDE epoch 1 may be far flatter, and that
+    # is exactly where selection now happens.
     best = {"step": 0, "val": v0, "state": lora_state(model), "epoch": -1}
+    runner = {"step": None, "val": float("inf"), "state": None, "epoch": None}
     print(f"    step 0 (pre-training): val {v0:.4f}", flush=True)
 
     model.train()
@@ -227,9 +247,14 @@ def train_step_level(model, tok, train_ex, val_eval_ex, n_epoch, lr, evals_per_e
                                   "val_loss": vl})
                     flag = ""
                     if vl < best["val"]:
+                        runner = {k: best[k] for k in ("step", "val", "state", "epoch")}
                         best = {"step": gstep, "val": vl, "state": lora_state(model),
                                 "epoch": epoch}
                         flag = "  <- best"
+                    elif vl < runner["val"]:
+                        runner = {"step": gstep, "val": vl, "state": lora_state(model),
+                                  "epoch": epoch}
+                        flag = "  <- runner-up"
                     print(f"    step {gstep} (epoch {epoch}): train {tr:.4f}  "
                           f"val {vl:.4f}{flag}", flush=True)
         opt.step()
@@ -240,7 +265,10 @@ def train_step_level(model, tok, train_ex, val_eval_ex, n_epoch, lr, evals_per_e
     model.eval()
     print(f"  SELECTED step {best['step']} (epoch {best['epoch']}), val {best['val']:.4f}, "
           f"from {len(curve)} measurements", flush=True)
-    return curve, best["step"], best["val"], best["epoch"]
+    if runner["step"] is not None:
+        print(f"  runner-up: step {runner['step']} (epoch {runner['epoch']}), "
+              f"val {runner['val']:.4f}, gap {runner['val'] - best['val']:.4f}")
+    return curve, best, runner
 
 
 def digit_token_map(tok):
@@ -365,11 +393,22 @@ if __name__ == "__main__":
         train_c = [c for c in trainable if c not in vset]
         train_ex = [ex for c in train_c for ex in trainable[c]]
         val_ex = [ex for c in val_c for ex in trainable[c]]
-        val_eval_ex = (random.Random(1234).sample(val_ex, VAL_EVAL_LINES)
-                       if len(val_ex) > VAL_EVAL_LINES else list(val_ex))
+        # ONE variant per validation compound for the step-level curve -- maximum distinct
+        # molecules per unit of compute. Capped only as a safety net; no target reaches it.
+        val_eval_pairs = [(c, trainable[c][0]) for c in val_c][:VAL_EVAL_CAP]
+        val_eval_ex = [ex for _, ex in val_eval_pairs]
+        n_distinct_eval = len({c for c, _ in val_eval_pairs})
+        aug = len(val_ex) / max(1, len(val_c))
         print(f"\n=== {tag}: train {len(train_c)} compounds ({len(train_ex)} lines) | "
-              f"val {len(val_c)} compounds ({len(val_ex)} lines, {len(val_eval_ex)} per "
-              f"step-eval) | {len(keys)} scaffolds ===", flush=True)
+              f"val {len(val_c)} compounds ({len(val_ex)} lines, {aug:.2f}x augmented) | "
+              f"{len(keys)} scaffolds ===", flush=True)
+        print(f"  step-level curve measured on {len(val_eval_ex)} lines = "
+              f"{n_distinct_eval} DISTINCT molecules "
+              f"({100 * n_distinct_eval / max(1, len(val_c)):.0f}% of val compounds)",
+              flush=True)
+        if n_distinct_eval < 30:
+            print(f"  WARNING: only {n_distinct_eval} distinct validation molecules. The "
+                  f"curve will be noisy and its selected step is weak evidence.")
 
         base = AutoModelForCausalLM.from_pretrained(
             MODEL, device_map="cuda:0", dtype=torch.bfloat16)
@@ -377,18 +416,47 @@ if __name__ == "__main__":
         base.enable_input_require_grads()
         model = get_peft_model(base, LORA_CONFIG, adapter_name=tag)
 
-        curve, best_step, best_val, best_epoch = train_step_level(
+        curve, best, runner = train_step_level(
             model, tok, train_ex, val_eval_ex, N_EPOCH, LR, EVALS_PER_EPOCH)
+        best_step, best_val, best_epoch = best["step"], best["val"], best["epoch"]
+        device = next(model.parameters()).device
 
-        # try09 lost its models by never saving. Save before any scoring.
+        # Full ALL-VARIANTS validation at the selected checkpoint (model currently holds
+        # the best weights), and at the runner-up. If the full set disagrees with the
+        # step-level curve about which of the two is better, the step-level measurement is
+        # too noisy to select on -- and that has to be known, not assumed.
+        full_val_best = val_loss(model, tok, val_ex, device)
+        print(f"  full validation set ({len(val_ex)} lines) at SELECTED step "
+              f"{best_step}: {full_val_best:.4f}")
+
+        selection_check = {"agrees": None, "full_val_best": full_val_best,
+                           "full_val_runner": None, "runner_step": runner["step"]}
+        if runner["state"] is not None:
+            model.load_state_dict(runner["state"], strict=False)
+            full_val_runner = val_loss(model, tok, val_ex, device)
+            agrees = full_val_best <= full_val_runner
+            selection_check.update({"agrees": agrees, "full_val_runner": full_val_runner})
+            print(f"  full validation set at RUNNER-UP step {runner['step']}: "
+                  f"{full_val_runner:.4f}")
+            if agrees:
+                print(f"  SELECTION CHECK: full-val agrees with the step-level curve "
+                      f"(selected {full_val_best:.4f} <= runner-up {full_val_runner:.4f})")
+            else:
+                print(f"  SELECTION CHECK FAILED: full-val RANKS THE RUNNER-UP BETTER "
+                      f"({full_val_runner:.4f} < {full_val_best:.4f}). The step-level "
+                      f"curve mis-selected -- {n_distinct_eval} distinct validation "
+                      f"molecules is too few to resolve this curve. Treat this seed's "
+                      f"selected step as unreliable and widen the validation set.")
+            # Restore the selected weights before scoring, whatever the check said --
+            # selection policy stays 'lowest step-level val', and the check is diagnostic.
+            model.load_state_dict(best["state"], strict=False)
+            model.eval()
+
+        # try09 lost its models by never saving. Save the selected weights.
         adapter_path = os.path.join(out_dir, f"{tag}_adapter")
         model.save_pretrained(adapter_path, selected_adapters=[tag])
         print(f"  saved adapter -> {adapter_path}")
-
-        # Full val-set loss at the selected checkpoint, for comparability with try09's
-        # whole-val-set numbers (the curve above uses the fixed subsample).
-        full_val = val_loss(model, tok, val_ex, next(model.parameters()).device)
-        print(f"  full validation set loss at selected checkpoint: {full_val:.4f}")
+        full_val = full_val_best
 
         print(f"=== Scoring {tag}: both readouts, one forward pass each ===", flush=True)
         ref_g, ref_d = score_both(model, tok, prompt_for(template, ref_smiles), dmap)
@@ -417,6 +485,10 @@ if __name__ == "__main__":
                "n_train_lines": len(train_ex), "validation_curve": curve,
                "selected_step": best_step, "selected_epoch": best_epoch,
                "selected_val_loss": best_val, "full_val_loss_at_selected": full_val,
+               "runner_up_step": runner["step"], "runner_up_val_loss": runner["val"],
+               "selection_check": selection_check,
+               "n_val_lines": len(val_ex), "augmentation_factor": aug,
+               "n_distinct_val_molecules_in_curve": n_distinct_eval,
                "adapter_path": adapter_path,
                "reference_real": eval_set["reference"]["score"]}
         for name, refv, dvals in (("greedy", ref_g, dg), ("digit_exp", ref_d, dd)):
@@ -457,8 +529,23 @@ if __name__ == "__main__":
               f"{str(r['greedy']['beats_hard']):>8s} "
               f"{str(r['digit_exp']['beats_hard']):>8s}")
 
+    mis = [t for t, r in results.items()
+           if r["selection_check"].get("agrees") is False]
+    if mis:
+        print(f"\nSELECTION CHECK FAILED for {mis} -- full all-variants validation ranked "
+              f"the runner-up checkpoint better than the selected one. The step-level "
+              f"curve was measured on {results[mis[0]]['n_distinct_val_molecules_in_curve']} "
+              f"distinct molecules, which is too few to resolve it. Widen the validation "
+              f"set before trusting those selected steps.")
+    else:
+        print("\nselection check: full all-variants validation agreed with the step-level "
+              "curve on the top-two ordering for every seed.")
+    print(f"distinct validation molecules in the curve: "
+          f"{[r['n_distinct_val_molecules_in_curve'] for r in results.values()]} "
+          f"(augmentation {results[next(iter(results))]['augmentation_factor']:.2f}x)")
+
     steps = [r["selected_step"] for r in results.values()]
-    print(f"\nselected steps: {steps}")
+    print(f"selected steps: {steps}")
     if steps and max(steps) == 0:
         print("  WARNING: every seed selected step 0, the PRE-TRAINING checkpoint. Training")
         print("  never improved held-out loss at all, so these adapters are effectively the")
