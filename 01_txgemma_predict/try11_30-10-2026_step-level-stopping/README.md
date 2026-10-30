@@ -2,7 +2,7 @@
 
 **Date:** 30-10-2026
 **Scripts:** `step_stopping_eval.py` + `step_stopping_{cf,gaucher,attr,fabry}.sb`
-**Jobs:** see Status below.
+**Jobs:** 23332264 (CF) · 23332265 (Gaucher) · 23332266 (TTR) · 23332267 (Fabry) -- pending.
 
 ## Why this try exists
 All 4 completed try09 runs reported `best_epoch = 0`, with validation loss rising
@@ -28,11 +28,39 @@ Same behaviour (`eval_strategy="steps"` / `load_best_model_at_end` / `metric_for
 ="eval_loss"`), without rewriting the training path — which keeps the only differences from
 try09 the ones listed here.
 
-**Validation cost note:** validation forwards cost the same as training forwards, so the
-frequent step-level evaluations use a **fixed seeded 400-line subsample** (identical at
-every step, so the curve is comparable step to step). The full validation set is measured
-once at the selected checkpoint and reported separately, for comparability with try09's
-whole-set numbers.
+**Validation set design.** Validation forwards cost the same as training forwards, so the
+step-level evaluations use **one variant per validation compound** rather than a subsample
+of lines. Measured augmentation is **5.00x** (fabry/gaucher/attr) and **4.92x** (CF), so
+subsampling 400 *lines* would have covered only ~80 distinct molecules — and a curve
+measured on 80 molecules is near-meaningless however cleanly it is measured. One variant per
+compound maximises distinct molecules per unit of compute, and every target then fits under
+the old budget with no subsampling at all:
+
+| Target | distinct validation molecules in the curve |
+|---|---|
+| CF | 214 (100% of val compounds) |
+| Gaucher | 181 |
+| TTR | 72 |
+| **Fabry** | **11** — the run warns explicitly |
+
+The split was always *by compound*, so there was never post-augmentation leakage; the
+line-level subsample would simply have collapsed coverage silently. The run prints the
+distinct count and warns below 30.
+
+(Incidentally, CF's 4.92x explains the 1,450-vs-1,427 count discrepancy flagged in try08:
+48 CF compounds received fewer than 5 variants where random SMILES generation produced
+duplicates.)
+
+**Selection audit.** The loop keeps the **top two** checkpoints and runs full all-variants
+validation on both. try09's epoch-level steps differed by ~0.7 in validation loss, which any
+reasonable set resolves — but the curve *inside* epoch 1 may be far flatter, and that is
+exactly where selection now happens. If full-val ranks the runner-up better, the step-level
+curve mis-selected and the run says so (`SELECTION CHECK FAILED`), naming the distinct-molecule
+count as the likely cause.
+
+On disagreement the run still scores the **step-level-selected** checkpoint: selection policy
+stays fixed and the check stays diagnostic, rather than silently becoming the selection rule
+it was meant to audit. Both numbers go into the summary JSON.
 
 ## Kept unchanged from try09, so the runs stay comparable
 - hard negatives held out of training **by scaffold** — not just the 3 molecules, since a
@@ -90,5 +118,12 @@ any disagreement between the two columns is attributable to the readout alone �
 is identical.
 
 ## Status
-Pre-submission validation of step math, leak closure and scaffold-split integrity, then
-submitted. Job IDs recorded here once submitted.
+Submitted 30-10-2026: **23332264** (CF, 10h), **23332265** (Gaucher, 10h), **23332266**
+(TTR, 8h), **23332267** (Fabry, 6h). 3 seeds each, `LR=6.67e-5`, `N_EPOCH=2`,
+`EVALS_PER_EPOCH=7`. Results pending.
+
+Pre-submission: script compiles; split sizes measured directly (see table above); leak
+closure and scaffold-split logic are inherited **unchanged** from try09, where they were
+verified as hard negatives 3/3 present before the holdout and 0/3 after, with zero train/val
+scaffold overlap. Each run re-prints both checks in its own log, so they are confirmed per
+run rather than assumed.
