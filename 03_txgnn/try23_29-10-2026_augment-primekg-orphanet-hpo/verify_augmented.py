@@ -25,6 +25,7 @@ TARGETS = {
     'cf':      ([16250.], 16250., ['DB08820', 'DB09280', 'DB11712', 'DB15444']),
     'ttr':     ([6669., 6361., 6665., 6008., 4803., 5528.], 6669., ['DB11644']),
 }
+SIM = os.environ.get('SIM', 'all_nodes_profile')
 ALLOWED_PROTO_HITS = {('gaucher', 'Niemann-Pick disease')}  # legitimate sibling, try14/15
 
 
@@ -57,9 +58,14 @@ def check_target(name):
               (((tr.x_type == 'disease') & tr.x_idx.isin(holdout)) | ((tr.y_type == 'disease') & tr.y_idx.isin(holdout)))]
     msgs, ok = [], len(leak) == 0
     msgs.append(f'[{name}] blind: {ok} ({len(leak)} held-out drug-disease rows in train)')
-    # prototype lookalikes (all_nodes_profile = disease_disease + proteins), as in try18
+    # prototype lookalikes, as in try18. SIM picks the signature, matching txgnn/model.py:
+    #   all_nodes_profile      -> disease_disease + rev_disease_protein
+    #   all_nodes_profile_more -> + disease_phenotype_positive + rev_exposure_disease
+    rels = ['disease_disease', 'rev_disease_protein']
+    if SIM == 'all_nodes_profile_more':
+        rels += ['disease_phenotype_positive', 'rev_exposure_disease']
     dis = tr[tr.x_type == 'disease']
-    e = dis[(dis.relation == 'disease_disease') | (dis.y_type == 'gene/protein')]
+    e = dis[dis.relation.isin(rels)]
     prof = {i: set(zip(g.y_type, g.y_idx)) for i, g in e.groupby('x_idx')}
     ind = tr[tr.relation == 'rev_indication']
     key_drugs = {k: set(g.y_id.astype(str)) for k, g in ind.groupby('x_idx')}
@@ -86,6 +92,7 @@ if __name__ == '__main__':
     if not index_check():
         print('FAIL: node indices changed vs original PrimeKG -- results would not be comparable')
         sys.exit(1)
+    print(f'lookalike signature checked: {SIM}', flush=True)
     with Pool(len(TARGETS)) as pool:
         results = pool.map(check_target, list(TARGETS))
     for _, msg in results:

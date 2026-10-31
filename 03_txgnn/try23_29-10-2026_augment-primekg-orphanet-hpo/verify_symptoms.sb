@@ -1,0 +1,8 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-cpu
+#SBATCH -p cpu
+#SBATCH -n 1 -c 8 --mem=200g -t 04:00:00
+#SBATCH -J txgnn_aug_verify_sym
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgnn/%x_%j.out
+set -eo pipefail
+SIM=all_nodes_profile_more /work/hdd/bisa/sshah21/envs/txgnn2/bin/python -u /projects/bisa/sshah21/library/03_txgnn/try23_29-10-2026_augment-primekg-orphanet-hpo/verify_augmented.py | tee /projects/bisa/sshah21/library/03_txgnn/try23_29-10-2026_augment-primekg-orphanet-hpo/verify_symptoms.out
