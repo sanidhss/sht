@@ -66,10 +66,3 @@ teaching a narrow heuristic that happens to work for lysosomal enzymes with no
 evidence it extrapolates to a disease with a genuinely different receptor profile,
 which is the actual thing this thesis needs. CF/TTR running under the *unmodified*
 general pipeline (01) is the real test of extrapolation breadth.
-
-## For a fresh Claude Code session
-Each project has its own dedicated, local-only (not pushed to GitHub) Claude Code
-session home with a `CLAUDE.md` briefing: `$PROJ/txgemma_predict`, `txgemma_chat`,
-`txgnn`, `setup`. Start there for that project's context; this file plus each
-project's own README remain the authoritative, versioned record of what actually
-happened.
