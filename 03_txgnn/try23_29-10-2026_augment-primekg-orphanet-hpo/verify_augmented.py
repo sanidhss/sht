@@ -29,8 +29,11 @@ ALLOWED_PROTO_HITS = {('gaucher', 'Niemann-Pick disease')}  # legitimate sibling
 
 
 def index_check():
-    from txgnn import TxData
-    TxData(data_folder_path=AUG)  # first use builds AUG/kg_directed.csv
+    # TxData() alone does not build the processed graph (that happens inside
+    # prepare_split), so call the library's own preprocessing step directly.
+    from txgnn.utils import preprocess_kg
+    if not os.path.exists(os.path.join(AUG, 'kg_directed.csv')):
+        preprocess_kg(AUG, 'random')
     o =pd.read_csv(os.path.join(ORIG, 'kg_directed.csv'), dtype={'x_id': str, 'y_id': str}, low_memory=False)
     n = pd.read_csv(os.path.join(AUG, 'kg_directed.csv'), dtype={'x_id': str, 'y_id': str}, low_memory=False)
     def idmap(df):

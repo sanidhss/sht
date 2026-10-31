@@ -72,3 +72,8 @@ Built on Delta via Slurm (CPU), not locally.
 
 Compare against the baseline runs (try11/try13) with the same seed-ensembled ranks.
 
+
+## 30-10-2026
+- Build 23321609 done (73,192 rows added with filters; see build_report.txt).
+- Verify 23321610 FAILED: TxData() does not create kg_directed.csv (prepare_split does). Fixed by calling preprocess_kg directly. GPU jobs were auto-cancelled by the failed dependency.
+- Resubmitted: verify 23366266, then fabry 23366267, gaucher 23366268, cf 23366269, ttr 23366270.
