@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA100x4
+#SBATCH --gpus=1 -n 1 -c 16 --mem=128g -t 04:00:00
+#SBATCH -J zeroshot_familiarity
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgemma_lora_orphan/%x_%j.out
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+# Inference only on the UNMODIFIED base model -- no LoRA, no gradients, no optimizer, no
+# checkpoint selection. Reads each target's eval_set.json and train_blind.jsonl (the
+# latter only to build the decoy pool; none of it is trained on) and writes to
+# zero_shot_familiarity/ only. Touches no per-target directory and no adapter.
+#
+# Budget: one base-model load (try08 measured ~1h34m for FOUR loads plus ~1,240
+# generations, so a single load is well under 15 min) + 4 targets x 504 molecules =
+# 2,016 generate calls at <2s each (~1.1h) + 2,016 single-forward SMILES NLLs, which are
+# cheaper than the generates (~20 min) + ~10 min of RDKit decoy construction, now
+# memoized across targets. Roughly 2h expected; 4h reserved for margin.
+#
+# All four targets in ONE job on purpose: nothing is trained, so the try05
+# scope-coupling bug has no surface here, and reusing a single base-model load across
+# four targets is the entire reason this is cheap. TARGETS can still narrow it.
+
+/work/hdd/bisa/sshah21/envs/txgemma/bin/python \
+  /projects/bisa/sshah21/library/01_txgemma_predict/try13_01-11-2026_zero-shot-familiarity/zero_shot_familiarity.py
