@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-cpu
+#SBATCH -p cpu
+#SBATCH -n 1 -c 8 --mem=32g -t 03:00:00
+#SBATCH -J try14_A_prep
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgemma_lora_orphan/%x_%j.out
+
+# JOB A (CPU): fetch data for the 6 new targets, report pool sizes, decide routing.
+# Writes routing.json, which jobs B and C read. No GPU: this is all HTTP + RDKit.
+#
+# 3h because ChEMBL/BindingDB/PubChem pagination for KIT (~4.5k ChEMBL records, ~6.2k
+# PubChem rows) is slow and rate-limited, and MaxMin diversity capping on a few thousand
+# fingerprints is a few minutes more. Nothing here is parallel.
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+# TARGETS_TO_RUN is set EXPLICITLY, per the standing rule from the try05 scope-coupling
+# bug: without it, prep processes every target in the shared TARGETS dict and a later
+# run reading coverage_report.json cannot tell this run's targets from a previous one's.
+export TARGETS_TO_RUN=cel,mastocytosis,nsiad,tyrosinemia,mh,pku
+
+python /projects/bisa/sshah21/library/01_txgemma_predict/try14_10-11-2026_new-target-set/prep_orphan_target_data.py
+
+# The non-LLM baseline is pure CPU and depends only on the prepped data, so it runs here
+# rather than occupying a GPU task. It is the number job B's results have to clear.
+python /projects/bisa/sshah21/library/01_txgemma_predict/try14_10-11-2026_new-target-set/descriptor_baseline_predict.py
