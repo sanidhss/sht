@@ -78,3 +78,27 @@ Compare against the baseline runs (try11/try13) with the same seed-ensembled ran
 - Verify 23321610 FAILED: TxData() does not create kg_directed.csv (prepare_split does). Fixed by calling preprocess_kg directly. GPU jobs were auto-cancelled by the failed dependency.
 - Resubmitted: verify 23366266, then fabry 23366267, gaucher 23366268, cf 23366269, ttr 23366270.
 - Added symptom-aware lookalike variant (sim_measure=all_nodes_profile_more), decided before any results: verify_symptoms 23366581, then 4 runs (txgnn_augsym_*), results in txgnn_v3_augmented_symptoms/.
+
+## Result (all jobs completed by 09-11-2026)
+Both verify runs PASSED (indices unchanged, all splits blind, no new lookalike leaks;
+Gaucher→Niemann-Pick allowed). Seed-ensembled rank of the right drug, out of 7,957
+(lower = better):
+
+| target (drug) | original PrimeKG (try11/13) | augmented | augmented + symptom lookalikes |
+|---|---|---|---|
+| Fabry (migalastat) | 16 *(leaked)* | **3,170** | **486** |
+| Gaucher (miglustat) | 17 | 21 | 24 |
+| CF (4 CFTR modulators) | 1,208–1,652 | 997–1,356 | **742–918** |
+| TTR @ ATTRV122I (tafamidis) | 974 | 1,094 | **340** |
+| TTR @ wild-type ATTR (tafamidis) | 980 | 548 | **138** |
+| TTR @ hereditary ATTR (tafamidis) | 4,308 | 4,945 | **592** |
+
+- Fabry: with the duplicate removed and its parent held out, migalastat falls to 3,170. This
+  confirms the old 16 came from the leak. Matching lookalikes on symptoms brings it to 486
+  (top ~6%).
+- Gaucher is unchanged (~20): still driven by the Niemann-Pick sibling, which is present in
+  all versions.
+- CF and TTR improve only when symptoms are used to pick lookalikes. Inotersen (a real ATTR
+  drug, unlabelled in PrimeKG) also rises to 206–256.
+- Not yet checked for these runs: disease-specificity (try17-style). The ranks could still
+  partly reflect category-level behaviour.
