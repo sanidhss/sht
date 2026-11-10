@@ -14,6 +14,13 @@
 | 17835 | 5368.0 | lymphocytic hypereosinophilic syndrome | 1 | 0 |
 | 100059 | 46.0 | hypereosinophilia of undetermined significance | 1 | 0 |
 
+Causal/associated genes of eval and held-out nodes (augmented graph):
+
+- chronic eosinophilic leukemia (15687): 2 genes: FIP1L1, PDGFRA
+- chronic eosinophilic leukemia, not otherwise specified (6147): 2 genes: FIP1L1, PDGFRA
+- hypereosinophilic syndrome (15691): 12 genes: ETNK1, FIP1L1, GATA3, IL5, IL6ST, JAK1, MYD88, PDGFRA, RAG2, SHARPIN, TLR2, TLR4
+- idiopathic hypereosinophilic syndrome (11895): 2 genes: FIP1L1, PDGFRA
+
 | ref drug | DrugBank id | answer edge (indication/off-label) to eval node(s) |
 |---|---|---|
 | Imatinib | DB00619 | 15687, 6147 |
@@ -22,8 +29,8 @@ Other diseases carrying a reference-drug answer, by similarity to the eval node 
 
 | disease | raw id | drug | cos | MONDO neighbour of eval node | held out |
 |---|---|---|---|---|---|
-| hypereosinophilic syndrome | 15691 | Imatinib | 0.246 | False | False |
-| idiopathic hypereosinophilic syndrome | 11895 | Imatinib | 0.130 | False | False |
+| hypereosinophilic syndrome | 15691 | Imatinib | 0.246 | False | True |
+| idiopathic hypereosinophilic syndrome | 11895 | Imatinib | 0.130 | False | True |
 | gastrointestinal stromal tumor | 11719 | Imatinib | 0.070 | False | False |
 | mastocytosis | 7950 | Imatinib | 0.000 | False | False |
 | blast phase chronic myelogenous leukemia, BCR-ABL1 positive | 6115 | Imatinib | 0.000 | False | False |
@@ -51,6 +58,15 @@ Other diseases carrying a reference-drug answer, by similarity to the eval node 
 | 15558 | 3476.0 | isolated bone marrow mastocytosis | 2 | 0 |
 | 15559 | 3477.0 | lymphoadenopathic mastocytosis with eosinophilia | 1 | 0 |
 
+Causal/associated genes of eval and held-out nodes (augmented graph):
+
+- systemic mastocytosis (16586): 2 genes: HMOX1, KIT
+- mastocytosis (7950): 3 genes: FOXF1, HMOX1, KIT
+- aggressive systemic mastocytosis (20333): 7 genes: ASXL1, CBL, HMOX1, KIT, RUNX1, SRSF2, TET2
+- mast cell leukemia (20334): 1 genes: KIT
+- aleukemic mast cell leukemia (15561): 1 genes: KIT
+- obsolete classic mast cell leukemia (15560): 1 genes: KIT
+
 | ref drug | DrugBank id | answer edge (indication/off-label) to eval node(s) |
 |---|---|---|
 | Midostaurin | DB06595 | 16586 |
@@ -60,11 +76,11 @@ Other diseases carrying a reference-drug answer, by similarity to the eval node 
 
 | disease | raw id | drug | cos | MONDO neighbour of eval node | held out |
 |---|---|---|---|---|---|
-| aleukemic mast cell leukemia | 15561 | Midostaurin | 0.500 | False | False |
-| obsolete classic mast cell leukemia | 15560 | Midostaurin | 0.354 | False | False |
-| mast cell leukemia | 20334 | Midostaurin | 0.177 | True | False |
-| mastocytosis | 7950 | Midostaurin | 0.120 | True | False |
-| aggressive systemic mastocytosis | 20333 | Midostaurin | 0.088 | True | False |
+| aleukemic mast cell leukemia | 15561 | Midostaurin | 0.500 | False | True |
+| obsolete classic mast cell leukemia | 15560 | Midostaurin | 0.354 | False | True |
+| mast cell leukemia | 20334 | Midostaurin | 0.177 | True | True |
+| mastocytosis | 7950 | Midostaurin | 0.120 | True | True |
+| aggressive systemic mastocytosis | 20333 | Midostaurin | 0.088 | True | True |
 | gastrointestinal stromal tumor | 11719 | Avapritinib | 0.043 | False | False |
 | acute myeloid leukemia with NPM1 somatic mutations | 18437 | Midostaurin | 0.027 | False | False |
 | acute myeloid leukemia with inv3(p21;q26.2) or t(3;3)(p21;q26.2) | 18435 | Midostaurin | 0.027 | False | False |
@@ -89,6 +105,11 @@ Other diseases carrying a reference-drug answer, by similarity to the eval node 
 | 10356 | 437.0 | nephrogenic syndrome of inappropriate antidiuresis | 34 | 11 |
 | 6802 | 14321.0 | inappropriate ADH syndrome | 23 | 0 |
 
+Causal/associated genes of eval and held-out nodes (augmented graph):
+
+- nephrogenic syndrome of inappropriate antidiuresis (10356): 1 genes: AVPR2
+- inappropriate ADH syndrome (6802): 0 genes: 
+
 | ref drug | DrugBank id | answer edge (indication/off-label) to eval node(s) |
 |---|---|---|
 | Tolvaptan | DB06212 | 10356 |
@@ -98,7 +119,7 @@ Other diseases carrying a reference-drug answer, by similarity to the eval node 
 | disease | raw id | drug | cos | MONDO neighbour of eval node | held out |
 |---|---|---|---|---|---|
 | polycystic kidney disease | 33281_8263_33004_13131_9889_4691_20642 | Tolvaptan | 0.025 | False | False |
-| inappropriate ADH syndrome | 6802 | Tolvaptan | 0.000 | False | False |
+| inappropriate ADH syndrome | 6802 | Tolvaptan | 0.000 | False | True |
 
 ## pku: phenylketonuria
 
@@ -113,6 +134,11 @@ Other diseases carrying a reference-drug answer, by similarity to the eval node 
 | 17389 | 5027.0 | tetrahydrobiopterin-responsive hyperphenylalaninemia/phenylketonuria | 2 | 0 |
 | 19335 | 6581.0 | mild hyperphenylalaninemia | 1 | 0 |
 
+Causal/associated genes of eval and held-out nodes (augmented graph):
+
+- phenylketonuria (9861_19259_16366_19258): 2 genes: PAH, QDPR
+- disorder of phenylalanine metabolism (17306): 2 genes: PAH, QDPR
+
 | ref drug | DrugBank id | answer edge (indication/off-label) to eval node(s) |
 |---|---|---|
 | Sapropterin | DB00360 | 9861_19259_16366_19258 |
@@ -121,7 +147,7 @@ Other diseases carrying a reference-drug answer, by similarity to the eval node 
 
 | disease | raw id | drug | cos | MONDO neighbour of eval node | held out |
 |---|---|---|---|---|---|
-| disorder of phenylalanine metabolism | 17306 | Sapropterin | 0.086 | True | False |
+| disorder of phenylalanine metabolism | 17306 | Sapropterin | 0.086 | True | True |
 
 ## mh: malignant hyperthermia
 
@@ -132,19 +158,23 @@ Other diseases carrying a reference-drug answer, by similarity to the eval node 
 | 18493 | 5912.0 | malignant hyperthermia of anesthesia | 36 | 22 |
 | 18752 | 6125.0 | exercise-induced malignant hyperthermia | 42 | 30 |
 
+Causal/associated genes of eval and held-out nodes (augmented graph):
+
+- malignant hyperthermia of anesthesia (18493): 2 genes: CACNA1S, RYR1
+- exercise-induced malignant hyperthermia (18752): 2 genes: CACNA1S, RYR1
+
 | ref drug | DrugBank id | answer edge (indication/off-label) to eval node(s) |
 |---|---|---|
-| Dantrolene | DB01219 | 18493 |
+| Dantrolene | DB01219 | 18493, 18752 |
 
 Other diseases carrying a reference-drug answer, by similarity to the eval node (4-type profile, full graph):
 
 | disease | raw id | drug | cos | MONDO neighbour of eval node | held out |
 |---|---|---|---|---|---|
-| exercise-induced malignant hyperthermia | 18752 | Dantrolene | 0.168 | False | False |
-| neuroleptic malignant syndrome | 19790 | Dantrolene | 0.112 | False | False |
-| muscular dystrophy | 11486_12279_19950_20121_23595_18281 | Dantrolene | 0.000 | False | False |
-| Duchenne muscular dystrophy | 10679 | Dantrolene | 0.000 | False | False |
-| Becker muscular dystrophy | 10311 | Dantrolene | 0.000 | False | False |
+| neuroleptic malignant syndrome | 19790 | Dantrolene | 0.203 | False | False |
+| Becker muscular dystrophy | 10311 | Dantrolene | 0.082 | False | False |
+| Duchenne muscular dystrophy | 10679 | Dantrolene | 0.047 | False | False |
+| muscular dystrophy | 11486_12279_19950_20121_23595_18281 | Dantrolene | 0.019 | False | False |
 
 ## tyr1: tyrosinemia type 1
 
@@ -152,6 +182,10 @@ Other diseases carrying a reference-drug answer, by similarity to the eval node 
 |---|---|---|---|---|
 | 10162_10160_10161_4741 | 311.0 | tyrosinemia | 77 | 65 |
 | 18083 | 5587.0 | transient tyrosinemia of the newborn | 1 | 0 |
+
+Causal/associated genes of eval and held-out nodes (augmented graph):
+
+- tyrosinemia (10162_10160_10161_4741): 3 genes: FAH, HPD, TAT
 
 | ref drug | DrugBank id | answer edge (indication/off-label) to eval node(s) |
 |---|---|---|
@@ -165,44 +199,48 @@ Other diseases carrying a reference-drug answer, by similarity to the eval node 
 # Step 2: blindness and prototype audit (real disease_eval split)
 
 
-## cel: holdout [3577.0, 13744.0] = ['chronic eosinophilic leukemia, not otherwise specified', 'chronic eosinophilic leukemia']
+## cel: holdout [1502.0, 3577.0, 3582.0, 13744.0] = ['chronic eosinophilic leukemia', 'chronic eosinophilic leukemia, not otherwise specified', 'hypereosinophilic syndrome', 'idiopathic hypereosinophilic syndrome']
 - blind: **True** (0 held-out drug-disease rows in train)
-- eval chronic eosinophilic leukemia (3577.0): profile size 3, best cos 0.2462
-  - lookalike 'hypereosinophilic syndrome' (idx 3582.0) cos=0.2462  <-- LEAK: carries ['Imatinib']
+- eval chronic eosinophilic leukemia (3577.0): profile size 3, best cos 0.1333  **UNRELIABLE (best cos < 0.2)**
   - lookalike 'monocytic leukemia' (idx 15262.0) cos=0.1333
-  - lookalike 'idiopathic hypereosinophilic syndrome' (idx 1502.0) cos=0.1299  <-- LEAK: carries ['Imatinib']
-- eval chronic eosinophilic leukemia, not otherwise specified (13744.0): profile size 4, best cos 0.2132
-  - lookalike 'hypereosinophilic syndrome' (idx 3582.0) cos=0.2132  <-- LEAK: carries ['Imatinib']
+  - lookalike 'myeloid leukemia' (idx 6226.0) cos=0.1184
+  - lookalike 'congestive heart failure' (idx 12648.0) cos=0.1077
+- eval chronic eosinophilic leukemia, not otherwise specified (13744.0): profile size 4, best cos 0.1732  **UNRELIABLE (best cos < 0.2)**
   - lookalike 'monocytic leukemia' (idx 15262.0) cos=0.1732
-  - lookalike 'idiopathic hypereosinophilic syndrome' (idx 1502.0) cos=0.1125  <-- LEAK: carries ['Imatinib']
+  - lookalike 'myeloid leukemia' (idx 6226.0) cos=0.1025
+  - lookalike 'congestive heart failure' (idx 12648.0) cos=0.0933
 
-## sm: holdout [4301.0] = ['systemic mastocytosis']
+## sm: holdout [3478.0, 3479.0, 4301.0, 7351.0, 7352.0, 15301.0] = ['obsolete classic mast cell leukemia', 'mastocytosis', 'mast cell leukemia', 'aggressive systemic mastocytosis', 'aleukemic mast cell leukemia', 'systemic mastocytosis']
 - blind: **True** (0 held-out drug-disease rows in train)
-- eval systemic mastocytosis (4301.0): profile size 8, best cos 0.5
-  - lookalike 'aleukemic mast cell leukemia' (idx 3479.0) cos=0.5  <-- LEAK: carries ['Midostaurin']
+- eval systemic mastocytosis (4301.0): profile size 8, best cos 0.1768  **UNRELIABLE (best cos < 0.2)**
   - lookalike 'gastroparesis (disease)' (idx 14288.0) cos=0.1768
-  - lookalike 'mast cell leukemia' (idx 7352.0) cos=0.1768  <-- LEAK: carries ['Midostaurin']
+  - lookalike 'acute myeloid leukemia with abnormal bone marrow eosinophils inv(16)(p13q22) or t(16;16)(p13;q22)' (idx 7334.0) cos=0.1443
+  - lookalike 'seminoma' (idx 9950.0) cos=0.0913
 
-## nsiad: holdout [437.0] = ['nephrogenic syndrome of inappropriate antidiuresis']
+## nsiad: holdout [437.0, 14321.0] = ['inappropriate ADH syndrome', 'nephrogenic syndrome of inappropriate antidiuresis']
 - blind: **True** (0 held-out drug-disease rows in train)
 - eval nephrogenic syndrome of inappropriate antidiuresis (437.0): profile size 13, best cos 0.1754  **UNRELIABLE (best cos < 0.2)**
   - lookalike 'Bartter disease' (idx 1464.0) cos=0.1754
   - lookalike 'cholera' (idx 3641.0) cos=0.1545
   - lookalike 'pituitary deficiency due to empty sella turcica syndrome' (idx 6803.0) cos=0.124
 
-## pku: holdout [16951.0] = ['phenylketonuria']
+## pku: holdout [4948.0, 16951.0] = ['disorder of phenylalanine metabolism', 'phenylketonuria']
 - blind: **True** (0 held-out drug-disease rows in train)
 - eval phenylketonuria (16951.0): profile size 90, best cos 0.1784  **UNRELIABLE (best cos < 0.2)**
   - lookalike 'argininosuccinic aciduria' (idx 16029.0) cos=0.1784
   - lookalike 'hyperargininemia' (idx 16028.0) cos=0.1677
   - lookalike 'Lennox-Gastaut syndrome' (idx 4253.0) cos=0.1675
 
-## mh: holdout [5912.0] = ['malignant hyperthermia of anesthesia']
+## mh: holdout [5912.0, 6125.0] = ['exercise-induced malignant hyperthermia', 'malignant hyperthermia of anesthesia']
 - blind: **True** (0 held-out drug-disease rows in train)
-- eval malignant hyperthermia of anesthesia (5912.0): profile size 27, best cos 0.1675  **UNRELIABLE (best cos < 0.2)**
-  - lookalike 'exercise-induced malignant hyperthermia' (idx 6125.0) cos=0.1675  <-- LEAK: carries ['Dantrolene']
+- eval malignant hyperthermia of anesthesia (5912.0): profile size 27, best cos 0.134  **UNRELIABLE (best cos < 0.2)**
   - lookalike 'tetanus' (idx 13107.0) cos=0.134
   - lookalike 'anxiety' (idx 1512.0) cos=0.1111
+  - lookalike 'cholera' (idx 3641.0) cos=0.1072
+- eval exercise-induced malignant hyperthermia (6125.0): profile size 33, best cos 0.2438
+  - lookalike 'hyperammonemia due to N-acetylglutamate synthase deficiency' (idx 16530.0) cos=0.2438
+  - lookalike 'cholera' (idx 3641.0) cos=0.2263
+  - lookalike 'citrullinemia' (idx 16181.0) cos=0.1797
 
 ## tyr1: holdout [311.0] = ['tyrosinemia']
 - blind: **True** (0 held-out drug-disease rows in train)
@@ -212,15 +250,4 @@ Other diseases carrying a reference-drug answer, by similarity to the eval node 
   - lookalike 'scrub typhus' (idx 6601.0) cos=0.2136
 
 # Problems
-- sm: 'aleukemic mast cell leukemia' (15561) carries Midostaurin, cos=0.500, MONDO neighbour=False, but is NOT held out
-- sm: 'mast cell leukemia' (20334) carries Midostaurin, cos=0.177, MONDO neighbour=True, but is NOT held out
-- sm: 'mastocytosis' (7950) carries Midostaurin, cos=0.120, MONDO neighbour=True, but is NOT held out
-- sm: 'aggressive systemic mastocytosis' (20333) carries Midostaurin, cos=0.088, MONDO neighbour=True, but is NOT held out
-- pku: 'disorder of phenylalanine metabolism' (17306) carries Sapropterin, cos=0.086, MONDO neighbour=True, but is NOT held out
-- cel: prototype 'hypereosinophilic syndrome' carries ['DB00619']
-- cel: prototype 'idiopathic hypereosinophilic syndrome' carries ['DB00619']
-- cel: prototype 'hypereosinophilic syndrome' carries ['DB00619']
-- cel: prototype 'idiopathic hypereosinophilic syndrome' carries ['DB00619']
-- sm: prototype 'aleukemic mast cell leukemia' carries ['DB06595']
-- sm: prototype 'mast cell leukemia' carries ['DB06595']
-- mh: prototype 'exercise-induced malignant hyperthermia' carries ['DB01219']
+none

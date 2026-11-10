@@ -1,7 +1,7 @@
 {
  "cel": {
   "label": "chronic eosinophilic leukemia",
-  "ok": false,
+  "ok": true,
   "eval": {
    "3577.0": {
     "raw_id": "15687",
@@ -13,12 +13,16 @@
    }
   },
   "holdout": [
+   1502.0,
    3577.0,
+   3582.0,
    13744.0
   ],
   "holdout_names": {
+   "3577.0": "chronic eosinophilic leukemia",
    "13744.0": "chronic eosinophilic leukemia, not otherwise specified",
-   "3577.0": "chronic eosinophilic leukemia"
+   "3582.0": "hypereosinophilic syndrome",
+   "1502.0": "idiopathic hypereosinophilic syndrome"
   },
   "ref": {
    "DB00619": "Imatinib"
@@ -31,16 +35,8 @@
   "proto": {
    "3577.0": {
     "profile_size": 3,
-    "best_cos": 0.2462,
+    "best_cos": 0.1333,
     "keys": [
-     {
-      "idx": 3582.0,
-      "raw_id": "15691",
-      "cos": 0.2462,
-      "ref_hits": [
-       "DB00619"
-      ]
-     },
      {
       "idx": 15262.0,
       "raw_id": "7896_4600_4614_875",
@@ -48,27 +44,23 @@
       "ref_hits": []
      },
      {
-      "idx": 1502.0,
-      "raw_id": "11895",
-      "cos": 0.1299,
-      "ref_hits": [
-       "DB00619"
-      ]
+      "idx": 6226.0,
+      "raw_id": "18874_4643",
+      "cos": 0.1184,
+      "ref_hits": []
+     },
+     {
+      "idx": 12648.0,
+      "raw_id": "5009",
+      "cos": 0.1077,
+      "ref_hits": []
      }
     ]
    },
    "13744.0": {
     "profile_size": 4,
-    "best_cos": 0.2132,
+    "best_cos": 0.1732,
     "keys": [
-     {
-      "idx": 3582.0,
-      "raw_id": "15691",
-      "cos": 0.2132,
-      "ref_hits": [
-       "DB00619"
-      ]
-     },
      {
       "idx": 15262.0,
       "raw_id": "7896_4600_4614_875",
@@ -76,12 +68,16 @@
       "ref_hits": []
      },
      {
-      "idx": 1502.0,
-      "raw_id": "11895",
-      "cos": 0.1125,
-      "ref_hits": [
-       "DB00619"
-      ]
+      "idx": 6226.0,
+      "raw_id": "18874_4643",
+      "cos": 0.1025,
+      "ref_hits": []
+     },
+     {
+      "idx": 12648.0,
+      "raw_id": "5009",
+      "cos": 0.0933,
+      "ref_hits": []
      }
     ]
    }
@@ -89,7 +85,7 @@
  },
  "sm": {
   "label": "systemic mastocytosis",
-  "ok": false,
+  "ok": true,
   "eval": {
    "4301.0": {
     "raw_id": "16586",
@@ -97,9 +93,19 @@
    }
   },
   "holdout": [
-   4301.0
+   3478.0,
+   3479.0,
+   4301.0,
+   7351.0,
+   7352.0,
+   15301.0
   ],
   "holdout_names": {
+   "3478.0": "obsolete classic mast cell leukemia",
+   "15301.0": "mastocytosis",
+   "7352.0": "mast cell leukemia",
+   "7351.0": "aggressive systemic mastocytosis",
+   "3479.0": "aleukemic mast cell leukemia",
    "4301.0": "systemic mastocytosis"
   },
   "ref": {
@@ -114,16 +120,8 @@
   "proto": {
    "4301.0": {
     "profile_size": 8,
-    "best_cos": 0.5,
+    "best_cos": 0.1768,
     "keys": [
-     {
-      "idx": 3479.0,
-      "raw_id": "15561",
-      "cos": 0.5,
-      "ref_hits": [
-       "DB06595"
-      ]
-     },
      {
       "idx": 14288.0,
       "raw_id": "6769",
@@ -131,12 +129,16 @@
       "ref_hits": []
      },
      {
-      "idx": 7352.0,
-      "raw_id": "20334",
-      "cos": 0.1768,
-      "ref_hits": [
-       "DB06595"
-      ]
+      "idx": 7334.0,
+      "raw_id": "20316",
+      "cos": 0.1443,
+      "ref_hits": []
+     },
+     {
+      "idx": 9950.0,
+      "raw_id": "3001",
+      "cos": 0.0913,
+      "ref_hits": []
      }
     ]
    }
@@ -152,9 +154,11 @@
    }
   },
   "holdout": [
-   437.0
+   437.0,
+   14321.0
   ],
   "holdout_names": {
+   "14321.0": "inappropriate ADH syndrome",
    "437.0": "nephrogenic syndrome of inappropriate antidiuresis"
   },
   "ref": {
@@ -194,7 +198,7 @@
  },
  "pku": {
   "label": "phenylketonuria",
-  "ok": false,
+  "ok": true,
   "eval": {
    "16951.0": {
     "raw_id": "9861_19259_16366_19258",
@@ -202,9 +206,11 @@
    }
   },
   "holdout": [
+   4948.0,
    16951.0
   ],
   "holdout_names": {
+   "4948.0": "disorder of phenylalanine metabolism",
    "16951.0": "phenylketonuria"
   },
   "ref": {
@@ -244,17 +250,23 @@
  },
  "mh": {
   "label": "malignant hyperthermia",
-  "ok": false,
+  "ok": true,
   "eval": {
    "5912.0": {
     "raw_id": "18493",
     "name": "malignant hyperthermia of anesthesia"
+   },
+   "6125.0": {
+    "raw_id": "18752",
+    "name": "exercise-induced malignant hyperthermia"
    }
   },
   "holdout": [
-   5912.0
+   5912.0,
+   6125.0
   ],
   "holdout_names": {
+   "6125.0": "exercise-induced malignant hyperthermia",
    "5912.0": "malignant hyperthermia of anesthesia"
   },
   "ref": {
@@ -268,16 +280,8 @@
   "proto": {
    "5912.0": {
     "profile_size": 27,
-    "best_cos": 0.1675,
+    "best_cos": 0.134,
     "keys": [
-     {
-      "idx": 6125.0,
-      "raw_id": "18752",
-      "cos": 0.1675,
-      "ref_hits": [
-       "DB01219"
-      ]
-     },
      {
       "idx": 13107.0,
       "raw_id": "5526",
@@ -288,6 +292,36 @@
       "idx": 1512.0,
       "raw_id": "11918",
       "cos": 0.1111,
+      "ref_hits": []
+     },
+     {
+      "idx": 3641.0,
+      "raw_id": "15766",
+      "cos": 0.1072,
+      "ref_hits": []
+     }
+    ]
+   },
+   "6125.0": {
+    "profile_size": 33,
+    "best_cos": 0.2438,
+    "keys": [
+     {
+      "idx": 16530.0,
+      "raw_id": "9377",
+      "cos": 0.2438,
+      "ref_hits": []
+     },
+     {
+      "idx": 3641.0,
+      "raw_id": "15766",
+      "cos": 0.2263,
+      "ref_hits": []
+     },
+     {
+      "idx": 16181.0,
+      "raw_id": "8988_16603_15991",
+      "cos": 0.1797,
       "ref_hits": []
      }
     ]
