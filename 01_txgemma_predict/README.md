@@ -135,28 +135,96 @@ Related: validation loss at its best (2.26–2.97) is still far above training l
 same epoch (~1.0), so the model overfits *within* epoch 0. Epoch-level early stopping may
 be too coarse — mid-epoch evaluation, lower LR, or fewer steps are the next things to try.
 
+### 7. THE CAUSE, found 04-11-2026 (try13): success tracks the *base model's* prior, not the training data
+
+This is the most important finding in the project so far, and it reframes everything
+above it. All four targets were scored on the **untouched base model, zero-shot** — no
+LoRA, no gradients, nothing learned:
+
+| target | drug | SMILES NLL %ile (familiarity) | zero-shot digit %ile | zero-shot beats_hard | fine-tuned digit %ile |
+|---|---|---|---|---|---|
+| gaucher | ambroxol | **5.4** | **18.4** | **True** | 0.2 / 0.2 / 0.8 |
+| fabry | migalastat | **0.2** | 15.2 | False | 44.0 / 48.6 / 48.0 |
+| cf | lumacaftor | 42.4 | 79.2 | False | 9.6 / 34.8 / 42.0 |
+| attr | tafamidis | **70.2** | 74.6 | False | 57.0 / 50.8 / 84.8 |
+
+**Ambroxol is the only drug in this project that beats its hard negatives before any
+training exists** — the single `True` in that column, and the only target that passes.
+Gaucher's result is therefore a **pre-existing base-model prior that LoRA sharpened**
+(18.4 → 0.2 percentile), not knowledge built from 1,208 training compounds.
+
+**TTR's cause:** tafamidis is the only reference drug that is both unfamiliar to the base
+model (NLL 70.2 percentile — the only one above the decoy median, raw NLL 11.30 vs
+ambroxol's 7.04) and has no zero-shot signal (74.6 percentile). There is no prior to
+sharpen. Fine-tuning does produce real learning — greedy 75.2 → 26.3 mean, digit_exp 74.6
+→ 64.2 mean — but from a cold start, 476 compounds whose nearest relative is a
+0.34-Tanimoto stranger only reach chance.
+
+**Why four structural hypotheses all died.** Each asked "what does TTR's *training data*
+lack that Gaucher's has," and each died because Gaucher has *less* of it (label range,
+scaffold presence, nearest-neighbour support, compound count — see
+`try11_30-10-2026_step-level-stopping/README.md`). They died because the question was
+wrong. The knowledge Gaucher uses is not in its fine-tuning data; it is in pretraining.
+Nothing measurable inside the fine-tuning data could have separated these two targets.
+
+**Fabry is training damage, not a knowledge gap.** Migalastat is the *most* familiar
+molecule of the four by a wide margin (NLL 2.83 vs decoy median 10.14 — 499 of 500 decoys
+are less familiar) and scores 15.2 percentile zero-shot. Every fine-tuned Fabry number is
+worse: 44–49 (try12) and 83 (try11). **Zero-shot is the best result Fabry has ever
+produced.** The diastereomer collapse is also a base-model property, not a data-volume
+artifact: zero-shot greedy returns **331 for migalastat and all three diastereomers**,
+identically, with real labels 196/925/754/993. This retires the long-recorded root cause
+("only 89 real training compounds") permanently.
+
+**Familiarity alone is not the predictor** — migalastat is the most familiar and fails.
+What sorts all four targets correctly is **zero-shot hard-negative discrimination**:
+whether the base model can already tell the drug from its closest real analogs.
+
+**The usable finding for rare diseases generally:** whether this pipeline will work on a
+given orphan drug is measurable up front, **in one GPU-hour, with no training.** Score
+the drug and its analogs zero-shot and check whether it separates. That is a screening
+criterion applicable to any orphan target, and it predicted all four outcomes here —
+which is a far more transferable result than a per-disease post-mortem.
+
+### 8. CF and Fabry, final numbers (try11 job 23400943, try12 job 23400706)
+- **CF: 2/3 seeds beat hard negatives on both readouts, but enrichment is 9.6 / 34.8 /
+  42.0 (spread 32.4).** Real learning happened — zero-shot was 79.2 — but the spread is
+  too wide to call a pass. The selection check **FAILED for 2 of 3 seeds** (full
+  all-variants validation ranked the runner-up checkpoint better), so even CF's 228–254
+  distinct validation molecules are too few to resolve its curve. Val minimum is at step
+  204–312, always inside epoch 0.
+- **Fabry: cross-validation fixed the instrument and the answer is a clean negative.**
+  6-fold scaffold CV put the optimum at 0.420 epochs with a clean interior minimum; 3
+  seeds at that point give digit_exp 44.0 / 48.6 / 48.0 — **spread collapsed from 38.4 to
+  4.6.** The try11 inconclusiveness *was* the 11-molecule checking set. What the
+  trustworthy measurement says is chance.
+
 ### Next steps, in order
-1. **Re-run CF through the try09 harness with digit-logit scoring**, 3 seeds, `N_EPOCH=2`.
-   try09's leak-free numbers were greedy-decoded too, so they need recomputing — and CF is
-   still the only target with a plausible genuine pass. **Save the adapters this time**:
-   try09 never called `save_pretrained`, which is why try10 had to run on the older
-   over-trained weights. (epoch 0 is established as optimal across 4
-   runs, so 5 epochs is wasted compute; this makes 3 seeds fit in budget).
-2. **Re-run Gaucher and Fabry through the try09 harness.** Both of their recorded verdicts
-   are void. Fabry's needs care: the scaffold holdout costs 20% of only 89 compounds.
-3. **Attack output degeneracy** — the one problem none of the eval fixes touched.
-4. **Then** revisit regularization and whether 5x SMILES augmentation still helps. Both
-   were deferred deliberately so the measurement could be fixed first; augmentation's
-   supporting evidence came from the broken test.
-5. `NEXT_PHASE_diverse_structural_training.md` remains **pending re-justification**, now on
-   a third count: the failures it was designed to address were substantially eval and
-   over-training artifacts.
+1. **Re-frame the thesis claim around what try13 found.** The defensible result is not
+   "TxGemma-predict ranks chaperones for orphan targets" — it is "whether it can is
+   predictable before training, from a one-hour zero-shot measurement, and we have the
+   criterion that sorted four targets correctly." That is a positive, transferable finding
+   about rare diseases generally, which was the stated requirement.
+2. **Decide whether fine-tuning should be kept at all for targets with a strong prior.**
+   Fabry is strictly better zero-shot, and Gaucher's gain (18.4 → 0.2) is the only case
+   where LoRA clearly helps. Worth testing zero-shot against fine-tuned on the full
+   3,417-drug approved library (`/work/hdd/bisa/sshah21/results/reasoning_screen/chembl_approved.json`,
+   built by the chat track) rather than 500 decoys.
+3. **CF needs a wider validation set before its numbers mean anything** — its selection
+   check failed on 2 of 3 seeds. Cross-validation, as done for Fabry in try12, is the
+   known fix.
+4. `NEXT_PHASE_diverse_structural_training.md` is now **superseded, not just pending**:
+   it was designed to fix structural discrimination in the fine-tuning data, and try13
+   shows the fine-tuning data is not where the discrimination comes from.
 
 ### Caveats on earlier numbers
 - Gaucher's analog real labels are 791/**679**/839, not the 791/791/839 quoted in places
   (those are *predicted*). Analog #2's real 679 is more potent than ambroxol's real 685.
 - CF's training file yields **1,450** distinct canonical compounds vs `coverage_report.json`'s
   1,427, so CF's compound count is slightly soft.
+- The recorded Fabry root cause ("only 89 real training compounds") is **wrong** — see
+  section 7. The diastereomer collapse exists in the base model with zero training
+  compounds involved, and try07 showed Gaucher passes at 493.
 - `beat_easy` is computed, printed, saved and never used in the original script's verdict —
   which is how Gaucher printed "trust this target adapter for broader DrugBank-wide
   screening" while scoring worse than metformin. try09 sidesteps this by reporting
