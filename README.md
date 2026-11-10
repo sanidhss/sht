@@ -1,3 +1,24 @@
+# Overview
+
+A senior honors thesis project testing whether current AI models can nominate small
+molecules that stabilise misfolded proteins in orphan diseases — and, more importantly,
+whether their predictions hold up when checked against structure and energetics.
+
+## Why three models
+
+Three architectures are run independently, chosen because they draw on **disjoint**
+evidence:
+
+| arm | sees | never sees |
+|---|---|---|
+| knowledge-graph link prediction | disease/gene/drug relationships | any chemical structure |
+| numeric drug-target scoring | molecular structure + measured bioactivity | the graph |
+| reasoning / free-text screening | natural-language mechanism descriptions | either of the above |
+
+Because the inputs don't overlap, agreement between arms is meaningful and disagreement
+is diagnostic. Each arm is held blind to the validated reference compound for the target
+being evaluated.
+
 # Library index
 
 Organized by project, then by try (one folder per distinct attempt, named
