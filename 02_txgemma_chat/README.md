@@ -57,6 +57,18 @@ downstream pipeline by design)?
    try06 redesign is sound in distribution — the failure is specifically
    retrieval-over-derivation under distribution shift. Caveat: n=1 per arm, and the
    verbatim in-distribution match is itself a memorization signal.
+11. **try11** — tests whether condition *phrasing register* causes the fabry-only result
+   (jobs 23226288 + 23226442, both COMPLETED 30-10-2026). **The causal result of this
+   track:** holding disease, weights and library fixed and changing only the register of
+   fabry's condition, migalastat goes from rank 11/3420 (paraphrased physicochemical,
+   155x) to **2974/3420 (pharmacological register, 0.6x — worse than random)**. A ~270x
+   swing from phrasing alone. But physicochemical phrasing is **necessary, not
+   sufficient**: rewriting gaucher/cf/attr as property specs moved attr 1774 -> 291
+   (5.9x), cf 993 -> 640, and gaucher not at all (1143 -> 1219, yes-set 47% of the
+   library). And the RDKit descriptor baseline beats the model on **all four** folds by
+   2x-48x (attr: 6/88 vs 291/3420), which rules out "the condition is uninformative" for
+   the worst fold — the information was there and the model did not use it.
+
 10. **try10** — multi-disease validation of the stage-2 screen (job 23114793, COMPLETED
    24-10-2026). Runs try08's exact protocol on all four folds. **try08 does not
    generalize:** fabry rank 4/3420 (427x enrichment) but gaucher 1143, cf 993, attr 1774
@@ -165,6 +177,16 @@ What this track can honestly claim, and what it cannot:
   i.e. at or near chance. try08's headline number was a single-fold result and does not
   generalize. A three-line RDKit descriptor filter lands within ~2.7x of the model on
   fabry, the one fold that works.
+- **Phrasing register is causally dominant (try11).** Changing only the register of
+  fabry's condition -- pharmacological instead of physicochemical, same disease, same
+  weights, same library -- moves migalastat from rank 11/3420 to 2974/3420 (worse than
+  random). Physicochemical phrasing is necessary but not sufficient: three
+  physicochemical rewrites of the failing folds still miss recall@100.
+- **A deterministic RDKit property filter beats the model on all four folds** by 2x-48x
+  (try11). Where the model appears to work it is approximating a property calculator,
+  more expensively and less accurately. For attr, descriptors reach rank 6/88 from the
+  same condition text on which the model manages 291/3420 -- so the condition carried the
+  information and the model failed to use it.
 - **The dominant variable is condition authoring, not model capability.** The screen
   converts a *property specification* into a ranking. fabry's condition is one
   ("compact, highly polar, ring position able to carry positive charge"). gaucher's is
