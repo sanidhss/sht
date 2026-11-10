@@ -26,30 +26,41 @@ DISEASES = {
         name_regex=r'eosinophilic leuk|hypereosinophil',
         eval={'15687': 'chronic eosinophilic leukemia',
               '6147': 'chronic eosinophilic leukemia, not otherwise specified'},
-        holdout_extra={},
+        # both HES nodes carry imatinib and have CEL's exact causal genes (FIP1L1, PDGFRA):
+        # FIP1L1-PDGFRA "HES" is the same entity (WHO: myeloid neoplasm with PDGFRA
+        # rearrangement). First audit: both were CEL's lookalikes and carried imatinib.
+        holdout_extra={'15691': 'hypereosinophilic syndrome',
+                       '11895': 'idiopathic hypereosinophilic syndrome'},
         ref=['Imatinib']),
     'sm': dict(
         label='systemic mastocytosis',
         name_regex=r'mastocytosis|mast cell leuk',
         eval={'16586': 'systemic mastocytosis'},
-        holdout_extra={},
+        # parent + subtypes carrying midostaurin (mast cell leukemia is an advanced-SM subtype)
+        holdout_extra={'7950': 'mastocytosis', '20333': 'aggressive systemic mastocytosis',
+                       '20334': 'mast cell leukemia', '15561': 'aleukemic mast cell leukemia',
+                       '15560': 'obsolete classic mast cell leukemia'},
         ref=['Midostaurin', 'Avapritinib']),
     'nsiad': dict(
         label='NSIAD',
         name_regex=r'antidiure|antidiuretic|ADH syndrome',
         eval={'10356': 'nephrogenic syndrome of inappropriate antidiuresis'},
-        holdout_extra={},
+        # name-level near-relative carrying tolvaptan (cos 0, not a MONDO neighbour): held out to be safe
+        holdout_extra={'6802': 'inappropriate ADH syndrome'},
         ref=['Tolvaptan']),
     'pku': dict(
         label='phenylketonuria',
         name_regex=r'phenylketon|hyperphenylalanin|phenylalanine metab',
         eval={'9861_19259_16366_19258': 'phenylketonuria'},
-        holdout_extra={},
+        holdout_extra={'17306': 'disorder of phenylalanine metabolism'},   # parent, carries sapropterin
         ref=['Sapropterin']),
     'mh': dict(
         label='malignant hyperthermia',
         name_regex=r'malignant hyperthermia',
-        eval={'18493': 'malignant hyperthermia of anesthesia'},
+        # two MH nodes both carry dantrolene; neither is "the" MH node, so both are held out
+        # and both are scored (no silent pick). 18493 is reported as primary.
+        eval={'18493': 'malignant hyperthermia of anesthesia',
+              '18752': 'exercise-induced malignant hyperthermia'},
         holdout_extra={},
         ref=['Dantrolene']),
     'tyr1': dict(

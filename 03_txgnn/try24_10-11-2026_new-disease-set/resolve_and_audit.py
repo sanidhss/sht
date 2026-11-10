@@ -60,6 +60,9 @@ def step1(kd, nodes):
     dd = u[u.relation == 'disease_disease']
     dd_nb = dd.groupby('x_id').y_id.apply(set).to_dict()
     prof = full_profiles(u)
+    gp = u[(u.x_type == 'disease') & (u.relation == 'disease_protein')]
+    genes = gp.groupby('x_id').y_id.apply(set).to_dict()
+    gname = dict(nodes[nodes.node_type == 'gene/protein'][['node_id', 'node_name']].values)
 
     rep, resolved, problems = ['# try24 resolution report\n'], {}, []
     for key in ORDER:
@@ -74,10 +77,14 @@ def step1(kd, nodes):
             if rid not in set(m.node_id) or dname.get(rid) != expect or rid not in dis_idx:
                 problems.append(f'{key}: eval node {rid} ({expect!r}) not resolved (name in graph: {dname.get(rid)!r})')
                 ok = False
-        for rid in cfg['holdout_extra']:
-            if rid not in dis_idx:
-                problems.append(f'{key}: holdout node {rid} not in graph')
+        for rid, expect in cfg['holdout_extra'].items():
+            if rid not in dis_idx or dname.get(rid) != expect:
+                problems.append(f'{key}: holdout node {rid} ({expect!r}) not resolved (name in graph: {dname.get(rid)!r})')
                 ok = False
+        rep.append('\nCausal/associated genes of eval and held-out nodes (augmented graph):\n')
+        for rid in list(cfg['eval']) + list(cfg['holdout_extra']):
+            g = sorted(gname.get(x, x) for x in genes.get(rid, set()))
+            rep.append(f'- {dname.get(rid)} ({rid}): {len(g)} genes: {", ".join(g[:30])}{" ..." if len(g) > 30 else ""}')
         # reference drugs
         refs, evaluable_refs = {}, {}
         rep.append('\n| ref drug | DrugBank id | answer edge (indication/off-label) to eval node(s) |\n|---|---|---|')

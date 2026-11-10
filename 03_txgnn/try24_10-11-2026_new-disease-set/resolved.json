@@ -1,0 +1,347 @@
+{
+ "cel": {
+  "label": "chronic eosinophilic leukemia",
+  "ok": false,
+  "eval": {
+   "3577.0": {
+    "raw_id": "15687",
+    "name": "chronic eosinophilic leukemia"
+   },
+   "13744.0": {
+    "raw_id": "6147",
+    "name": "chronic eosinophilic leukemia, not otherwise specified"
+   }
+  },
+  "holdout": [
+   3577.0,
+   13744.0
+  ],
+  "holdout_names": {
+   "13744.0": "chronic eosinophilic leukemia, not otherwise specified",
+   "3577.0": "chronic eosinophilic leukemia"
+  },
+  "ref": {
+   "DB00619": "Imatinib"
+  },
+  "evaluable_ref": {
+   "DB00619": "Imatinib"
+  },
+  "primary": "DB00619",
+  "blind_check_passed": true,
+  "proto": {
+   "3577.0": {
+    "profile_size": 3,
+    "best_cos": 0.2462,
+    "keys": [
+     {
+      "idx": 3582.0,
+      "raw_id": "15691",
+      "cos": 0.2462,
+      "ref_hits": [
+       "DB00619"
+      ]
+     },
+     {
+      "idx": 15262.0,
+      "raw_id": "7896_4600_4614_875",
+      "cos": 0.1333,
+      "ref_hits": []
+     },
+     {
+      "idx": 1502.0,
+      "raw_id": "11895",
+      "cos": 0.1299,
+      "ref_hits": [
+       "DB00619"
+      ]
+     }
+    ]
+   },
+   "13744.0": {
+    "profile_size": 4,
+    "best_cos": 0.2132,
+    "keys": [
+     {
+      "idx": 3582.0,
+      "raw_id": "15691",
+      "cos": 0.2132,
+      "ref_hits": [
+       "DB00619"
+      ]
+     },
+     {
+      "idx": 15262.0,
+      "raw_id": "7896_4600_4614_875",
+      "cos": 0.1732,
+      "ref_hits": []
+     },
+     {
+      "idx": 1502.0,
+      "raw_id": "11895",
+      "cos": 0.1125,
+      "ref_hits": [
+       "DB00619"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "sm": {
+  "label": "systemic mastocytosis",
+  "ok": false,
+  "eval": {
+   "4301.0": {
+    "raw_id": "16586",
+    "name": "systemic mastocytosis"
+   }
+  },
+  "holdout": [
+   4301.0
+  ],
+  "holdout_names": {
+   "4301.0": "systemic mastocytosis"
+  },
+  "ref": {
+   "DB06595": "Midostaurin",
+   "DB15233": "Avapritinib"
+  },
+  "evaluable_ref": {
+   "DB06595": "Midostaurin"
+  },
+  "primary": "DB06595",
+  "blind_check_passed": true,
+  "proto": {
+   "4301.0": {
+    "profile_size": 8,
+    "best_cos": 0.5,
+    "keys": [
+     {
+      "idx": 3479.0,
+      "raw_id": "15561",
+      "cos": 0.5,
+      "ref_hits": [
+       "DB06595"
+      ]
+     },
+     {
+      "idx": 14288.0,
+      "raw_id": "6769",
+      "cos": 0.1768,
+      "ref_hits": []
+     },
+     {
+      "idx": 7352.0,
+      "raw_id": "20334",
+      "cos": 0.1768,
+      "ref_hits": [
+       "DB06595"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "nsiad": {
+  "label": "NSIAD",
+  "ok": true,
+  "eval": {
+   "437.0": {
+    "raw_id": "10356",
+    "name": "nephrogenic syndrome of inappropriate antidiuresis"
+   }
+  },
+  "holdout": [
+   437.0
+  ],
+  "holdout_names": {
+   "437.0": "nephrogenic syndrome of inappropriate antidiuresis"
+  },
+  "ref": {
+   "DB06212": "Tolvaptan"
+  },
+  "evaluable_ref": {
+   "DB06212": "Tolvaptan"
+  },
+  "primary": "DB06212",
+  "blind_check_passed": true,
+  "proto": {
+   "437.0": {
+    "profile_size": 13,
+    "best_cos": 0.1754,
+    "keys": [
+     {
+      "idx": 1464.0,
+      "raw_id": "11822_100344_9424_909_10503_11242_15231",
+      "cos": 0.1754,
+      "ref_hits": []
+     },
+     {
+      "idx": 3641.0,
+      "raw_id": "15766",
+      "cos": 0.1545,
+      "ref_hits": []
+     },
+     {
+      "idx": 6803.0,
+      "raw_id": "19617",
+      "cos": 0.124,
+      "ref_hits": []
+     }
+    ]
+   }
+  }
+ },
+ "pku": {
+  "label": "phenylketonuria",
+  "ok": false,
+  "eval": {
+   "16951.0": {
+    "raw_id": "9861_19259_16366_19258",
+    "name": "phenylketonuria"
+   }
+  },
+  "holdout": [
+   16951.0
+  ],
+  "holdout_names": {
+   "16951.0": "phenylketonuria"
+  },
+  "ref": {
+   "DB00360": "Sapropterin"
+  },
+  "evaluable_ref": {
+   "DB00360": "Sapropterin"
+  },
+  "primary": "DB00360",
+  "blind_check_passed": true,
+  "proto": {
+   "16951.0": {
+    "profile_size": 90,
+    "best_cos": 0.1784,
+    "keys": [
+     {
+      "idx": 16029.0,
+      "raw_id": "8815",
+      "cos": 0.1784,
+      "ref_hits": []
+     },
+     {
+      "idx": 16028.0,
+      "raw_id": "8814",
+      "cos": 0.1677,
+      "ref_hits": []
+     },
+     {
+      "idx": 4253.0,
+      "raw_id": "16532",
+      "cos": 0.1675,
+      "ref_hits": []
+     }
+    ]
+   }
+  }
+ },
+ "mh": {
+  "label": "malignant hyperthermia",
+  "ok": false,
+  "eval": {
+   "5912.0": {
+    "raw_id": "18493",
+    "name": "malignant hyperthermia of anesthesia"
+   }
+  },
+  "holdout": [
+   5912.0
+  ],
+  "holdout_names": {
+   "5912.0": "malignant hyperthermia of anesthesia"
+  },
+  "ref": {
+   "DB01219": "Dantrolene"
+  },
+  "evaluable_ref": {
+   "DB01219": "Dantrolene"
+  },
+  "primary": "DB01219",
+  "blind_check_passed": true,
+  "proto": {
+   "5912.0": {
+    "profile_size": 27,
+    "best_cos": 0.1675,
+    "keys": [
+     {
+      "idx": 6125.0,
+      "raw_id": "18752",
+      "cos": 0.1675,
+      "ref_hits": [
+       "DB01219"
+      ]
+     },
+     {
+      "idx": 13107.0,
+      "raw_id": "5526",
+      "cos": 0.134,
+      "ref_hits": []
+     },
+     {
+      "idx": 1512.0,
+      "raw_id": "11918",
+      "cos": 0.1111,
+      "ref_hits": []
+     }
+    ]
+   }
+  }
+ },
+ "tyr1": {
+  "label": "tyrosinemia type 1",
+  "ok": true,
+  "eval": {
+   "311.0": {
+    "raw_id": "10162_10160_10161_4741",
+    "name": "tyrosinemia"
+   }
+  },
+  "holdout": [
+   311.0
+  ],
+  "holdout_names": {
+   "311.0": "tyrosinemia"
+  },
+  "ref": {
+   "DB00348": "Nitisinone"
+  },
+  "evaluable_ref": {
+   "DB00348": "Nitisinone"
+  },
+  "primary": "DB00348",
+  "blind_check_passed": true,
+  "proto": {
+   "311.0": {
+    "profile_size": 74,
+    "best_cos": 0.2289,
+    "keys": [
+     {
+      "idx": 9996.0,
+      "raw_id": "30105_18116",
+      "cos": 0.2289,
+      "ref_hits": []
+     },
+     {
+      "idx": 16029.0,
+      "raw_id": "8815",
+      "cos": 0.227,
+      "ref_hits": []
+     },
+     {
+      "idx": 6601.0,
+      "raw_id": "19365",
+      "cos": 0.2136,
+      "ref_hits": []
+     }
+    ]
+   }
+  }
+ }
+}
