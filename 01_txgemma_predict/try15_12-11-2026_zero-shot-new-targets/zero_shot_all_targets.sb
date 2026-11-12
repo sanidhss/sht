@@ -1,0 +1,40 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA100x4
+#SBATCH --gpus=1 -n 1 -c 16 --mem=128g -t 06:00:00
+#SBATCH -J try15_zeroshot_8target
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgemma_lora_orphan/%x_%j.out
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+# Inference only on the UNMODIFIED base model -- no LoRA, no gradients, no optimizer,
+# no checkpoint selection, no adapter loaded at any point. Reads each target's
+# eval_set.json and train_blind.jsonl (the latter ONLY to build the decoy pool; not a
+# single line of it is trained on) and writes to zero_shot_8target/ alone. It touches
+# no per-target directory, no adapter, and does not overwrite try13's output.
+#
+# WHY THIS RE-RUNS THE ORIGINAL FOUR as well as the four new targets:
+# build_decoys() builds the 500-decoy field from every OTHER target in ALL_TARGETS, so
+# that list defines the measuring stick, not just the work list. try13 scored the
+# original four against a FOUR-target decoy pool. try14's fine-tuned runs used all
+# EIGHT. Scoring cel zero-shot against try13's pool would compare it to its own
+# fine-tuned number using a different ruler. Running all eight here puts every target --
+# old and new, zero-shot and fine-tuned -- on one yardstick for the first time.
+# Re-scoring the original four is therefore not redundant work; it is what makes the
+# table comparable, and any large shift from try13 is itself a finding.
+#
+# TARGETS is set explicitly below even though it equals the full list. Leaving it unset
+# would work, but the try05 scope-coupling bug came from relying on an implicit default,
+# and the convention since then is that the target list is always stated out loud.
+export TARGETS=gaucher,cf,fabry,attr,cel,mastocytosis,nsiad,tyrosinemia
+export N_DECOYS=500
+
+# Budget: try13 did 4 targets in 1h00m wall including one base-model load. This is 8
+# targets, and the new ones have longer prompts (PDGFRA 780 and KIT 720 tokens vs
+# GBA1 501), so scoring time roughly doubles plus a margin: ~2h30m expected. 6h
+# reserved -- the job is cheap to over-reserve and expensive to lose at 3h59m.
+
+/work/hdd/bisa/sshah21/envs/txgemma/bin/python \
+  /projects/bisa/sshah21/library/01_txgemma_predict/try15_12-11-2026_zero-shot-new-targets/zero_shot_all_targets.py
