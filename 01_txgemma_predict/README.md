@@ -217,6 +217,94 @@ which is a far more transferable result than a per-disease post-mortem.
    it was designed to fix structural discrimination in the fine-tuning data, and try13
    shows the fine-tuning data is not where the discrimination comes from.
 
+### 9. New targets vs the original four (try14, partial — 12-11-2026)
+
+Two of try14's four runnable targets have finished (`cel`, `tyrosinemia`). The same job
+also ran the rebuilt RDKit descriptor baseline over **all eight** targets, so for the
+first time the original four have a non-LLM comparison in identical units.
+
+**Enrichment percentile, digit_exp readout, mean over 3 seeds (lower = better, 50 = chance):**
+
+| target | try | n_train | model | kNN | ridge | best baseline | model wins? |
+|---|---|---|---|---|---|---|---|
+| gaucher | 11 | ~1010 | **0.4** | 21.6 | 65.6 | 21.6 | **yes, decisively** |
+| cf | 11 | ~1190 | 28.8 | 52.6 | 29.4 | 29.4 | tie (28.8 vs 29.4) |
+| fabry | 11 | 60 | 35.2 | 26.4 | 97.0 | 26.4 | no |
+| attr | 11 | ~390 | 64.2 | 31.0 | 42.8 | 31.0 | no |
+| cel | 14 | ~1260 | 20.6 | **5.8** | 16.6 | 5.8 | no |
+| tyrosinemia | 14 | ~135 | 35.3 | 26.8 | 45.2 | 26.8 | no |
+
+**The new targets did not perform worse than the old ones.** cel's 20.6 is the
+second-best enrichment in the project, better than CF, Fabry and TTR. What changed is
+that the baseline is now in the table, and against it the model wins once — Gaucher,
+which try13 showed is a base-model prior LoRA sharpens rather than something learned
+from the training data. Everything else is a loss or a tie. **The original four were
+already losing to a Tanimoto k-NN; nobody had measured it.**
+
+**More data did not help.** cel has the most training compounds of any target in the
+project (~1,260, above Gaucher's ~1,010) and lands 50x worse than Gaucher on enrichment.
+This is consistent with try07's downsampling result and with try13: data volume is not
+the lever.
+
+#### The hard-negative test does not mean the same thing on both sets
+
+Gaucher and CF pass `beats_hard` 3/3; both try14 targets fail 0/3. That gap is not a
+performance difference. Reading the eval sets shows the test is constructed differently
+because the targets are different, in two ways.
+
+**1. The original four's hard negatives are genuinely distinct molecules. Three of
+try14's are the reference drug.** Hard negatives are the top-3 Tanimoto neighbours of
+the reference with no identity check, and similarity to a salt, tautomer or
+stereo-unannotated copy is ~1.0:
+
+| set | target | hard negatives are |
+|---|---|---|
+| original | gaucher | 3 unrelated brominated scaffolds |
+| original | cf | 3 distinct thiazole/pyridine analogs |
+| original | fabry | 3 true diastereomers of migalastat |
+| original | attr | 3 real xanthone analogs |
+| try14 | cel | **imatinib mesylate** (CHEMBL1642 — the reference plus a counterion) + 2 real analogs |
+| try14 | tyrosinemia | **both enol tautomers of nitisinone** + 1 real analog |
+| try14 | mastocytosis | **staurosporine twice** (with and without stereo annotation, identical 14.7 nM label) + 1 stereoisomer |
+
+ChEMBL lists salt and tautomer forms as separate molecule entries with their own
+activity records. Deduplication is by canonical SMILES, which does not merge them. The
+original four's reference drugs happen to appear once each; imatinib and nitisinone do
+not, because they have far larger medicinal-chemistry literatures.
+
+**2. On the original four the drug is the most potent molecule in its neighbourhood. On
+the new oncology targets it is not — by design.**
+
+```
+original:  fabry   migalastat  40.4 nM  vs  390000 / 45000 / 920000 nM   clean
+           attr    tafamidis    839 nM  vs   13000 / 10000 /  12000 nM   clean
+           gaucher ambroxol   10979 nM  vs   50000 / 10000 / 100000 nM   one near-tie
+           cf      lumacaftor  1293 nM  vs    5385 /  1294 /   3990 nM   one exact tie
+
+try14:     mastocytosis midostaurin 57.2 nM  vs  14.7 / 14.7 / 0.2 nM    ALL MORE POTENT
+           nsiad        tolvaptan    3.4 nM  vs  1200 /  8.0 / 3.0 nM    one inversion
+```
+
+Midostaurin is the approved drug for selectivity and ADME, not raw KIT potency;
+staurosporine is the more potent pan-kinase inhibitor and is undruggable for exactly
+that reason. **A correct model must fail mastocytosis's `beats_hard`.**
+
+This is the structural point, and it limits the thesis claim: the hard-negative test as
+designed only poses a well-formed question for diseases where potency *is* the whole
+story — chaperones and stabilisers, i.e. the original four. For oncology kinase
+inhibitors, "rank the drug above its close analogs" is the wrong question, because the
+drug was never selected for being the best binder.
+
+#### What got better
+
+The step-selection audit passed **6/6 seeds** on try14 against **4/6** in try11 (CF
+failed 2 of 3, TTR 1 of 3). The new targets have more validation molecules, so the
+stopping point is better determined. CF's instability is CF's, not the method's.
+
+Greedy's failure mode is also now unambiguous: on cel it produced 54–57 distinct values
+across 500 decoys (~89% collapse) against digit_exp's 239–253, with a cross-seed spread
+of 47.6 vs 4.6. Report digit_exp.
+
 ### Caveats on earlier numbers
 - Gaucher's analog real labels are 791/**679**/839, not the 791/791/839 quoted in places
   (those are *predicted*). Analog #2's real 679 is more potent than ambroxol's real 685.
