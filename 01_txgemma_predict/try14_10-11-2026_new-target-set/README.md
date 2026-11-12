@@ -175,8 +175,112 @@ have more public binding data than Fabry does is itself a finding.
 - Partitions and accounts confirmed against `sinfo` / `sacctmgr`: `cpu` + `bisa-delta-cpu`,
   `gpuA100x4` + `bisa-delta-gpu`.
 
-## Result
+## Result (partial — 2 of 4 targets done, 12-11-2026)
 
-Pending. Fill in from `/work/hdd/bisa/sshah21/results/txgemma_lora_orphan/try14_new_targets/SUMMARY.md`
-once job C runs, and state plainly for each target whether it cleared the non-LLM baseline
-— that is the bar, not 50th percentile.
+Job A completed 10-11 01:03. `tyrosinemia` finished 11-11 19:04 (2h05), `cel` finished
+12-11 01:31 (7h55). `mastocytosis` and `nsiad` are still queued behind GPU priority;
+job C has not run, so there is no `results.csv` yet. Numbers below are read directly
+from each target's `step_stopping_summary.json`.
+
+All four targets routed to **stepstop**; the crossval path went unused this try.
+
+### Enrichment percentile vs 500 decoys (lower = better; 50 = chance)
+
+| target | readout | seed 0 | seed 1 | seed 2 | mean | baseline kNN | baseline ridge | cleared baseline? |
+|---|---|---|---|---|---|---|---|---|
+| cel | digit_exp | 21.6 | 22.4 | 17.8 | **20.6** | **5.8** | 16.6 | **no** |
+| cel | greedy | 59.2 | 11.6 | 17.0 | 29.3 | — | — | no |
+| tyrosinemia | digit_exp | 8.8 | 39.6 | 57.4 | **35.3** | **26.8** | 45.2 | **no** |
+| tyrosinemia | greedy | 36.8 | 32.2 | 43.0 | 37.3 | — | — | no |
+
+**Both finished targets lose to the non-LLM baseline.** That is the bar the user set,
+and the fine-tune did not clear it on either. The Tanimoto k-NN baseline — five nearest
+training compounds weighted by fingerprint similarity, no neural network — puts imatinib
+at the 5.8th percentile of the decoy field against the fine-tuned model's 20.6.
+
+`beats_hard` is 0/3 seeds on every target and every readout. See the next section for
+why that number should not be reported as a result.
+
+### The hard-negative test is broken on 3 of the 4 new targets
+
+This was found by reading the eval sets directly rather than trusting the flag, and it
+is the most important thing in this try. Two distinct defects, both in hard-negative
+*selection*, which picks the top-3 Tanimoto neighbours of the reference drug out of the
+pool with no identity or potency check.
+
+**Defect 1 — the "hard negative" is the reference drug.** Tanimoto similarity to a
+salt, a tautomer, or a stereo-unannotated copy of a molecule is ~1.0, so the picker
+selects the reference drug itself written a different way:
+
+| target | hard negative | what it actually is |
+|---|---|---|
+| cel | `CS(=O)(=O)O.Cc1ccc(NC(=O)...` CHEMBL1642 "imatinib mesylate" | imatinib + a methanesulfonate counterion — the same drug, 6886 nM vs imatinib's 84.6 nM, an 81x gap that is assay variation, not chemistry |
+| tyrosinemia | `O=C1CCCC(O)=C1C(=O)...` and `O=C1CCCC(=O)C1=C(O)...` | the two enol tautomers of nitisinone — nitisinone is a triketone that exists as the enol; 85 nM vs 37 nM |
+| mastocytosis | `CN[C@@H]1C[C@H]2O[C@@](C)...` and `CNC1CC2OC(C)(C1OC)...` | staurosporine with and without stereo annotation — one compound, both carrying the identical 14.7 nM label |
+
+So 2 of tyrosinemia's 3 hard negatives are nitisinone, and 1 of cel's 3 is imatinib. The
+test asks the model to rank a molecule above itself, with the "right answer" set by which
+assay happened to be recorded.
+
+**Defect 2 — the hard negative is genuinely more potent than the drug.** The test assumes
+the reference drug is the most potent member of its structural neighbourhood. For
+mastocytosis it is not:
+
+```
+mastocytosis  ref midostaurin 57.2 nM  ->  hard negatives 14.7, 14.7, 0.2 nM
+```
+
+All three are more potent than midostaurin. Midostaurin is the approved drug because of
+selectivity and ADME, not raw KIT potency — staurosporine is a more potent pan-kinase
+inhibitor and is undruggable for exactly that reason. **A correct model must fail
+mastocytosis's `beats_hard`.** nsiad has a milder version: its third hard negative is
+3.0 nM against tolvaptan's 3.4 nM, a tie inside assay noise.
+
+Checked against the four original targets for comparison:
+
+```
+gaucher   ref 10979 nM  hard  50000 / 10000 / 100000   (one near-tie)
+cf        ref  1293 nM  hard   5385 /  1294 /   3990   (one exact tie)
+fabry     ref  40.4 nM  hard 390000 / 45000 / 920000   (clean)
+attr      ref   839 nM  hard  13000 / 10000 /  12000   (clean)
+```
+
+The original four were never this badly posed — the flaw existed but did not bite, because
+their analogs happened to be weaker. It is not a try14 regression; try14 is just the first
+set of targets that exposed it. **Any published `beats_hard` number for cel, tyrosinemia
+or mastocytosis is meaningless.** The enrichment percentiles are unaffected — they are
+measured against the 500-decoy field, not against these three molecules.
+
+Fix for the next try, not applied here (the remaining two array tasks are already queued
+against the eval sets job A wrote, and changing them now would make the four targets
+non-comparable): in `prep_orphan_target_data.py`, reject a hard-negative candidate when
+(a) its largest covalent fragment, stripped of stereochemistry, canonicalises to the same
+string as the reference's, or (b) its measured potency is not at least ~3x weaker than the
+reference's. Where (b) leaves a target with no valid hard negatives — mastocytosis almost
+certainly — that target has no hard-negative test, and the honest thing is to report the
+enrichment percentile alone and say so.
+
+### Secondary observations
+
+**The greedy readout collapses; digit_exp does not.** On cel, greedy produced 54–57
+distinct values across 500 decoys (~89% collapse) against digit_exp's 239–253. Seed 1's
+greedy decode gave the identical value 443 to imatinib and all three hard negatives.
+Greedy's cross-seed spread on cel is 47.6 against digit_exp's 4.6. Running both readouts
+off one forward pass was worth it: on this evidence digit_exp is the one to report, and
+greedy's 59.2 on cel seed 0 would have been a misleading headline number.
+
+**The selection audit passed 6/6 seeds** (all four checkpoints re-scored on full
+all-variants validation agreed with the step-selected one). That is a clean contrast with
+CF in try11, which failed 2 of 3 — so CF's instability is CF's, not the method's.
+
+**tyrosinemia's step selection is unstable even though the audit passed.** Seed 0 stopped
+at step 22 with val loss 2.07; seeds 1 and 2 ran to step 168 and reached 0.59/0.64. Seed 0
+is on a different curve entirely — its val loss rises monotonically after step 22 while the
+others fall throughout. With 46/35/39 distinct validation molecules this is the small-n
+regime the 6-fold CV path exists for; 179 compounds cleared the 150 threshold but the
+threshold looks too low. The digit_exp spread across seeds, 8.8 to 57.4, follows from it.
+
+## Still outstanding
+
+- `mastocytosis` and `nsiad` queued; job C will collate when they finish.
+- Rewrite the Result header to "final" and add the two missing rows once job C runs.
