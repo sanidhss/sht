@@ -101,3 +101,4 @@ See the log below for job ids.
 
 ## Log
 - 10-11-2026: submitted chain A=23702737 (CPU audit) -> B=23702757 (GPU array 0-5: cel sm nsiad pku mh tyr1, afterok:A) -> C=23702758 (collate, afterany:B). Directory frozen from here.
+- 12-11-2026: A100 array still queued (priority). Duplicate on gpuA40x4 (same code/config/split; results in txgnn_v4_new_disease_set_a40/, outputs tagged _a40): B40=23832634 -> C40=23832635. A100 copy left queued. config.py gained an env override for the results dir; default unchanged.

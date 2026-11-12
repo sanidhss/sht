@@ -3,7 +3,9 @@ import os
 
 TRY_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = '/work/hdd/bisa/sshah21/primekg_aug'
-RESULTS_DIR = '/work/hdd/bisa/sshah21/results/txgnn_v4_new_disease_set'
+# T24_RESULTS_DIR / T24_TAG are set only by the A40 duplicate (B_train_a40.sb); defaults unchanged
+RESULTS_DIR = os.environ.get('T24_RESULTS_DIR', '/work/hdd/bisa/sshah21/results/txgnn_v4_new_disease_set')
+TAG = os.environ.get('T24_TAG', '')
 RESOLVED = os.path.join(RESULTS_DIR, 'resolved.json')   # written by job A, read by B and C
 SIM = 'all_nodes_profile_more'   # fixed on try23 results, before any new-disease run
 SEEDS = [1, 2, 3]
