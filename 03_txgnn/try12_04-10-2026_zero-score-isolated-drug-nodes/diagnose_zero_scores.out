@@ -1,0 +1,35 @@
+
+===== FABRY (disease_eval_idx=543.0) =====
+seed 1: exact-0.0 drugs = ['DB00003', 'DB08876', 'DB12233', 'DB13218', 'DB13419']
+        0-train-edge drugs = ['DB00003', 'DB08876', 'DB12233', 'DB13218', 'DB13419']
+        identical sets: True; tied-at-0 rank band: 5249-5253 / 7957
+seed 2: exact-0.0 drugs = ['DB00003', 'DB08876', 'DB12233', 'DB13218', 'DB13419']
+        0-train-edge drugs = ['DB00003', 'DB08876', 'DB12233', 'DB13218', 'DB13419']
+        identical sets: True; tied-at-0 rank band: 5005-5009 / 7957
+seed 3: exact-0.0 drugs = ['DB00003', 'DB08876', 'DB12233', 'DB13218', 'DB13419']
+        0-train-edge drugs = ['DB00003', 'DB08876', 'DB12233', 'DB13218', 'DB13419']
+        identical sets: True; tied-at-0 rank band: 5447-5451 / 7957
+per-drug detail (edge rows, both directions):
+  DB00003 Dornase alfa           all-PrimeKG={'indication': 2}  split={'train': 0, 'valid': 2, 'test': 0}
+  DB08876 Taliglucerase alfa     all-PrimeKG={'indication': 2}  split={'train': 0, 'valid': 2, 'test': 0}
+  DB12233 Iguratimod             all-PrimeKG={'indication': 2}  split={'train': 0, 'valid': 2, 'test': 0}
+  DB13218 Mandelic acid          all-PrimeKG={'indication': 2}  split={'train': 0, 'valid': 2, 'test': 0}
+  DB13419 Troxipide              all-PrimeKG={'indication': 2}  split={'train': 0, 'valid': 2, 'test': 0}
+
+===== GAUCHER (disease_eval_idx=16430.0) =====
+seed 1: exact-0.0 drugs = ['DB00053', 'DB00088', 'DB08876', 'DB09041', 'DB11696', 'DB13614']
+        0-train-edge drugs = ['DB00053', 'DB00088', 'DB08876', 'DB09041', 'DB11696', 'DB13614']
+        identical sets: True; tied-at-0 rank band: 5194-5199 / 7957
+seed 2: exact-0.0 drugs = ['DB00053', 'DB00088', 'DB08876', 'DB09041', 'DB11696', 'DB13614']
+        0-train-edge drugs = ['DB00053', 'DB00088', 'DB08876', 'DB09041', 'DB11696', 'DB13614']
+        identical sets: True; tied-at-0 rank band: 5919-5924 / 7957
+seed 3: exact-0.0 drugs = ['DB00053', 'DB00088', 'DB08876', 'DB09041', 'DB11696', 'DB13614']
+        0-train-edge drugs = ['DB00053', 'DB00088', 'DB08876', 'DB09041', 'DB11696', 'DB13614']
+        identical sets: True; tied-at-0 rank band: 5944-5949 / 7957
+per-drug detail (edge rows, both directions):
+  DB00053 Imiglucerase           all-PrimeKG={'indication': 2}  split={'train': 0, 'valid': 0, 'test': 2}
+  DB00088 Alglucerase            all-PrimeKG={'indication': 2}  split={'train': 0, 'valid': 0, 'test': 2}
+  DB08876 Taliglucerase alfa     all-PrimeKG={'indication': 2}  split={'train': 0, 'valid': 0, 'test': 2}
+  DB09041 Tavaborole             all-PrimeKG={'indication': 2}  split={'train': 0, 'valid': 2, 'test': 0}
+  DB11696 Racecadotril           all-PrimeKG={'indication': 2}  split={'train': 0, 'valid': 2, 'test': 0}
+  DB13614 Metizoline             all-PrimeKG={'indication': 2}  split={'train': 0, 'valid': 2, 'test': 0}

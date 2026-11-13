@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# Local-only: AI-assistant briefing file, never pushed to GitHub
+AGENT_INSTRUCTIONS.txt
+core.python.*
+core.*

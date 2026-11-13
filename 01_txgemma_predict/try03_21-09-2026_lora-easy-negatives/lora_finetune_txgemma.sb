@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA100x4
+#SBATCH --gpus=1 -n 1 -c 16 --mem=128g -t 06:00:00
+#SBATCH -J txgemma_lora
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgemma_lora/%x_%j.out
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+/work/hdd/bisa/sshah21/envs/txgemma/bin/python /projects/bisa/sshah21/scripts/py_scripts/lora_finetune_txgemma.py

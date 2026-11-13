@@ -1,0 +1,10 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-cpu
+#SBATCH -p cpu
+#SBATCH -n 1 -c 4 --mem=32g -t 01:00:00
+#SBATCH -J txgnn_t24_C40
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgnn/%x_%j.out
+# B_JOB (the GPU array job id) is passed with sbatch --export
+export T24_RESULTS_DIR=/work/hdd/bisa/sshah21/results/txgnn_v4_new_disease_set_a40 T24_TAG=_a40
+cd /projects/bisa/sshah21/library/03_txgnn/try24_10-11-2026_new-disease-set
+/work/hdd/bisa/sshah21/envs/txgnn2/bin/python -u collate.py

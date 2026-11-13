@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA100x4
+#SBATCH --gpus=1 -n 1 -c 16 --mem=128g -t 10:00:00
+#SBATCH -J leakfree_attr
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgemma_lora_orphan/%x_%j.out
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+# One target per job. TARGET is explicit, so the scope-coupling bug that cost try05 a
+# whole run cannot recur here.
+export TARGET=attr
+export SEEDS=0,1,2
+export N_EPOCH=5
+export N_DECOYS=500
+
+# Budget: TTR has 493 compounds (~2,100 training lines), so each seed is markedly
+# faster than CF. 3 seeds x (~35min load + ~45min train + ~15min decoys/eval) is roughly
+# 5h; 10h leaves margin.
+
+/work/hdd/bisa/sshah21/envs/txgemma/bin/python \
+  /projects/bisa/sshah21/library/01_txgemma_predict/try09_18-10-2026_leak-free-eval-harness/leak_free_eval.py

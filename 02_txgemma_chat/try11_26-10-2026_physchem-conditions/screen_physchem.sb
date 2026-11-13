@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA40x4
+#SBATCH --gpus=4 -n 1 -c 16 --mem=128g -t 02:30:00
+#SBATCH -J screen_physchem
+#SBATCH -o /work/hdd/bisa/sshah21/results/reasoning_screen/%x_%j.out
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+TRY=/projects/bisa/sshah21/library/02_txgemma_chat/try11_26-10-2026_physchem-conditions
+PY=/work/hdd/bisa/sshah21/envs/txgemma/bin/python
+COND=/work/hdd/bisa/sshah21/results/reasoning_screen/physchem_conditions.json
+
+# fabry is NOT rerun: its condition is unchanged and try10 already measured it at
+# batch 12 (rank 4/3420), which is the control for this comparison.
+TARGETS=gaucher,cf,attr
+
+echo "########## SMOKE TEST (64 candidates x 3 targets) ##########"
+$PY $TRY/screen_physchem.py --targets $TARGETS --conditions-file $COND --limit 64 --batch-size 12 || exit 1
+
+echo
+echo "########## FULL LIBRARY x 3 TARGETS ##########"
+$PY $TRY/screen_physchem.py --targets $TARGETS --conditions-file $COND --batch-size 12

@@ -1,0 +1,40 @@
+
+===== Fabry: query 'Fabry disease'  profile size 40  in keys? False  blend c=0.90
+  key 'chylomicron retention disease'                         cos=0.687 weight=0.35 c*w=0.31  #indications=2  TRUE DRUG AMONG THEM: ['Migalastat']
+      indications: ['Alipogene tiparvovec', 'Migalastat']
+  key 'lysosomal lipid storage disorder'                      cos=0.661 weight=0.33 c*w=0.30  #indications=1  TRUE DRUG AMONG THEM: no
+      indications: ['Sebelipase alfa']
+  key 'Wolman disease'                                        cos=0.640 weight=0.32 c*w=0.29  #indications=1  TRUE DRUG AMONG THEM: no
+      indications: ['Sebelipase alfa']
+
+===== Gaucher: query 'Gaucher disease'  profile size 18  in keys? False  blend c=0.90
+  key 'Niemann-Pick disease'                                  cos=0.252 weight=0.40 c*w=0.36  #indications=1  TRUE DRUG AMONG THEM: ['Miglustat']
+      indications: ['Miglustat']
+  key 'Hurler syndrome'                                       cos=0.192 weight=0.31 c*w=0.27  #indications=1  TRUE DRUG AMONG THEM: no
+      indications: ['Laronidase']
+  key 'Fabry disease'                                         cos=0.186 weight=0.30 c*w=0.27  #indications=1  TRUE DRUG AMONG THEM: no
+      indications: ['Migalastat']
+
+===== Gaucher (Niemann-Pick held out, try15): query 'Gaucher disease'  profile size 18  in keys? False  blend c=0.90
+  key 'Hurler syndrome'                                       cos=0.192 weight=0.35 c*w=0.31  #indications=1  TRUE DRUG AMONG THEM: no
+      indications: ['Laronidase']
+  key 'Fabry disease'                                         cos=0.186 weight=0.34 c*w=0.30  #indications=1  TRUE DRUG AMONG THEM: no
+      indications: ['Migalastat']
+  key 'cerebrotendinous xanthomatosis'                        cos=0.171 weight=0.31 c*w=0.28  #indications=1  TRUE DRUG AMONG THEM: no
+      indications: ['Cholic Acid']
+
+===== CF: query 'cystic fibrosis'  profile size 13  in keys? False  blend c=0.90
+  key 'idiopathic bronchiectasis'                             cos=0.226 weight=0.35 c*w=0.32  #indications=6  TRUE DRUG AMONG THEM: no
+      indications: ['Acetylcysteine', 'Bitolterol', 'Cysteine', 'Epinephrine', 'Norepinephrine', 'Pirbuterol']
+  key 'bronchiectasis'                                        cos=0.218 weight=0.34 c*w=0.31  #indications=5  TRUE DRUG AMONG THEM: no
+      indications: ['Acetylcysteine', 'Bitolterol', 'Cysteine', 'Epinephrine', 'Norepinephrine']
+  key 'altitude sickness'                                     cos=0.196 weight=0.31 c*w=0.28  #indications=1  TRUE DRUG AMONG THEM: no
+      indications: ['Acetazolamide']
+
+===== TTR (ATTRV122I): query 'ATTRV122I amyloidosis'  profile size 3  in keys? False  blend c=0.90
+  key 'lung neoplasm'                                         cos=0.035 weight=0.34 c*w=0.31  #indications=6  TRUE DRUG AMONG THEM: no
+      indications: ['Doxorubicin', 'Lonidamine', 'Mechlorethamine', 'Methotrexate', 'Talaporfin', 'Vindesine']
+  key 'dysthymic disorder'                                    cos=0.034 weight=0.33 c*w=0.30  #indications=26  TRUE DRUG AMONG THEM: no
+      indications: ['Amineptine', 'Amitriptyline', 'Amoxapine', 'Bupropion', 'Butriptyline', 'Caroxazone', 'Citalopram', 'Demexiptiline', 'Desipramine', 'Doxepin', 'Esketamine', 'Ethyl loflazepate', 'Fluoxetine', 'Imipramine'] ...
+  key 'neurotic disorder'                                     cos=0.033 weight=0.33 c*w=0.29  #indications=30  TRUE DRUG AMONG THEM: no
+      indications: ['Amineptine', 'Amitriptyline', 'Amoxapine', 'Brexanolone', 'Bupropion', 'Butriptyline', 'Caroxazone', 'Citalopram', 'Demexiptiline', 'Desipramine', 'Doxepin', 'Esketamine', 'Ethyl loflazepate', 'Fluoxetine'] ...

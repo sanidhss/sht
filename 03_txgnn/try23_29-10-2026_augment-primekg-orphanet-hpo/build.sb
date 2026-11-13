@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-cpu
+#SBATCH -p cpu
+#SBATCH -n 1 -c 4 --mem=128g -t 03:00:00
+#SBATCH -J txgnn_aug_build
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgnn/%x_%j.out
+set -e
+OUT=/work/hdd/bisa/sshah21/primekg_aug
+mkdir -p $OUT
+rm -f $OUT/kg_directed.csv          # never reuse a stale processed graph
+/work/hdd/bisa/sshah21/envs/txgnn2/bin/python -u -I /projects/bisa/sshah21/library/03_txgnn/try23_29-10-2026_augment-primekg-orphanet-hpo/build_augmented_kg.py --primekg /work/hdd/bisa/sshah21/primekg \
+    --external /work/hdd/bisa/sshah21/external --out $OUT --only both
+# node set is unchanged by design, so node/edge tables are shared with the original
+ln -sf /work/hdd/bisa/sshah21/primekg/node.csv $OUT/node.csv
+ln -sf /work/hdd/bisa/sshah21/primekg/edges.csv $OUT/edges.csv
+cp $OUT/report.txt /projects/bisa/sshah21/library/03_txgnn/try23_29-10-2026_augment-primekg-orphanet-hpo/build_report.txt

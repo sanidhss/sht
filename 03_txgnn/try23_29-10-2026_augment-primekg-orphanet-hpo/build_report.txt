@@ -1,0 +1,19 @@
+mode: --only both
+versions: HPO 2026-09-02 | Orphadata product6 date=2026-06-23 07:57:31 version=1.3.42 / 4.1.8 [2025-03-03] | MONDO http://purl.obolibrary.org/obo/mondo/releases/2026-10-06/mondo.owl
+Orphanet assessed association types (only Disease-causing* kept): {'Disease-causing germline mutation(s) in': 5411, 'Disease-causing germline mutation(s) (loss of function) in': 1222, 'Disease-causing somatic mutation(s) in': 243, 'Major susceptibility factor in': 393, 'Modifying germline mutation in': 56, 'Disease-causing germline mutation(s) (gain of function) in': 214, 'Role in the phenotype of': 277, 'Candidate gene tested in': 12, 'Part of a fusion gene in': 261, 'Biomarker tested in': 47}
+HPO rows 286651; dropped by filter: {'IEA (electronic-only)': 28094, 'very rare / excluded / <5%': 11243}
+MONDO xrefs usable (unambiguous, in PrimeKG): 18180
+Orphanet disease-gene pairs mapped: 6350; HPO disease-phenotype pairs mapped: 145021
+edges added (both directions): 73192  [disease_protein 3178, disease_phenotype_positive 70014]
+edges removed (CRD fix): 46  [migalastat-CRD + 22 duplicated gene links]
+
+per-disease edge counts (one direction), before -> after:
+  Fabry disease                  genes  23 ->  24   phenotypes  69 ->  77
+  Gaucher disease                genes   5 ->   5   phenotypes 115 -> 147
+  cystic fibrosis                genes  11 ->  11   phenotypes  32 ->  46
+  ATTRV122I amyloidosis          genes   1 ->   1   phenotypes   0 ->  19
+  hereditary ATTR amyloidosis    genes   0 ->   0   phenotypes   0 ->  34
+  wild type ATTR amyloidosis     genes   0 ->   0   phenotypes  23 ->  35
+  familial amyloid neuropathy    genes  14 ->  14   phenotypes  36 ->  62
+  chylomicron retention disease  genes  25 ->   3   phenotypes  26 ->  26
+  hereditary ATTR -> TTR gene linked after: False

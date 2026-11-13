@@ -1,0 +1,381 @@
+{
+ "cel": {
+  "label": "chronic eosinophilic leukemia",
+  "ok": true,
+  "eval": {
+   "3577.0": {
+    "raw_id": "15687",
+    "name": "chronic eosinophilic leukemia"
+   },
+   "13744.0": {
+    "raw_id": "6147",
+    "name": "chronic eosinophilic leukemia, not otherwise specified"
+   }
+  },
+  "holdout": [
+   1502.0,
+   3577.0,
+   3582.0,
+   13744.0
+  ],
+  "holdout_names": {
+   "3577.0": "chronic eosinophilic leukemia",
+   "13744.0": "chronic eosinophilic leukemia, not otherwise specified",
+   "3582.0": "hypereosinophilic syndrome",
+   "1502.0": "idiopathic hypereosinophilic syndrome"
+  },
+  "ref": {
+   "DB00619": "Imatinib"
+  },
+  "evaluable_ref": {
+   "DB00619": "Imatinib"
+  },
+  "primary": "DB00619",
+  "blind_check_passed": true,
+  "proto": {
+   "3577.0": {
+    "profile_size": 3,
+    "best_cos": 0.1333,
+    "keys": [
+     {
+      "idx": 15262.0,
+      "raw_id": "7896_4600_4614_875",
+      "cos": 0.1333,
+      "ref_hits": []
+     },
+     {
+      "idx": 6226.0,
+      "raw_id": "18874_4643",
+      "cos": 0.1184,
+      "ref_hits": []
+     },
+     {
+      "idx": 12648.0,
+      "raw_id": "5009",
+      "cos": 0.1077,
+      "ref_hits": []
+     }
+    ]
+   },
+   "13744.0": {
+    "profile_size": 4,
+    "best_cos": 0.1732,
+    "keys": [
+     {
+      "idx": 15262.0,
+      "raw_id": "7896_4600_4614_875",
+      "cos": 0.1732,
+      "ref_hits": []
+     },
+     {
+      "idx": 6226.0,
+      "raw_id": "18874_4643",
+      "cos": 0.1025,
+      "ref_hits": []
+     },
+     {
+      "idx": 12648.0,
+      "raw_id": "5009",
+      "cos": 0.0933,
+      "ref_hits": []
+     }
+    ]
+   }
+  }
+ },
+ "sm": {
+  "label": "systemic mastocytosis",
+  "ok": true,
+  "eval": {
+   "4301.0": {
+    "raw_id": "16586",
+    "name": "systemic mastocytosis"
+   }
+  },
+  "holdout": [
+   3478.0,
+   3479.0,
+   4301.0,
+   7351.0,
+   7352.0,
+   15301.0
+  ],
+  "holdout_names": {
+   "3478.0": "obsolete classic mast cell leukemia",
+   "15301.0": "mastocytosis",
+   "7352.0": "mast cell leukemia",
+   "7351.0": "aggressive systemic mastocytosis",
+   "3479.0": "aleukemic mast cell leukemia",
+   "4301.0": "systemic mastocytosis"
+  },
+  "ref": {
+   "DB06595": "Midostaurin",
+   "DB15233": "Avapritinib"
+  },
+  "evaluable_ref": {
+   "DB06595": "Midostaurin"
+  },
+  "primary": "DB06595",
+  "blind_check_passed": true,
+  "proto": {
+   "4301.0": {
+    "profile_size": 8,
+    "best_cos": 0.1768,
+    "keys": [
+     {
+      "idx": 14288.0,
+      "raw_id": "6769",
+      "cos": 0.1768,
+      "ref_hits": []
+     },
+     {
+      "idx": 7334.0,
+      "raw_id": "20316",
+      "cos": 0.1443,
+      "ref_hits": []
+     },
+     {
+      "idx": 9950.0,
+      "raw_id": "3001",
+      "cos": 0.0913,
+      "ref_hits": []
+     }
+    ]
+   }
+  }
+ },
+ "nsiad": {
+  "label": "NSIAD",
+  "ok": true,
+  "eval": {
+   "437.0": {
+    "raw_id": "10356",
+    "name": "nephrogenic syndrome of inappropriate antidiuresis"
+   }
+  },
+  "holdout": [
+   437.0,
+   14321.0
+  ],
+  "holdout_names": {
+   "14321.0": "inappropriate ADH syndrome",
+   "437.0": "nephrogenic syndrome of inappropriate antidiuresis"
+  },
+  "ref": {
+   "DB06212": "Tolvaptan"
+  },
+  "evaluable_ref": {
+   "DB06212": "Tolvaptan"
+  },
+  "primary": "DB06212",
+  "blind_check_passed": true,
+  "proto": {
+   "437.0": {
+    "profile_size": 13,
+    "best_cos": 0.1754,
+    "keys": [
+     {
+      "idx": 1464.0,
+      "raw_id": "11822_100344_9424_909_10503_11242_15231",
+      "cos": 0.1754,
+      "ref_hits": []
+     },
+     {
+      "idx": 3641.0,
+      "raw_id": "15766",
+      "cos": 0.1545,
+      "ref_hits": []
+     },
+     {
+      "idx": 6803.0,
+      "raw_id": "19617",
+      "cos": 0.124,
+      "ref_hits": []
+     }
+    ]
+   }
+  }
+ },
+ "pku": {
+  "label": "phenylketonuria",
+  "ok": true,
+  "eval": {
+   "16951.0": {
+    "raw_id": "9861_19259_16366_19258",
+    "name": "phenylketonuria"
+   }
+  },
+  "holdout": [
+   4948.0,
+   16951.0
+  ],
+  "holdout_names": {
+   "4948.0": "disorder of phenylalanine metabolism",
+   "16951.0": "phenylketonuria"
+  },
+  "ref": {
+   "DB00360": "Sapropterin"
+  },
+  "evaluable_ref": {
+   "DB00360": "Sapropterin"
+  },
+  "primary": "DB00360",
+  "blind_check_passed": true,
+  "proto": {
+   "16951.0": {
+    "profile_size": 90,
+    "best_cos": 0.1784,
+    "keys": [
+     {
+      "idx": 16029.0,
+      "raw_id": "8815",
+      "cos": 0.1784,
+      "ref_hits": []
+     },
+     {
+      "idx": 16028.0,
+      "raw_id": "8814",
+      "cos": 0.1677,
+      "ref_hits": []
+     },
+     {
+      "idx": 4253.0,
+      "raw_id": "16532",
+      "cos": 0.1675,
+      "ref_hits": []
+     }
+    ]
+   }
+  }
+ },
+ "mh": {
+  "label": "malignant hyperthermia",
+  "ok": true,
+  "eval": {
+   "5912.0": {
+    "raw_id": "18493",
+    "name": "malignant hyperthermia of anesthesia"
+   },
+   "6125.0": {
+    "raw_id": "18752",
+    "name": "exercise-induced malignant hyperthermia"
+   }
+  },
+  "holdout": [
+   5912.0,
+   6125.0
+  ],
+  "holdout_names": {
+   "6125.0": "exercise-induced malignant hyperthermia",
+   "5912.0": "malignant hyperthermia of anesthesia"
+  },
+  "ref": {
+   "DB01219": "Dantrolene"
+  },
+  "evaluable_ref": {
+   "DB01219": "Dantrolene"
+  },
+  "primary": "DB01219",
+  "blind_check_passed": true,
+  "proto": {
+   "5912.0": {
+    "profile_size": 27,
+    "best_cos": 0.134,
+    "keys": [
+     {
+      "idx": 13107.0,
+      "raw_id": "5526",
+      "cos": 0.134,
+      "ref_hits": []
+     },
+     {
+      "idx": 1512.0,
+      "raw_id": "11918",
+      "cos": 0.1111,
+      "ref_hits": []
+     },
+     {
+      "idx": 3641.0,
+      "raw_id": "15766",
+      "cos": 0.1072,
+      "ref_hits": []
+     }
+    ]
+   },
+   "6125.0": {
+    "profile_size": 33,
+    "best_cos": 0.2438,
+    "keys": [
+     {
+      "idx": 16530.0,
+      "raw_id": "9377",
+      "cos": 0.2438,
+      "ref_hits": []
+     },
+     {
+      "idx": 3641.0,
+      "raw_id": "15766",
+      "cos": 0.2263,
+      "ref_hits": []
+     },
+     {
+      "idx": 16181.0,
+      "raw_id": "8988_16603_15991",
+      "cos": 0.1797,
+      "ref_hits": []
+     }
+    ]
+   }
+  }
+ },
+ "tyr1": {
+  "label": "tyrosinemia type 1",
+  "ok": true,
+  "eval": {
+   "311.0": {
+    "raw_id": "10162_10160_10161_4741",
+    "name": "tyrosinemia"
+   }
+  },
+  "holdout": [
+   311.0
+  ],
+  "holdout_names": {
+   "311.0": "tyrosinemia"
+  },
+  "ref": {
+   "DB00348": "Nitisinone"
+  },
+  "evaluable_ref": {
+   "DB00348": "Nitisinone"
+  },
+  "primary": "DB00348",
+  "blind_check_passed": true,
+  "proto": {
+   "311.0": {
+    "profile_size": 74,
+    "best_cos": 0.2289,
+    "keys": [
+     {
+      "idx": 9996.0,
+      "raw_id": "30105_18116",
+      "cos": 0.2289,
+      "ref_hits": []
+     },
+     {
+      "idx": 16029.0,
+      "raw_id": "8815",
+      "cos": 0.227,
+      "ref_hits": []
+     },
+     {
+      "idx": 6601.0,
+      "raw_id": "19365",
+      "cos": 0.2136,
+      "ref_hits": []
+     }
+    ]
+   }
+  }
+ }
+}

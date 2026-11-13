@@ -1,0 +1,58 @@
+Found local copy...
+Found local copy...
+Found local copy...
+disease eval index is not none, use the individual disease split...
+Found saved processed KG... Loading...
+Splits detected... Loading splits....
+Creating DGL graph....
+Done!
+=== [gaucher seed=1] Blindness check ===
+OK: gaucher has no drug edges in the training split -- model is blind to it.
+Creating minibatch pretraining dataloader...
+Start pre-training with #param: 1035000
+dict_keys(['inp', '_ID', 'Wh_anatomy_anatomy', 'Wh_rev_anatomy_protein_absent', 'Wh_rev_anatomy_protein_present'])
+dict_keys(['inp', '_ID'])
+anatomy_anatomy
+tensor([ 159,  160,  161,  ..., 4096, 4097,  502], device='cuda:0')
+tensor([  0,   0,   0,  ..., 824, 824, 824], device='cuda:0')
+Edge type: anatomy_anatomy
+Source type: anatomy Keys: dict_keys(['inp', '_ID', 'Wh_anatomy_anatomy', 'Wh_rev_anatomy_protein_absent', 'Wh_rev_anatomy_protein_present'])
+Destination type: anatomy Keys: dict_keys(['inp', '_ID', 'Wh_anatomy_anatomy', 'Wh_rev_anatomy_protein_absent', 'Wh_rev_anatomy_protein_present'])
+Keys: dict_keys(['inp', '_ID', 'Wh_anatomy_anatomy', 'Wh_rev_anatomy_protein_absent', 'Wh_rev_anatomy_protein_present'])
+Keys: dict_keys(['inp', '_ID', 'Wh_anatomy_anatomy', 'Wh_rev_anatomy_protein_absent', 'Wh_rev_anatomy_protein_present'])
+Traceback (most recent call last):
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/txgnn/model.py", line 323, in edge_attention
+    wh2 = torch.cat([edges.src['Wh_%s' % etype], edges.dst['Wh_%s' % etype]], dim=1)
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/dgl/frame.py", line 622, in __getitem__
+    return self._columns[name].data
+KeyError: 'Wh_anatomy_anatomy'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/txgnn/model.py", line 356, in forward
+    G.apply_edges(self.edge_attention, etype=etype)
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/dgl/heterograph.py", line 4460, in apply_edges
+    edata = core.invoke_edge_udf(g, eid, etype, func)
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/dgl/core.py", line 85, in invoke_edge_udf
+    return func(ebatch)
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/txgnn/model.py", line 332, in edge_attention
+    raise ValueError
+ValueError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/projects/bisa/sshah21/scripts/py_scripts/txgnn_fabry.py", line 116, in <module>
+    outs.append(run_disease_eval(disease_name, cfg['idx'], cfg['split'](seed), seed, result_dir))
+  File "/projects/bisa/sshah21/scripts/py_scripts/txgnn_fabry.py", line 73, in run_disease_eval
+    model.pretrain(n_epoch=2, learning_rate=1e-3, batch_size=1024)
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/txgnn/TxGNN.py", line 165, in pretrain
+    pred_score_pos, pred_score_neg, pos_score, neg_score = self.model.forward_minibatch(pos_g, neg_g, blocks, self.G, mode = 'train', pretrain_mode = True)
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/txgnn/model.py", line 510, in forward_minibatch
+    h_dict = self.layer1(blocks[0], input_dict)
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/work/hdd/bisa/sshah21/envs/txgnn2/lib/python3.8/site-packages/txgnn/model.py", line 371, in forward
+    raise ValueError
+ValueError

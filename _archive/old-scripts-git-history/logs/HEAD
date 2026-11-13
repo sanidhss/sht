@@ -1,0 +1,2 @@
+0000000000000000000000000000000000000000 a2244dae356b8457bff42e2cd32efeed8089fac6 Sanidh Shah <sshah45@uh.edu> 1789772879 -0500	commit (initial): download script for TxGemma weights
+a2244dae356b8457bff42e2cd32efeed8089fac6 56faa78b7423261dfb02656f1ba04dd3139b99f7 Sanidh Shah <your@email> 1789877173 -0500	commit: working TxGemma scoring + TxGNN PrimeKG setup

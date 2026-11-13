@@ -1,0 +1,36 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA100x4
+#SBATCH --gpus=1 -n 1 -c 16 --mem=128g -t 18:00:00
+#SBATCH -J try14_B_large
+#SBATCH -a 0-2
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgemma_lora_orphan/%x_%A_%a.out
+
+# JOB B (GPU array), the expected-large targets: cel, mastocytosis, nsiad.
+# Each task reads routing.json and runs whichever harness job A chose for its target, so
+# a target that routes unexpectedly still gets the CORRECT harness -- the array it sits in
+# only sets the time ceiling, never the method.
+#
+# 18h: CF is the calibration point at 977 prompt tokens x 6,050 training lines x 3 seeds =
+# 9h49m. Measured prompt lengths here are PDGFRA 780, KIT 720, AVPR2 415 tokens, and
+# MAX_TRAIN_COMPOUNDS=1500 caps lines at 7,500, so the largest of these costs
+# 7500x780 = 5.9M token-lines against CF's 5.9M -- about the same, so ~10h expected with
+# 18h as the ceiling. CF timed out twice at 10h and 12h in earlier tries; this is sized
+# not to repeat that.
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+NAMES=(cel mastocytosis nsiad)
+export TARGET=${NAMES[$SLURM_ARRAY_TASK_ID]}
+
+# try11's parameters, unchanged and set explicitly so the log records them.
+export SEEDS=0,1,2
+export N_EPOCH=2
+export LR=6.666666666666667e-05
+export EVALS_PER_EPOCH=7
+export VAL_EVAL_CAP=400
+export N_DECOYS=500
+
+bash /projects/bisa/sshah21/library/01_txgemma_predict/try14_10-11-2026_new-target-set/run_routed.sh

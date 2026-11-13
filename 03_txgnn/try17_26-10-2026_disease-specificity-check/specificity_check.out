@@ -1,0 +1,31 @@
+Fabry           top 10: ['Idursulfase', 'Galsulfase', 'Avelumab', 'Selumetinib', 'Elosulfase alfa', 'Vestronidase alfa', 'Roxadustat', 'Mecasermin rinfabate', 'Mecasermin', 'Siltuximab']
+Gaucher         top 10: ['Idursulfase', 'Galsulfase', 'Avelumab', 'Selumetinib', 'Avapritinib', 'Roxadustat', 'Mecasermin', 'Siltuximab', 'Elosulfase alfa', 'Vestronidase alfa']
+CF              top 10: ['Prednisone', 'Dexamethasone', 'Methylprednisolone', 'Triamcinolone', 'Betamethasone', 'Prednisolone', 'Cortisone acetate', 'Tesamorelin', 'Hydrocortisone acetate', 'Rosiglitazone']
+TTR(ATTRV122I)  top 10: ['Cisplatin', 'Prednisone', 'Tretamine', 'Carboplatin', 'Rucaparib', 'Dexamethasone', 'Triamcinolone', 'Methylprednisolone', 'Budesonide', 'Trabectedin']
+
+Spearman correlation of full 7,957-drug score lists between diseases:
+  Fabry           vs Gaucher         0.957
+  Fabry           vs CF              0.325
+  Fabry           vs TTR(ATTRV122I)  0.288
+  Gaucher         vs CF              0.393
+  Gaucher         vs TTR(ATTRV122I)  0.344
+  CF              vs TTR(ATTRV122I)  0.926
+top-50 overlap:
+  Fabry           vs Gaucher         41/50
+  Fabry           vs CF              0/50
+  Fabry           vs TTR(ATTRV122I)  0/50
+  Gaucher         vs CF              0/50
+  Gaucher         vs TTR(ATTRV122I)  0/50
+  CF              vs TTR(ATTRV122I)  29/50
+
+cross-disease ranks (row = true drug of that disease; columns = rank when scored for each disease):
+  drug                             Fabry         Gaucher              CF  TTR(ATTRV122I)
+  migalastat (Fabry)                  16              27            7341            7400
+  miglustat (Gaucher)                 60              17            7778            7904
+  eliglustat (Gaucher)                15             921            7379            7488
+  velaglucerase alfa (Gaucher)              19            3423            7601            7672
+  elexacaftor (CF)                    61              93            1208            7548
+  tezacaftor (CF)                     63              98            1301            7577
+  lumacaftor (CF)                     64             106            1385            7583
+  ivacaftor (CF)                      69             131            1652            7591
+  tafamidis (TTR(ATTRV122I))              46              48            7263             974

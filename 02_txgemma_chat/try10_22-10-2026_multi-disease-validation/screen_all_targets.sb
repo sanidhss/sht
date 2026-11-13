@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA40x4
+#SBATCH --gpus=4 -n 1 -c 16 --mem=128g -t 04:00:00
+#SBATCH -J screen_all
+#SBATCH -o /work/hdd/bisa/sshah21/results/reasoning_screen/%x_%j.out
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+TRY=/projects/bisa/sshah21/library/02_txgemma_chat/try10_22-10-2026_multi-disease-validation
+PY=/work/hdd/bisa/sshah21/envs/txgemma/bin/python
+TARGETS=fabry,gaucher,cf,attr
+
+# Smoke test exercises build_candidates for all four targets, including the assert that
+# the true drug is actually in the pool -- ambroxol is NOT max_phase=4 in ChEMBL, so the
+# gaucher fold depends on the reference-drug spiking added in this try.
+echo "########## SMOKE TEST (64 candidates x 4 targets) ##########"
+$PY $TRY/screen_all_targets.py --targets $TARGETS --limit 64 --batch-size 12 || exit 1
+
+echo
+echo "########## FULL LIBRARY x 4 TARGETS ##########"
+$PY $TRY/screen_all_targets.py --targets $TARGETS --batch-size 12
