@@ -1,0 +1,57 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-cpu
+#SBATCH -p cpu
+#SBATCH -n 1 -c 16 --mem=64g -t 02:00:00
+#SBATCH -J build_vllm_env
+#SBATCH -o /work/hdd/bisa/sshah21/results/setup_%x_%j.out
+
+# Builds the vLLM serving environment for 05_multi_agent.
+#
+# Why vLLM and not plain transformers: the multi-agent protocol issues thousands of
+# short generate() calls (try01: ~5,400 for 12 cases). Plain transformers reloads and
+# re-pads per call; vLLM keeps the model resident with paged KV cache and continuous
+# batching, which is the difference between hours and days. It also provides guided
+# JSON decoding, which 05's protocol depends on to make malformed agent output
+# impossible rather than merely unlikely.
+#
+# Runs on a CPU node on purpose: this is a pip/network job, not a GPU job, and compute
+# nodes DO have outbound HTTPS (verified 13-11-2026, job 23850441 -- the older note in
+# discover_candidates.py claiming otherwise is stale).
+
+set -euo pipefail
+
+ENV_PREFIX=/work/hdd/bisa/sshah21/envs/vllm
+export CONDA_PKGS_DIRS=/work/hdd/bisa/sshah21/conda_pkgs
+export PIP_CACHE_DIR=/work/hdd/bisa/sshah21/pip_cache
+
+module load miniforge3-python
+
+echo "=== creating env at $ENV_PREFIX ==="
+conda create -y -p "$ENV_PREFIX" python=3.12
+
+echo "=== installing vllm ==="
+# vllm pulls its own matching torch build; do not pre-install torch or they fight.
+"$ENV_PREFIX/bin/pip" install --no-input vllm
+
+echo "=== supporting packages ==="
+# rdkit: the descriptor tool (and the baseline 05 has to beat).
+# xmltodict/lxml: PubMed baseline parsing for the date-cut corpus.
+# rank_bm25: the corpus retriever (BM25 by design -- see CORPUS_DESIGN.md: dense
+#   retrievers are themselves trained on post-cutoff text, a subtler leak).
+"$ENV_PREFIX/bin/pip" install --no-input rdkit pandas requests xmltodict lxml rank_bm25
+
+echo "=== versions ==="
+"$ENV_PREFIX/bin/python" - <<'PY'
+import importlib
+for m in ("vllm", "torch", "rdkit", "pandas", "rank_bm25"):
+    try:
+        mod = importlib.import_module(m)
+        print(f"{m:12s} {getattr(mod, '__version__', 'n/a')}")
+    except Exception as e:
+        print(f"{m:12s} FAILED: {type(e).__name__}: {e}")
+import torch
+print("cuda available (expected False on a CPU node):", torch.cuda.is_available())
+print("torch cuda build version:", torch.version.cuda)
+PY
+
+echo "=== done ==="

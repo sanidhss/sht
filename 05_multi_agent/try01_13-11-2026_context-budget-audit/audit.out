@@ -1,0 +1,48 @@
+==============================================================================
+CONTEXT BUDGET AUDIT — multi-agent protocol
+==============================================================================
+tokeniser          : txgemma-27b-chat (gemma2)
+target             : mastocytosis (KIT/P10721)
+candidates (k)     : 20
+rounds             : 4
+nodes/turn/agent   : 3   edges/turn/agent: 2
+heuristics (J)     : 5
+library in Explorer: 200 compounds
+
+txgemma-27b-chat limit : 8192 (sliding window 4096)
+llama-3.3-70b limit    : 131072
+
+round  role         tokens    vs 8192  verdict
+------------------------------------------------------------------------------
+    1  explorer       8455     103.2%  OVERRUN
+    1  proponent      2267      27.7%  OK
+    1  skeptic        2319      28.3%  OK
+    1  pi            14999     183.1%  OVERRUN
+------------------------------------------------------------------------------
+    2  explorer       8455     103.2%  OVERRUN
+    2  proponent      3199      39.1%  OK
+    2  skeptic        3251      39.7%  OK
+    2  pi            28699     350.3%  OVERRUN
+------------------------------------------------------------------------------
+    3  explorer       8455     103.2%  OVERRUN
+    3  proponent      4145      50.6%  OK (beyond sliding window)
+    3  skeptic        4197      51.2%  OK (beyond sliding window)
+    3  pi            42679     521.0%  OVERRUN
+------------------------------------------------------------------------------
+    4  explorer       8455     103.2%  OVERRUN
+    4  proponent      5094      62.2%  OK (beyond sliding window)
+    4  skeptic        5146      62.8%  OK (beyond sliding window)
+    4  pi            56719     692.4%  OVERRUN
+------------------------------------------------------------------------------
+
+worst-case prompt: 56719 tokens  (692.4% of 8192, 43.27% of 131072)
+
+worst Explorer prompt  : 8455 (shrinkable: send fewer library compounds per call)
+worst debate/PI prompt : 56719 (structural: grows with rounds and candidates)
+
+VERDICT: the debate protocol does NOT fit txgemma-27b-chat's context.
+  The overrun is in the accumulating roles, not the shrinkable one, so it
+  cannot be fixed by trimming the candidate library. Orchestration needs a
+  long-context model; txgemma stays in the design as a bounded tool.
+
+wrote /projects/bisa/sshah21/library/05_multi_agent/context_audit_results.json

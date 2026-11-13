@@ -1,0 +1,8 @@
+srun: job 23850410 queued and waiting for resources
+srun: job 23850410 has been allocated resources
+k=3 rounds=2 : worst Explorer prompt  : 8454 (shrinkable: send fewer library compounds per call)|worst debate/PI prompt : 5613 (structural: grows with rounds and candidates)|
+k=5 rounds=2 : worst Explorer prompt  : 8454 (shrinkable: send fewer library compounds per call)|worst debate/PI prompt : 8329 (structural: grows with rounds and candidates)|
+k=5 rounds=3 : worst Explorer prompt  : 8454 (shrinkable: send fewer library compounds per call)|worst debate/PI prompt : 12019 (structural: grows with rounds and candidates)|
+k=10 rounds=3 : worst Explorer prompt  : 8455 (shrinkable: send fewer library compounds per call)|worst debate/PI prompt : 22239 (structural: grows with rounds and candidates)|
+k=20 rounds=4 : worst Explorer prompt  : 8455 (shrinkable: send fewer library compounds per call)|worst debate/PI prompt : 56719 (structural: grows with rounds and candidates)|
+k=50 rounds=4 : worst Explorer prompt  : 8455 (shrinkable: send fewer library compounds per call)|worst debate/PI prompt : 138709 (structural: grows with rounds and candidates)|

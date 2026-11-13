@@ -1,0 +1,102 @@
+{
+  "tokeniser": "txgemma-27b-chat (gemma2)",
+  "target": "mastocytosis",
+  "settings": {
+    "n_candidates": 20,
+    "max_rounds": 4,
+    "nodes_per_turn": 3,
+    "edges_per_turn": 2,
+    "n_heuristics": 5,
+    "library_in_explorer": 200
+  },
+  "limits": {
+    "gemma": 8192,
+    "gemma_sliding": 4096,
+    "llama": 131072
+  },
+  "rows": [
+    {
+      "round": 1,
+      "role": "explorer",
+      "tokens": 8455
+    },
+    {
+      "round": 1,
+      "role": "proponent",
+      "tokens": 2267
+    },
+    {
+      "round": 1,
+      "role": "skeptic",
+      "tokens": 2319
+    },
+    {
+      "round": 1,
+      "role": "pi",
+      "tokens": 14999
+    },
+    {
+      "round": 2,
+      "role": "explorer",
+      "tokens": 8455
+    },
+    {
+      "round": 2,
+      "role": "proponent",
+      "tokens": 3199
+    },
+    {
+      "round": 2,
+      "role": "skeptic",
+      "tokens": 3251
+    },
+    {
+      "round": 2,
+      "role": "pi",
+      "tokens": 28699
+    },
+    {
+      "round": 3,
+      "role": "explorer",
+      "tokens": 8455
+    },
+    {
+      "round": 3,
+      "role": "proponent",
+      "tokens": 4145
+    },
+    {
+      "round": 3,
+      "role": "skeptic",
+      "tokens": 4197
+    },
+    {
+      "round": 3,
+      "role": "pi",
+      "tokens": 42679
+    },
+    {
+      "round": 4,
+      "role": "explorer",
+      "tokens": 8455
+    },
+    {
+      "round": 4,
+      "role": "proponent",
+      "tokens": 5094
+    },
+    {
+      "round": 4,
+      "role": "skeptic",
+      "tokens": 5146
+    },
+    {
+      "round": 4,
+      "role": "pi",
+      "tokens": 56719
+    }
+  ],
+  "worst_overall": 56719,
+  "worst_debate": 56719,
+  "fits_gemma": false
+}
