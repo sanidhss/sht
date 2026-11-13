@@ -1,0 +1,120 @@
+{
+  "knn_k": 5,
+  "library_size": 3417,
+  "results": [
+    {
+      "target": "attr",
+      "reference": "tafamidis",
+      "reference_in_library": true,
+      "n_actives": 493,
+      "pool_size": 3417,
+      "rank": 1921,
+      "percentile": 56.21890547263681,
+      "max_tanimoto_to_actives": 0.4348,
+      "n_actives_sim_ge_0.95": 0,
+      "n_actives_sim_ge_0.80": 0,
+      "reference_leaked_into_actives": false
+    },
+    {
+      "target": "cel",
+      "reference": "imatinib",
+      "reference_in_library": true,
+      "n_actives": 1501,
+      "pool_size": 3417,
+      "rank": 581,
+      "percentile": 17.003219198127013,
+      "max_tanimoto_to_actives": 0.942,
+      "n_actives_sim_ge_0.95": 0,
+      "n_actives_sim_ge_0.80": 2,
+      "reference_leaked_into_actives": false
+    },
+    {
+      "target": "cf",
+      "reference": "lumacaftor",
+      "reference_in_library": true,
+      "n_actives": 1450,
+      "pool_size": 3417,
+      "rank": 2455,
+      "percentile": 71.84664910740416,
+      "max_tanimoto_to_actives": 0.5753,
+      "n_actives_sim_ge_0.95": 0,
+      "n_actives_sim_ge_0.80": 0,
+      "reference_leaked_into_actives": false
+    },
+    {
+      "target": "fabry",
+      "reference": "migalastat",
+      "reference_in_library": true,
+      "n_actives": 89,
+      "pool_size": 3417,
+      "rank": 2964,
+      "percentile": 86.74275680421422,
+      "max_tanimoto_to_actives": 1.0,
+      "n_actives_sim_ge_0.95": 3,
+      "n_actives_sim_ge_0.80": 5,
+      "reference_leaked_into_actives": false
+    },
+    {
+      "target": "gaucher",
+      "reference": "ambroxol",
+      "reference_in_library": false,
+      "n_actives": 1208,
+      "pool_size": 3418,
+      "rank": 1879,
+      "percentile": 54.97366881217086,
+      "max_tanimoto_to_actives": 0.1918,
+      "n_actives_sim_ge_0.95": 0,
+      "n_actives_sim_ge_0.80": 0,
+      "reference_leaked_into_actives": false
+    },
+    {
+      "target": "mastocytosis",
+      "reference": "midostaurin",
+      "reference_in_library": true,
+      "n_actives": 1501,
+      "pool_size": 3417,
+      "rank": 17,
+      "percentile": 0.4975124378109453,
+      "max_tanimoto_to_actives": 0.6923,
+      "n_actives_sim_ge_0.95": 0,
+      "n_actives_sim_ge_0.80": 0,
+      "reference_leaked_into_actives": false
+    },
+    {
+      "target": "nsiad",
+      "reference": "tolvaptan",
+      "reference_in_library": true,
+      "n_actives": 1109,
+      "pool_size": 3417,
+      "rank": 344,
+      "percentile": 10.067310506292069,
+      "max_tanimoto_to_actives": 1.0,
+      "n_actives_sim_ge_0.95": 1,
+      "n_actives_sim_ge_0.80": 4,
+      "reference_leaked_into_actives": false
+    },
+    {
+      "target": "tyrosinemia",
+      "reference": "nitisinone",
+      "reference_in_library": true,
+      "n_actives": 179,
+      "pool_size": 3417,
+      "rank": 621,
+      "percentile": 18.173836698858647,
+      "max_tanimoto_to_actives": 0.6327,
+      "n_actives_sim_ge_0.95": 0,
+      "n_actives_sim_ge_0.80": 0,
+      "reference_leaked_into_actives": false
+    }
+  ],
+  "recall_at_k": {
+    "10": 0.0,
+    "20": 0.125,
+    "50": 0.125,
+    "100": 0.125,
+    "200": 0.125,
+    "500": 0.25,
+    "1000": 0.5,
+    "2000": 0.75
+  }
+}

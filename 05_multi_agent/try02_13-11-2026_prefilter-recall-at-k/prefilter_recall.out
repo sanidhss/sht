@@ -1,0 +1,56 @@
+==============================================================================================
+PRE-FILTER RECALL@K — how deep must a chemistry filter go to catch the reference?
+==============================================================================================
+library           : 3417 approved compounds
+pre-filter        : Tanimoto 5-NN, Morgan-2 2048-bit, similarity-weighted mean label
+targets available : 8 (attr, cel, cf, fabry, gaucher, mastocytosis, nsiad, tyrosinemia)
+
+NOTE: the 12 pins include 4 cases with too few measured activities to support
+any chemistry pre-filter at all (PKU 2 records, propionic acidemia 4, MH 10,
+HLCS 11). They have no prepared target dir and are absent below -- that
+absence is itself the result for those cells.
+
+[attr]
+  rank 1921/3417  (56.22%)  actives=493  maxTanimoto=0.4348
+[cel]
+  rank 581/3417  (17.00%)  actives=1501  maxTanimoto=0.942
+[cf]
+  rank 2455/3417  (71.85%)  actives=1450  maxTanimoto=0.5753
+[fabry]
+  rank 2964/3417  (86.74%)  actives=89  maxTanimoto=1.0
+[gaucher]
+  rank 1879/3418  (54.97%)  actives=1208  maxTanimoto=0.1918
+[mastocytosis]
+  rank 17/3417  (0.50%)  actives=1501  maxTanimoto=0.6923
+[nsiad]
+  rank 344/3417  (10.07%)  actives=1109  maxTanimoto=1.0
+[tyrosinemia]
+  rank 621/3417  (18.17%)  actives=179  maxTanimoto=0.6327
+
+==============================================================================================
+RESULTS
+==============================================================================================
+target        reference           rank     pct  actives  maxSim  >=.95  >=.80  leak?
+----------------------------------------------------------------------------------------------
+mastocytosis  midostaurin           17   0.50%     1501   0.692      0      0  
+nsiad         tolvaptan            344  10.07%     1109   1.000      1      4  TRIVIAL
+cel           imatinib             581  17.00%     1501   0.942      0      2  close
+tyrosinemia   nitisinone           621  18.17%      179   0.633      0      0  
+gaucher       ambroxol            1879  54.97%     1208   0.192      0      0  
+attr          tafamidis           1921  56.22%      493   0.435      0      0  
+cf            lumacaftor          2455  71.85%     1450   0.575      0      0  
+fabry         migalastat          2964  86.74%       89   1.000      3      5  TRIVIAL
+
+RECALL@K  (fraction of targets whose reference is within the top k)
+----------------------------------------------------------------------------------------------
+       k    recall      n   targets caught
+      10       0%    0/8   -
+      20      12%    1/8   mastocytosis
+      50      12%    1/8   mastocytosis
+     100      12%    1/8   mastocytosis
+     200      12%    1/8   mastocytosis
+     500      25%    2/8   mastocytosis, nsiad
+    1000      50%    4/8   cel, mastocytosis, nsiad, tyrosinemia
+    2000      75%    6/8   attr, cel, gaucher, mastocytosis, nsiad, tyrosinemia
+
+wrote /projects/bisa/sshah21/library/05_multi_agent/try02_13-11-2026_prefilter-recall-at-k/prefilter_recall.json

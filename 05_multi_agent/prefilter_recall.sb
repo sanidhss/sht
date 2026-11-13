@@ -1,0 +1,37 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-cpu
+#SBATCH -p cpu
+#SBATCH -n 1 -c 16 --mem=32g -t 01:00:00
+#SBATCH -J prefilter_recall
+#SBATCH -o /work/hdd/bisa/sshah21/results/multi_agent/%x_%j.out
+
+# try02 -- measures how deep a chemistry pre-filter must go to catch the reference drug,
+# which is what sets `k` for the multi-agent protocol. The paper never reports its own
+# top-k, and its candidate space (74 drugs) is ~46x smaller than this project's library
+# (3,420), so k cannot be inherited and has to be measured here.
+#
+# CPU only: RDKit fingerprints, no GPU, no network, no model weights. Sized at 1h for
+# 8 targets x 3,420 library compounds x up to ~1,500 actives of Tanimoto comparison,
+# which is minutes of real work -- the ceiling is for Lustre I/O on the conda env, not
+# for compute.
+#
+# Does NOT import transformers: try01 measured that import at 197s in envs/txgemma on
+# Lustre, which alone overran two interactive allocations.
+
+set -euo pipefail
+
+mkdir -p /work/hdd/bisa/sshah21/results/multi_agent
+
+TRIAL_DIR=$(/projects/bisa/sshah21/library/_lib/new_trial.sh 05_multi_agent \
+    "prefilter-recall-at-k" \
+    /projects/bisa/sshah21/library/05_multi_agent/prefilter_recall.py "$0")
+echo "Trial: $TRIAL_DIR"
+
+export OUT_DIR="$TRIAL_DIR"
+export KNN_K=5
+
+# Run the SNAPSHOT, not the original, so the exact version that ran is preserved.
+/work/hdd/bisa/sshah21/envs/txgemma/bin/python -I -u "$TRIAL_DIR/prefilter_recall.py" \
+    2>&1 | tee "$TRIAL_DIR/prefilter_recall.out"
+
+/projects/bisa/sshah21/library/_lib/finalize_trial.sh "$TRIAL_DIR" "$SLURM_JOB_ID"
