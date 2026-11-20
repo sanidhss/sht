@@ -1,0 +1,6 @@
+disease,eval_node,ref_drug,answer_edge,ens_rank,n_drugs,best_cos,reliable,proto_hit,zero
+cel,chronic eosinophilic leukemia,Imatinib,True,6322,7957,0.1333,False,False,False
+cel,"chronic eosinophilic leukemia, not otherwise specified",Imatinib,True,6216,7957,0.1732,False,False,False
+sm,systemic mastocytosis,Midostaurin,True,6427,7957,0.1768,False,False,False
+sm,systemic mastocytosis,Avapritinib,False,6892,7957,0.1768,False,False,False
+nsiad,nephrogenic syndrome of inappropriate antidiuresis,Tolvaptan,True,6373,7957,0.1754,False,False,False

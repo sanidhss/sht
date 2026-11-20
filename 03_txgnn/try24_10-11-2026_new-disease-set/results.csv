@@ -1,0 +1,13 @@
+disease,eval_node,internal_idx,seed,ref_drug,ref_drug_db_id,rank,percentile,proto_hit,proto_best_cos,reliable,proto_keys,n_holdout_nodes,blind_check_passed,score_zero
+cel,chronic eosinophilic leukemia,3577.0,1,Imatinib,DB00619,6381,0.8019,False,0.1333,False,7896_4600_4614_875(0.1333); 18874_4643(0.1184); 5009(0.1077),4,True,False
+cel,chronic eosinophilic leukemia,3577.0,2,Imatinib,DB00619,6411,0.8057,False,0.1333,False,7896_4600_4614_875(0.1333); 18874_4643(0.1184); 5009(0.1077),4,True,False
+cel,chronic eosinophilic leukemia,3577.0,3,Imatinib,DB00619,5879,0.7388,False,0.1333,False,7896_4600_4614_875(0.1333); 18874_4643(0.1184); 5009(0.1077),4,True,False
+cel,"chronic eosinophilic leukemia, not otherwise specified",13744.0,1,Imatinib,DB00619,6314,0.7935,False,0.1732,False,7896_4600_4614_875(0.1732); 18874_4643(0.1025); 5009(0.0933),4,True,False
+cel,"chronic eosinophilic leukemia, not otherwise specified",13744.0,2,Imatinib,DB00619,6326,0.795,False,0.1732,False,7896_4600_4614_875(0.1732); 18874_4643(0.1025); 5009(0.0933),4,True,False
+cel,"chronic eosinophilic leukemia, not otherwise specified",13744.0,3,Imatinib,DB00619,5388,0.6771,False,0.1732,False,7896_4600_4614_875(0.1732); 18874_4643(0.1025); 5009(0.0933),4,True,False
+sm,systemic mastocytosis,4301.0,1,Midostaurin,DB06595,6532,0.8209,False,0.1768,False,6769(0.1768); 20316(0.1443); 3001(0.0913),6,True,False
+sm,systemic mastocytosis,4301.0,2,Midostaurin,DB06595,6350,0.798,False,0.1768,False,6769(0.1768); 20316(0.1443); 3001(0.0913),6,True,False
+sm,systemic mastocytosis,4301.0,3,Midostaurin,DB06595,6340,0.7968,False,0.1768,False,6769(0.1768); 20316(0.1443); 3001(0.0913),6,True,False
+nsiad,nephrogenic syndrome of inappropriate antidiuresis,437.0,1,Tolvaptan,DB06212,6511,0.8183,False,0.1754,False,11822_100344_9424_909_10503_11242_15231(0.1754); 15766(0.1545); 19617(0.124),2,True,False
+nsiad,nephrogenic syndrome of inappropriate antidiuresis,437.0,2,Tolvaptan,DB06212,6626,0.8327,False,0.1754,False,11822_100344_9424_909_10503_11242_15231(0.1754); 15766(0.1545); 19617(0.124),2,True,False
+nsiad,nephrogenic syndrome of inappropriate antidiuresis,437.0,3,Tolvaptan,DB06212,2640,0.3318,False,0.1754,False,11822_100344_9424_909_10503_11242_15231(0.1754); 15766(0.1545); 19617(0.124),2,True,False
