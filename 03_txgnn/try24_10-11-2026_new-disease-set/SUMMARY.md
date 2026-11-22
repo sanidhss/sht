@@ -10,27 +10,21 @@ UNRELIABLE = best lookalike similarity < 0.2: the lookalikes are arbitrary, so t
 | sm | systemic mastocytosis | Midostaurin | True | UNRELIABLE | - | 0.177 | False |
 | sm | systemic mastocytosis | Avapritinib | False | 6892 (informational only) | 0.866 | 0.177 | False |
 | nsiad | nephrogenic syndrome of inappropriate antidiuresis | Tolvaptan | True | UNRELIABLE | - | 0.175 | False |
+| pku | phenylketonuria | Sapropterin | True | UNRELIABLE | - | 0.178 | False |
+| mh | malignant hyperthermia of anesthesia | Dantrolene | True | UNRELIABLE | - | 0.134 | False |
+| mh | exercise-induced malignant hyperthermia | Dantrolene | True | 14 / 7957 | 0.002 | 0.244 | False |
 
 ## Array task states
 
 - task 0 cel: COMPLETED (07:19:30)
 - task 1 sm: COMPLETED (07:10:30)
 - task 2 nsiad: COMPLETED (07:06:21)
-- task 3 pku: unknown
-- task 4 mh: unknown
+- task 3 pku: COMPLETED (07:03:35)
+- task 4 mh: COMPLETED (07:05:05)
 - task 5 tyr1: unknown
 
 ## Failed / skipped / incomplete
 
-- **pku** @ phenylketonuria seed 1: NO OUTPUT. Array task 3: unknown (no sacct record)
-- **pku** @ phenylketonuria seed 2: NO OUTPUT. Array task 3: unknown (no sacct record)
-- **pku** @ phenylketonuria seed 3: NO OUTPUT. Array task 3: unknown (no sacct record)
-- **mh** @ malignant hyperthermia of anesthesia seed 1: NO OUTPUT. Array task 4: unknown (no sacct record)
-- **mh** @ malignant hyperthermia of anesthesia seed 2: NO OUTPUT. Array task 4: unknown (no sacct record)
-- **mh** @ malignant hyperthermia of anesthesia seed 3: NO OUTPUT. Array task 4: unknown (no sacct record)
-- **mh** @ exercise-induced malignant hyperthermia seed 1: NO OUTPUT. Array task 4: unknown (no sacct record)
-- **mh** @ exercise-induced malignant hyperthermia seed 2: NO OUTPUT. Array task 4: unknown (no sacct record)
-- **mh** @ exercise-induced malignant hyperthermia seed 3: NO OUTPUT. Array task 4: unknown (no sacct record)
 - **tyr1** @ tyrosinemia seed 1: NO OUTPUT. Array task 5: unknown (no sacct record)
 - **tyr1** @ tyrosinemia seed 2: NO OUTPUT. Array task 5: unknown (no sacct record)
 - **tyr1** @ tyrosinemia seed 3: NO OUTPUT. Array task 5: unknown (no sacct record)
