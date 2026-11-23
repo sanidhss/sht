@@ -87,6 +87,112 @@ So for the generalisation question above, read the **enrichment percentile**, an
   `eval_set.json`; both files use the same `{prompt, answer}` schema across old and new
   targets; the script parses; the conda python and output directory exist.
 
-## Result
+## Result (job 23833457, completed 17-11-2026, 53m15s)
 
-Pending.
+### Zero-shot vs fine-tuned, same 8-target decoy pool
+
+For the four **new** targets both numbers come from the same decoy pool, so the
+difference is real. digit_exp percentile, lower = better, 50 = chance.
+
+| target | zero-shot | fine-tuned | delta | what fine-tuning did |
+|---|---|---|---|---|
+| cel | 94.2 | 20.6 | **+73.6** | huge genuine learning |
+| nsiad | 96.6 | 16.0 | **+80.6** | huge genuine learning |
+| tyrosinemia | 86.6 | 35.3 | **+51.3** | large genuine learning |
+| mastocytosis | 14.6 | 77.9 | **−63.2** | **destroyed a working prior** |
+
+**This overturns the reading that fine-tuning adds nothing.** On three of the four new
+targets the base model starts near or below chance — cel at 94.2 and nsiad at 96.6 are
+not "no signal", they are *actively wrong*, ranking the real drug among the least potent
+of 501 — and LoRA moves them 50 to 80 percentile points. That is the largest effect
+measured anywhere in this project. try13's conclusion was drawn from four targets of
+which two (gaucher, fabry) had strong priors, and it generalised a special case.
+
+**mastocytosis is a second Fabry.** It is the only new target where the base model
+already had a good prior (14.6), and fine-tuning wrecked it — 14.6 to 77.9, the single
+worst degradation on record, worse than Fabry's 15.2 to 35.2.
+
+### The pattern that actually holds
+
+Sorting every target by its zero-shot score makes the rule visible:
+
+| target | zero-shot | after fine-tuning | direction |
+|---|---|---|---|
+| fabry | 10.0 | 35.2 | **worse** |
+| gaucher | 11.0 | 0.4 | better |
+| mastocytosis | 14.6 | 77.9 | **much worse** |
+| cf | 47.8 | 28.8 | better |
+| attr | 58.0 | 64.2 | flat |
+| tyrosinemia | 86.6 | 35.3 | much better |
+| cel | 94.2 | 20.6 | much better |
+| nsiad | 96.6 | 16.0 | much better |
+
+Everything that starts badly improves sharply. Two of the three targets that start well
+are damaged. Gaucher is the lone exception — it starts well and improves.
+
+Nothing lands below ~16 after fine-tuning except Gaucher, and nothing stays above ~65.
+Fine-tuning pulls every target toward a band around 20–35 regardless of where it
+started. **It is not learning the target so much as learning the task's output
+distribution.** That is a sharper and more defensible claim than "it does nothing", and
+it explains the damage cases: a prior better than the band gets dragged down to it.
+
+### Against the non-LLM baseline, which is the bar
+
+| target | fine-tuned | best baseline | winner |
+|---|---|---|---|
+| gaucher | **0.4** | 21.6 | model |
+| cf | 28.8 | 29.4 | tie |
+| fabry | 35.2 | 26.4 | baseline |
+| attr | 64.2 | 31.0 | baseline |
+| cel | 20.6 | 5.8 | baseline |
+| mastocytosis | 77.9 | 20.8 | baseline |
+| nsiad | 16.0 | 9.2 | baseline (model wins 2/3 seeds: 7.2, 3.4) |
+| tyrosinemia | 35.3 | 26.8 | baseline (model wins 1/3 seeds: 8.8) |
+
+**1 win, 1 tie, 6 losses.** The large learning above is real and still not enough —
+every target it rescues, a Tanimoto k-NN had already solved better. nsiad is the closest
+call: two of three seeds beat the baseline, but seed 0 lands at 37.4 and the spread is
+34.0, so the mean loses.
+
+### The zero-shot screening claim is still n = 1
+
+Two targets pass `beats_hard` zero-shot — gaucher and mastocytosis — but **mastocytosis's
+pass is the model being wrong.** Its hard negatives are genuinely *more* potent than
+midostaurin (14.7 / 14.7 / 0.2 nM vs 57.2), so ranking the drug above them is a factual
+error that the flag records as a success. See try14's README.
+
+Gaucher remains the only legitimate zero-shot pass in eight targets. The no-training
+screening result does **not** generalise.
+
+### Decoy-pool sensitivity: try13's numbers were not stable
+
+This run predicted that a large shift in the original four would itself be a finding.
+There is one.
+
+| target | try13 (4-target pool) | try15 (8-target pool) | shift |
+|---|---|---|---|
+| gaucher | 18.4 | 11.0 | −7.4 |
+| cf | 79.2 | 47.8 | **−31.4** |
+| fabry | 15.2 | 10.0 | −5.2 |
+| attr | 74.6 | 58.0 | −16.6 |
+
+The same model scoring the same drugs moved by up to 31 percentile points purely because
+the decoy field changed. All four moved in the same direction — a wider, more chemically
+diverse pool contains more molecules the model scores as potent, which lifts the
+reference's rank.
+
+**Consequence: an enrichment percentile is only meaningful relative to a stated decoy
+pool, and no number in this project should be compared across tries unless both used the
+same `ALL_TARGETS`.** The relative ordering survives (gaucher and fabry good, cf and attr
+poor, under both pools), so try13's *conclusions* hold; its *numbers* do not transfer.
+Any thesis table must state the pool.
+
+## What this changes
+
+1. **"Fine-tuning does nothing" is wrong and should not be written down.** It produces
+   the largest effects in the project. It just converges every target to the same
+   mediocre band.
+2. **Damage is a real and repeated failure mode**, not a Fabry quirk — 2 of the 3
+   targets with good priors were degraded.
+3. **The baseline verdict is unchanged**: 1 win, 1 tie, 6 losses.
+4. **Zero-shot screening does not generalise.** Gaucher is one molecule, not a method.

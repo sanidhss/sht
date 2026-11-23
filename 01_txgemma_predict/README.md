@@ -305,6 +305,72 @@ Greedy's failure mode is also now unambiguous: on cel it produced 54–57 distin
 across 500 decoys (~89% collapse) against digit_exp's 239–253, with a cross-seed spread
 of 47.6 vs 4.6. Report digit_exp.
 
+### 10. The corrected picture, all eight targets (try14 + try15, 22-11-2026)
+
+Supersedes the reading in section 9, which was written on 2 of 8 targets and on a
+zero-shot control that had only ever been run on the original four.
+
+**Everything below uses the 8-target decoy pool.** Section 11 explains why that matters.
+
+| target | zero-shot | fine-tuned | best baseline | fine-tuning did | vs baseline |
+|---|---|---|---|---|---|
+| fabry | 10.0 | 35.2 | 26.4 | **damaged** | baseline |
+| gaucher | 11.0 | **0.4** | 21.6 | sharpened | **model** |
+| mastocytosis | 14.6 | 77.9 | 20.8 | **destroyed** | baseline |
+| cf | 47.8 | 28.8 | 29.4 | learned | tie |
+| attr | 58.0 | 64.2 | 31.0 | nothing | baseline |
+| tyrosinemia | 86.6 | 35.3 | 26.8 | learned a lot | baseline |
+| cel | 94.2 | 20.6 | 5.8 | learned a lot | baseline |
+| nsiad | 96.6 | 16.0 | 9.2 | learned a lot | baseline (2/3 seeds win) |
+
+**Fine-tuning produces the largest effects in this project — up to 80 percentile points.**
+The earlier conclusion that it adds nothing was drawn from four targets, two of which
+happened to have strong base-model priors, and it does not survive contact with the new
+four. cel and nsiad start *actively wrong* (94.2, 96.6 — the real drug ranked among the
+least potent of 501) and end at 20.6 and 16.0.
+
+**But it converges everything to the same band.** Nothing finishes below ~16 except
+Gaucher; nothing finishes above ~65 except mastocytosis. Targets starting at 87–97 are
+pulled down to 16–35; targets starting at 10–15 are pushed up to 35–78. The honest
+description is that **LoRA is teaching the task's output distribution more than the
+target's chemistry** — which simultaneously explains the gains and the damage.
+
+**Damage is a repeatable failure mode, not a Fabry quirk.** Of the three targets whose
+base model had a good prior, two were degraded: fabry 10.0 → 35.2 and mastocytosis
+14.6 → 77.9. Only Gaucher improved from a good start.
+
+**Against the bar: 1 win, 1 tie, 6 losses.** Every target fine-tuning rescued, a Tanimoto
+k-NN had already solved better. That verdict is unchanged from section 9 and is the one
+robust result.
+
+**Zero-shot screening does not generalise.** Only gaucher passes `beats_hard` zero-shot
+legitimately. Mastocytosis also passes, but its analogs are genuinely more potent than
+midostaurin, so that pass is a factual error the flag records as success. n = 1 over
+eight targets.
+
+### 11. Enrichment percentiles are decoy-pool-dependent (try15)
+
+`build_decoys()` pools every other target in `ALL_TARGETS`, so that list defines the
+yardstick. Re-scoring the original four zero-shot against an 8-target pool instead of
+try13's 4-target pool moved every number, one by 31 points:
+
+| target | try13 (4-pool) | try15 (8-pool) | shift |
+|---|---|---|---|
+| gaucher | 18.4 | 11.0 | −7.4 |
+| cf | 79.2 | 47.8 | **−31.4** |
+| fabry | 15.2 | 10.0 | −5.2 |
+| attr | 74.6 | 58.0 | −16.6 |
+
+Same model, same drugs, same prompts. Only the comparison set changed. A wider pool holds
+more molecules the model rates as potent, lifting the reference's rank.
+
+**No percentile in this project is comparable across tries unless both used the same
+`ALL_TARGETS`.** The ordering is stable under both pools, so try13's conclusions hold and
+its numbers do not transfer. Every table in the thesis must state its decoy pool. In
+particular, try11's fine-tuned numbers for the original four are 4-pool and cannot be
+differenced against try15's 8-pool zero-shot — which is why the table in section 10 shows
+direction for those four rather than a delta.
+
 ### Caveats on earlier numbers
 - Gaucher's analog real labels are 791/**679**/839, not the 791/791/839 quoted in places
   (those are *predicted*). Analog #2's real 679 is more potent than ambroxol's real 685.

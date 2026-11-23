@@ -175,7 +175,50 @@ have more public binding data than Fabry does is itself a finding.
 - Partitions and accounts confirmed against `sinfo` / `sacctmgr`: `cpu` + `bisa-delta-cpu`,
   `gpuA100x4` + `bisa-delta-gpu`.
 
-## Result (partial — 2 of 4 targets done, 12-11-2026)
+## Result (final — all 4 targets, job C completed 20-11-2026)
+
+Full table in `/work/hdd/bisa/sshah21/results/txgemma_lora_orphan/try14_new_targets/`
+(`results.csv`, `SUMMARY.md`). digit_exp percentile, mean of 3 seeds, lower = better.
+
+| target | n_train | fine-tuned | spread | best baseline | beat baseline | audit |
+|---|---|---|---|---|---|---|
+| cel | 1253 | 20.6 | 4.6 | 5.8 | 0/3 | 3/3 |
+| mastocytosis | 1272 | 77.9 | 21.2 | 20.8 | 0/3 | **2/3** |
+| nsiad | 928 | 16.0 | 34.0 | 9.2 | **2/3** | 3/3 |
+| tyrosinemia | 130 | 35.3 | 48.6 | 26.8 | 1/3 | 3/3 |
+
+**No target cleared the baseline on a mean-of-seeds basis.** nsiad came closest: seeds 1
+and 2 scored 7.2 and 3.4 against the 9.2 baseline, but seed 0 landed at 37.4 and the
+spread of 34.0 swamps the margin. tyrosinemia's seed 0 beat it once at 8.8 with a spread
+of 48.6, which is noise, not a result.
+
+`beats_hard` was 0/3 everywhere except mastocytosis at 2/3 — and **mastocytosis's passes
+are the model being wrong**; its analogs are genuinely more potent than midostaurin, so
+ranking the drug above them is a factual error the flag scores as success. See the
+hard-negative defect section below.
+
+**mastocytosis's selection audit failed on 1 of 3 seeds**, so its checkpoint choice is
+not resolved by the validation set. It is also the worst result in the project (77.9,
+well past chance) and the target whose prior fine-tuning destroyed — see try15.
+
+### What try15 added
+
+Zero-shot scoring on the same decoy pool (try15, job 23833457) showed fine-tuning's
+effect on these four targets is **large and real**, which this try alone could not see:
+
+| target | zero-shot | fine-tuned | delta |
+|---|---|---|---|
+| cel | 94.2 | 20.6 | +73.6 |
+| nsiad | 96.6 | 16.0 | +80.6 |
+| tyrosinemia | 86.6 | 35.3 | +51.3 |
+| mastocytosis | 14.6 | 77.9 | **−63.2** |
+
+So the flat reading of this try — "four targets, none beat the baseline" — understates
+what happened. Three were rescued from far worse than chance and still lost; one was
+ruined. Read try15's README for the pattern.
+
+## Result (superseded — partial write-up, 2 of 4 targets, 12-11-2026)
+
 
 Job A completed 10-11 01:03. `tyrosinemia` finished 11-11 19:04 (2h05), `cel` finished
 12-11 01:31 (7h55). `mastocytosis` and `nsiad` are still queued behind GPU priority;
