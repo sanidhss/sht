@@ -104,3 +104,24 @@ See the log below for job ids.
 - 12-11-2026: A100 array still queued (priority). Duplicate on gpuA40x4 (same code/config/split; results in txgnn_v4_new_disease_set_a40/, outputs tagged _a40): B40=23832634 -> C40=23832635. A100 copy left queued. config.py gained an env override for the results dir; default unchanged.
 - 20-11-2026: A100 tasks 0-2 (cel, sm, nsiad) COMPLETED, ~7h each; tasks 3-5 still queued. A40 duplicate CANCELLED: tasks 0-1 hit the 12h limit (A40 ~2x slower; 3 seeds do not fit), and the A100 copy had already finished those diseases. Interim collate: cel, sm, nsiad all UNRELIABLE (best lookalike cos < 0.2); avapritinib (no SM edge, informational) 6892.
 - 22-11-2026: pku, mh COMPLETED. Exercise-induced MH: dantrolene ensemble rank 14/7957 (best lookalike cos 0.244, reliable; no lookalike carries dantrolene). MH of anesthesia 36 but UNRELIABLE (0.134). PKU UNRELIABLE. Specificity control: dantrolene ranks 6259-6702 for cel/sm/nsiad/pku, so the MH rank is disease-specific. tyr1 still queued.
+
+## Specificity control (23-11-2026)
+Rank of each success-case drug under every other disease's own model (seed-ensembled),
+the try17 rule: a rank only counts if the drug is NOT ranked that high everywhere.
+
+| model \ drug | nitisinone | dantrolene |
+|---|---|---|
+| cel | 6977 | 6259 |
+| sm | 7653 | 6702 |
+| nsiad | 7060 | 6573 |
+| pku | 6406 | 6414 |
+| mh (exercise-induced) | 6055 | **14** |
+| tyr1 | **3224** | 3164 |
+
+- **Dantrolene @ exercise-induced MH passes:** 14 there, 6,259-7,060 everywhere else.
+  Both MH nodes carry RYR1, dantrolene's target, so this is a gene-mediated hit, not a
+  borrowed lookalike indication.
+- **Nitisinone @ tyrosinemia FAILS the control:** 3,224, but dantrolene is 3,164 for the
+  same disease - the tyrosinemia model ranks an unrelated drug slightly *higher* than the
+  true one. The 3,224 is not a disease-specific signal, it is where this model puts
+  everything. Report tyrosinemia as a miss, not a weak hit.
