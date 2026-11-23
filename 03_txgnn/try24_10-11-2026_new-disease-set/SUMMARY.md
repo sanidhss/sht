@@ -13,6 +13,7 @@ UNRELIABLE = best lookalike similarity < 0.2: the lookalikes are arbitrary, so t
 | pku | phenylketonuria | Sapropterin | True | UNRELIABLE | - | 0.178 | False |
 | mh | malignant hyperthermia of anesthesia | Dantrolene | True | UNRELIABLE | - | 0.134 | False |
 | mh | exercise-induced malignant hyperthermia | Dantrolene | True | 14 / 7957 | 0.002 | 0.244 | False |
+| tyr1 | tyrosinemia | Nitisinone | True | 3224 / 7957 | 0.405 | 0.229 | False |
 
 ## Array task states
 
@@ -21,10 +22,8 @@ UNRELIABLE = best lookalike similarity < 0.2: the lookalikes are arbitrary, so t
 - task 2 nsiad: COMPLETED (07:06:21)
 - task 3 pku: COMPLETED (07:03:35)
 - task 4 mh: COMPLETED (07:05:05)
-- task 5 tyr1: unknown
+- task 5 tyr1: COMPLETED (07:50:00)
 
 ## Failed / skipped / incomplete
 
-- **tyr1** @ tyrosinemia seed 1: NO OUTPUT. Array task 5: unknown (no sacct record)
-- **tyr1** @ tyrosinemia seed 2: NO OUTPUT. Array task 5: unknown (no sacct record)
-- **tyr1** @ tyrosinemia seed 3: NO OUTPUT. Array task 5: unknown (no sacct record)
+none

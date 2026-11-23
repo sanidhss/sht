@@ -20,3 +20,6 @@ mh,malignant hyperthermia of anesthesia,5912.0,3,Dantrolene,DB01219,33,0.0041,Fa
 mh,exercise-induced malignant hyperthermia,6125.0,1,Dantrolene,DB01219,25,0.0031,False,0.2438,True,9377(0.2438); 15766(0.2263); 8988_16603_15991(0.1797),2,True,False
 mh,exercise-induced malignant hyperthermia,6125.0,2,Dantrolene,DB01219,14,0.0018,False,0.2438,True,9377(0.2438); 15766(0.2263); 8988_16603_15991(0.1797),2,True,False
 mh,exercise-induced malignant hyperthermia,6125.0,3,Dantrolene,DB01219,18,0.0023,False,0.2438,True,9377(0.2438); 15766(0.2263); 8988_16603_15991(0.1797),2,True,False
+tyr1,tyrosinemia,311.0,1,Nitisinone,DB00348,200,0.0251,False,0.2289,True,30105_18116(0.2289); 8815(0.227); 19365(0.2136),1,True,False
+tyr1,tyrosinemia,311.0,2,Nitisinone,DB00348,4011,0.5041,False,0.2289,True,30105_18116(0.2289); 8815(0.227); 19365(0.2136),1,True,False
+tyr1,tyrosinemia,311.0,3,Nitisinone,DB00348,6197,0.7788,False,0.2289,True,30105_18116(0.2289); 8815(0.227); 19365(0.2136),1,True,False

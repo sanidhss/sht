@@ -7,3 +7,4 @@ nsiad,nephrogenic syndrome of inappropriate antidiuresis,Tolvaptan,True,6373,795
 pku,phenylketonuria,Sapropterin,True,599,7957,0.1784,False,False,False
 mh,malignant hyperthermia of anesthesia,Dantrolene,True,36,7957,0.134,False,False,False
 mh,exercise-induced malignant hyperthermia,Dantrolene,True,14,7957,0.2438,True,False,False
+tyr1,tyrosinemia,Nitisinone,True,3224,7957,0.2289,True,False,False
