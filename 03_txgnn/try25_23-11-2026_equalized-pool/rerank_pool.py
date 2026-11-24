@@ -172,9 +172,6 @@ def main():
 
     df = pd.DataFrame(rows)
     df.to_csv(os.path.join(TRY_DIR, 'results_pool_v1.csv'), index=False)
-    E = pd.DataFrame(ens_rows)
-    E.to_csv(os.path.join(TRY_DIR, 'results_pool_v1_ensemble.csv'), index=False)
-
     # ---- specificity control on the NEW field ----
     # Every reference drug that is in the pool, ranked under every model, pool-restricted.
     drugs = {(r['ref_drug_db_id'], r['ref_drug']) for r in ens_rows}
@@ -187,13 +184,34 @@ def main():
     S = pd.DataFrame(spec)
     S.to_csv(os.path.join(TRY_DIR, 'specificity_pool_v1.csv'), index=False)
 
+    # Verdict per (model, drug): a rank counts only if the drug ranks better under its own
+    # disease's model than under EVERY other model. Eyeballing the matrix is how a
+    # borrowed-category rank slips through, so the comparison is made explicit here.
+    by_drug = {}
+    for r in spec:
+        by_drug.setdefault(r['drug_db_id'], []).append(r)
+    for e in ens_rows:
+        own = (e['disease'], e['eval_node'])
+        others = [r for r in by_drug[e['ref_drug_db_id']]
+                  if (r['model_disease'], r['model_node']) != own and r['rank_pool'] is not None]
+        best = min(others, key=lambda r: r['rank_pool']) if others else None
+        e['best_other_rank'] = best['rank_pool'] if best else None
+        e['best_other_model'] = f"{best['model_disease']}/{best['model_node']}" if best else None
+        e['specificity_pass'] = (None if e['rank_pool'] is None or best is None
+                                 else bool(e['rank_pool'] < best['rank_pool']))
+    E = pd.DataFrame(ens_rows)
+    E.to_csv(os.path.join(TRY_DIR, 'results_pool_v1_ensemble.csv'), index=False)
+
     # ---- printed summary ----
     pd.set_option('display.width', 250, 'display.max_colwidth', 44)
     print('\n==== seed-ensembled ranks: pool_v1 vs full field ====')
     show = E.copy()
-    show['verdict'] = np.where(~show.reliable, 'UNRELIABLE (cos<0.2)', '')
-    print(show[['source', 'disease', 'eval_node', 'ref_drug', 'rank_pool', 'n_pool',
-                'rank_7957', 'best_cos', 'verdict']].to_string(index=False))
+    show['rank_pool'] = [('not in pool_v1' if r is None else int(r)) for r in show.rank_pool]
+    show['verdict'] = np.where(~show.reliable, 'UNRELIABLE (cos<0.2)',
+                      np.where(show.specificity_pass.fillna(False), 'counts',
+                               'FAILS specificity'))
+    print(show[['source', 'disease', 'eval_node', 'ref_drug', 'rank_pool', 'rank_7957',
+                'best_cos', 'best_other_rank', 'best_other_model', 'verdict']].to_string(index=False))
 
     print('\n==== specificity control on pool_v1 (rank of each reference drug under every model) ====')
     piv = S.pivot_table(index=['model_disease', 'model_node'], columns='drug', values='rank_pool')
