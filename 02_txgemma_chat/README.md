@@ -57,6 +57,16 @@ downstream pipeline by design)?
    try06 redesign is sound in distribution — the failure is specifically
    retrieval-over-derivation under distribution shift. Caveat: n=1 per arm, and the
    verbatim in-distribution match is itself a memorization signal.
+12. **try12** — try11's screen re-ranked on the frozen equalized pool (`pool_v1`,
+   sha-verified, 1,933 compounds). No model calls; try10/try11 saved per-compound
+   margins with `chembl_id`, so this is a join. **The register finding survives the
+   restriction and widens:** fabry migalastat is rank **7/1,933 (0.36%)** under
+   physicochemical phrasing and **1,675/1,933 (86.65%)** under pharmacological phrasing
+   — a 239x separation from wording alone. cf 360/1,933, attr 177/1,933. **gaucher drops
+   out:** ambroxol is not in `pool_v1` under any id (not `max_phase=4` in ChEMBL), so it
+   cannot be placed on this ruler without rebuilding the pool. This arm is descoped from
+   the architecture comparison; it exists only to put these numbers on the shared ruler.
+
 11. **try11** — tests whether condition *phrasing register* causes the fabry-only result
    (jobs 23226288 + 23226442, both COMPLETED 30-10-2026). **The causal result of this
    track:** holding disease, weights and library fixed and changing only the register of

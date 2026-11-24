@@ -1,0 +1,7 @@
+target,ref_drug,register,rank_pool,n_pool,percentile_pool,rank_3417
+fabry,migalastat,physchem,7,1933,0.36,11
+fabry,migalastat,pharmacological,1675,1933,86.65,2974
+gaucher,ambroxol,physchem,NOT_IN_POOL,1933,,1219
+gaucher,ambroxol,pharmacological,NOT_IN_POOL,1933,,1143
+cf,lumacaftor,physchem,360,1933,18.62,640
+attr,tafamidis,physchem,177,1933,9.16,291
