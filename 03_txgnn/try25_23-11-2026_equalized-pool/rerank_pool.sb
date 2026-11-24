@@ -1,0 +1,9 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-cpu
+#SBATCH -p cpu
+#SBATCH -n 1 -c 8 --mem=200g -t 01:00:00
+#SBATCH -J txgnn_t25_pool
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgnn/%x_%j.out
+set -eo pipefail
+cd /projects/bisa/sshah21/library/03_txgnn/try25_23-11-2026_equalized-pool
+/work/hdd/bisa/sshah21/envs/txgnn2/bin/python -u rerank_pool.py 2>&1 | tee rerank_pool.out
