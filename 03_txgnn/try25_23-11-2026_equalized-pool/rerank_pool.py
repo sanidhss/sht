@@ -206,7 +206,7 @@ def main():
     pd.set_option('display.width', 250, 'display.max_colwidth', 44)
     print('\n==== seed-ensembled ranks: pool_v1 vs full field ====')
     show = E.copy()
-    show['rank_pool'] = [('not in pool_v1' if r is None else int(r)) for r in show.rank_pool]
+    show['rank_pool'] = ['not in pool_v1' if pd.isna(r) else int(r) for r in show.rank_pool]
     show['verdict'] = np.where(~show.reliable, 'UNRELIABLE (cos<0.2)',
                       np.where(show.specificity_pass.fillna(False), 'counts',
                                'FAILS specificity'))

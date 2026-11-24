@@ -1,42 +1,11 @@
 [0] pool verified: 1933 records, 1933 unique DrugBank ids, sha256 9d89c3ce758b7ec7c8bea2866f6448a9ea71b372f0f3c3f92c8c6b690653e308
 
 ==== seed-ensembled ranks: pool_v1 vs full field ====
-source disease                                              eval_node    ref_drug  rank_pool  n_pool  rank_7957  best_cos              verdict
- try24     cel                          chronic eosinophilic leukemia    Imatinib      839.0    1933       6322    0.1333 UNRELIABLE (cos<0.2)
- try24     cel chronic eosinophilic leukemia, not otherwise specified    Imatinib      804.0    1933       6216    0.1732 UNRELIABLE (cos<0.2)
- try24      sm                                  systemic mastocytosis Midostaurin      976.0    1933       6427    0.1768 UNRELIABLE (cos<0.2)
- try24   nsiad     nephrogenic syndrome of inappropriate antidiuresis   Tolvaptan        NaN    1933       6373    0.1754 UNRELIABLE (cos<0.2)
- try24     pku                                        phenylketonuria Sapropterin      211.0    1933        599    0.1784 UNRELIABLE (cos<0.2)
- try24      mh                   malignant hyperthermia of anesthesia  Dantrolene       29.0    1933         36    0.1340 UNRELIABLE (cos<0.2)
- try24      mh                exercise-induced malignant hyperthermia  Dantrolene       11.0    1933         14    0.2438                     
- try24    tyr1                                            tyrosinemia  Nitisinone      566.0    1933       3224    0.2289                     
- try23   fabry                                          Fabry disease  migalastat      118.0    1933        486    0.3176                     
- try23 gaucher                                        Gaucher disease   miglustat       10.0    1933         24    0.3305                     
- try23 gaucher                                        Gaucher disease  eliglustat      204.0    1933        896    0.3305                     
- try23      cf                                        cystic fibrosis   ivacaftor      324.0    1933        918    0.1588 UNRELIABLE (cos<0.2)
- try23      cf                                        cystic fibrosis  lumacaftor      289.0    1933        803    0.1588 UNRELIABLE (cos<0.2)
- try23      cf                                        cystic fibrosis  tezacaftor      302.0    1933        847    0.1588 UNRELIABLE (cos<0.2)
- try23      cf                                        cystic fibrosis elexacaftor      264.0    1933        742    0.1588 UNRELIABLE (cos<0.2)
- try23     ttr                                  ATTRV122I amyloidosis   tafamidis      155.0    1933        340    0.1473 UNRELIABLE (cos<0.2)
- try23     ttr                             wild type ATTR amyloidosis   tafamidis       91.0    1933        138    0.1714 UNRELIABLE (cos<0.2)
- try23     ttr                            hereditary ATTR amyloidosis   tafamidis      280.0    1933        592    0.2010                     
-
-==== specificity control on pool_v1 (rank of each reference drug under every model) ====
-drug                                                                  Dantrolene  Imatinib  Midostaurin  Nitisinone  Sapropterin  elexacaftor  eliglustat  ivacaftor  lumacaftor  migalastat  miglustat  tafamidis  tezacaftor
-model_disease model_node                                                                                                                                                                                                      
-cel           chronic eosinophilic leukemia                                816.0     839.0       1100.0      1295.0       1199.0       1411.0      1018.0     1452.0      1432.0      1042.0     1522.0      959.0      1429.0
-              chronic eosinophilic leukemia, not otherwise specified       783.0     804.0       1104.0      1177.0       1207.0       1358.0       938.0     1397.0      1379.0       959.0     1286.0      948.0      1381.0
-cf            cystic fibrosis                                              740.0     121.0        908.0       432.0        925.0        264.0         6.0      324.0       289.0        17.0       33.0       14.0       302.0
-fabry         Fabry disease                                                595.0     385.0        768.0       657.0        778.0         63.0         5.0       96.0        72.0       118.0       27.0        8.0        82.0
-gaucher       Gaucher disease                                              458.0     425.0        851.0        34.0        866.0        117.0       204.0      168.0       134.0        23.0       10.0        8.0       137.0
-mh            exercise-induced malignant hyperthermia                       11.0     655.0        949.0       752.0       1352.0       1397.0       764.0     1419.0      1405.0       832.0      922.0     1048.0      1416.0
-              malignant hyperthermia of anesthesia                          29.0     917.0       1013.0      1387.0       1706.0       1809.0      1345.0     1815.0      1811.0      1408.0     1511.0     1623.0      1814.0
-nsiad         nephrogenic syndrome of inappropriate antidiuresis           981.0     772.0       1038.0      1318.0       1659.0       1590.0      1035.0     1602.0      1595.0      1119.0     1096.0     1307.0      1608.0
-pku           phenylketonuria                                              874.0     341.0        891.0       867.0        211.0       1012.0       220.0     1036.0      1021.0       619.0      664.0      665.0      1039.0
-sm            systemic mastocytosis                                       1101.0     905.0        976.0      1758.0       1578.0       1745.0      1285.0     1756.0      1752.0      1231.0     1315.0     1515.0      1754.0
-ttr           ATTRV122I amyloidosis                                        816.0     723.0       1093.0       970.0       1278.0       1273.0       767.0     1286.0      1276.0       841.0      879.0      155.0      1288.0
-              hereditary ATTR amyloidosis                                 1223.0     986.0       1164.0      1358.0       1447.0       1514.0      1065.0     1519.0      1509.0      1062.0     1109.0      280.0      1524.0
-              wild type ATTR amyloidosis                                  1035.0     324.0        984.0       512.0       1056.0        966.0        17.0      979.0       963.0       241.0      106.0       91.0       980.0
-tyr1          tyrosinemia                                                  560.0     443.0       1111.0       566.0       1291.0       1161.0       239.0     1182.0      1169.0       775.0      498.0      784.0      1183.0
-
-[note] own-disease rank is the diagonal; a rank only counts if it is far better there than under the other models.
+Traceback (most recent call last):
+  File "rerank_pool.py", line 225, in <module>
+    main()
+  File "rerank_pool.py", line 209, in main
+    show['rank_pool'] = [('not in pool_v1' if r is None else int(r)) for r in show.rank_pool]
+  File "rerank_pool.py", line 209, in <listcomp>
+    show['rank_pool'] = [('not in pool_v1' if r is None else int(r)) for r in show.rank_pool]
+ValueError: cannot convert float NaN to integer
