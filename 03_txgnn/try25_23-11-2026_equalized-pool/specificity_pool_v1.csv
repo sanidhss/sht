@@ -1,0 +1,197 @@
+drug,drug_db_id,model_disease,model_node,rank_pool,n_pool
+Dantrolene,DB01219,cel,chronic eosinophilic leukemia,816.0,1933
+Dantrolene,DB01219,cel,"chronic eosinophilic leukemia, not otherwise specified",783.0,1933
+Dantrolene,DB01219,sm,systemic mastocytosis,1101.0,1933
+Dantrolene,DB01219,nsiad,nephrogenic syndrome of inappropriate antidiuresis,981.0,1933
+Dantrolene,DB01219,pku,phenylketonuria,874.0,1933
+Dantrolene,DB01219,mh,malignant hyperthermia of anesthesia,29.0,1933
+Dantrolene,DB01219,mh,exercise-induced malignant hyperthermia,11.0,1933
+Dantrolene,DB01219,tyr1,tyrosinemia,560.0,1933
+Dantrolene,DB01219,fabry,Fabry disease,595.0,1933
+Dantrolene,DB01219,gaucher,Gaucher disease,458.0,1933
+Dantrolene,DB01219,cf,cystic fibrosis,740.0,1933
+Dantrolene,DB01219,ttr,ATTRV122I amyloidosis,816.0,1933
+Dantrolene,DB01219,ttr,wild type ATTR amyloidosis,1035.0,1933
+Dantrolene,DB01219,ttr,hereditary ATTR amyloidosis,1223.0,1933
+Imatinib,DB00619,cel,chronic eosinophilic leukemia,839.0,1933
+Imatinib,DB00619,cel,"chronic eosinophilic leukemia, not otherwise specified",804.0,1933
+Imatinib,DB00619,sm,systemic mastocytosis,905.0,1933
+Imatinib,DB00619,nsiad,nephrogenic syndrome of inappropriate antidiuresis,772.0,1933
+Imatinib,DB00619,pku,phenylketonuria,341.0,1933
+Imatinib,DB00619,mh,malignant hyperthermia of anesthesia,917.0,1933
+Imatinib,DB00619,mh,exercise-induced malignant hyperthermia,655.0,1933
+Imatinib,DB00619,tyr1,tyrosinemia,443.0,1933
+Imatinib,DB00619,fabry,Fabry disease,385.0,1933
+Imatinib,DB00619,gaucher,Gaucher disease,425.0,1933
+Imatinib,DB00619,cf,cystic fibrosis,121.0,1933
+Imatinib,DB00619,ttr,ATTRV122I amyloidosis,723.0,1933
+Imatinib,DB00619,ttr,wild type ATTR amyloidosis,324.0,1933
+Imatinib,DB00619,ttr,hereditary ATTR amyloidosis,986.0,1933
+Midostaurin,DB06595,cel,chronic eosinophilic leukemia,1100.0,1933
+Midostaurin,DB06595,cel,"chronic eosinophilic leukemia, not otherwise specified",1104.0,1933
+Midostaurin,DB06595,sm,systemic mastocytosis,976.0,1933
+Midostaurin,DB06595,nsiad,nephrogenic syndrome of inappropriate antidiuresis,1038.0,1933
+Midostaurin,DB06595,pku,phenylketonuria,891.0,1933
+Midostaurin,DB06595,mh,malignant hyperthermia of anesthesia,1013.0,1933
+Midostaurin,DB06595,mh,exercise-induced malignant hyperthermia,949.0,1933
+Midostaurin,DB06595,tyr1,tyrosinemia,1111.0,1933
+Midostaurin,DB06595,fabry,Fabry disease,768.0,1933
+Midostaurin,DB06595,gaucher,Gaucher disease,851.0,1933
+Midostaurin,DB06595,cf,cystic fibrosis,908.0,1933
+Midostaurin,DB06595,ttr,ATTRV122I amyloidosis,1093.0,1933
+Midostaurin,DB06595,ttr,wild type ATTR amyloidosis,984.0,1933
+Midostaurin,DB06595,ttr,hereditary ATTR amyloidosis,1164.0,1933
+Nitisinone,DB00348,cel,chronic eosinophilic leukemia,1295.0,1933
+Nitisinone,DB00348,cel,"chronic eosinophilic leukemia, not otherwise specified",1177.0,1933
+Nitisinone,DB00348,sm,systemic mastocytosis,1758.0,1933
+Nitisinone,DB00348,nsiad,nephrogenic syndrome of inappropriate antidiuresis,1318.0,1933
+Nitisinone,DB00348,pku,phenylketonuria,867.0,1933
+Nitisinone,DB00348,mh,malignant hyperthermia of anesthesia,1387.0,1933
+Nitisinone,DB00348,mh,exercise-induced malignant hyperthermia,752.0,1933
+Nitisinone,DB00348,tyr1,tyrosinemia,566.0,1933
+Nitisinone,DB00348,fabry,Fabry disease,657.0,1933
+Nitisinone,DB00348,gaucher,Gaucher disease,34.0,1933
+Nitisinone,DB00348,cf,cystic fibrosis,432.0,1933
+Nitisinone,DB00348,ttr,ATTRV122I amyloidosis,970.0,1933
+Nitisinone,DB00348,ttr,wild type ATTR amyloidosis,512.0,1933
+Nitisinone,DB00348,ttr,hereditary ATTR amyloidosis,1358.0,1933
+Sapropterin,DB00360,cel,chronic eosinophilic leukemia,1199.0,1933
+Sapropterin,DB00360,cel,"chronic eosinophilic leukemia, not otherwise specified",1207.0,1933
+Sapropterin,DB00360,sm,systemic mastocytosis,1578.0,1933
+Sapropterin,DB00360,nsiad,nephrogenic syndrome of inappropriate antidiuresis,1659.0,1933
+Sapropterin,DB00360,pku,phenylketonuria,211.0,1933
+Sapropterin,DB00360,mh,malignant hyperthermia of anesthesia,1706.0,1933
+Sapropterin,DB00360,mh,exercise-induced malignant hyperthermia,1352.0,1933
+Sapropterin,DB00360,tyr1,tyrosinemia,1291.0,1933
+Sapropterin,DB00360,fabry,Fabry disease,778.0,1933
+Sapropterin,DB00360,gaucher,Gaucher disease,866.0,1933
+Sapropterin,DB00360,cf,cystic fibrosis,925.0,1933
+Sapropterin,DB00360,ttr,ATTRV122I amyloidosis,1278.0,1933
+Sapropterin,DB00360,ttr,wild type ATTR amyloidosis,1056.0,1933
+Sapropterin,DB00360,ttr,hereditary ATTR amyloidosis,1447.0,1933
+Tolvaptan,DB06212,cel,chronic eosinophilic leukemia,,1933
+Tolvaptan,DB06212,cel,"chronic eosinophilic leukemia, not otherwise specified",,1933
+Tolvaptan,DB06212,sm,systemic mastocytosis,,1933
+Tolvaptan,DB06212,nsiad,nephrogenic syndrome of inappropriate antidiuresis,,1933
+Tolvaptan,DB06212,pku,phenylketonuria,,1933
+Tolvaptan,DB06212,mh,malignant hyperthermia of anesthesia,,1933
+Tolvaptan,DB06212,mh,exercise-induced malignant hyperthermia,,1933
+Tolvaptan,DB06212,tyr1,tyrosinemia,,1933
+Tolvaptan,DB06212,fabry,Fabry disease,,1933
+Tolvaptan,DB06212,gaucher,Gaucher disease,,1933
+Tolvaptan,DB06212,cf,cystic fibrosis,,1933
+Tolvaptan,DB06212,ttr,ATTRV122I amyloidosis,,1933
+Tolvaptan,DB06212,ttr,wild type ATTR amyloidosis,,1933
+Tolvaptan,DB06212,ttr,hereditary ATTR amyloidosis,,1933
+elexacaftor,DB15444,cel,chronic eosinophilic leukemia,1411.0,1933
+elexacaftor,DB15444,cel,"chronic eosinophilic leukemia, not otherwise specified",1358.0,1933
+elexacaftor,DB15444,sm,systemic mastocytosis,1745.0,1933
+elexacaftor,DB15444,nsiad,nephrogenic syndrome of inappropriate antidiuresis,1590.0,1933
+elexacaftor,DB15444,pku,phenylketonuria,1012.0,1933
+elexacaftor,DB15444,mh,malignant hyperthermia of anesthesia,1809.0,1933
+elexacaftor,DB15444,mh,exercise-induced malignant hyperthermia,1397.0,1933
+elexacaftor,DB15444,tyr1,tyrosinemia,1161.0,1933
+elexacaftor,DB15444,fabry,Fabry disease,63.0,1933
+elexacaftor,DB15444,gaucher,Gaucher disease,117.0,1933
+elexacaftor,DB15444,cf,cystic fibrosis,264.0,1933
+elexacaftor,DB15444,ttr,ATTRV122I amyloidosis,1273.0,1933
+elexacaftor,DB15444,ttr,wild type ATTR amyloidosis,966.0,1933
+elexacaftor,DB15444,ttr,hereditary ATTR amyloidosis,1514.0,1933
+eliglustat,DB09039,cel,chronic eosinophilic leukemia,1018.0,1933
+eliglustat,DB09039,cel,"chronic eosinophilic leukemia, not otherwise specified",938.0,1933
+eliglustat,DB09039,sm,systemic mastocytosis,1285.0,1933
+eliglustat,DB09039,nsiad,nephrogenic syndrome of inappropriate antidiuresis,1035.0,1933
+eliglustat,DB09039,pku,phenylketonuria,220.0,1933
+eliglustat,DB09039,mh,malignant hyperthermia of anesthesia,1345.0,1933
+eliglustat,DB09039,mh,exercise-induced malignant hyperthermia,764.0,1933
+eliglustat,DB09039,tyr1,tyrosinemia,239.0,1933
+eliglustat,DB09039,fabry,Fabry disease,5.0,1933
+eliglustat,DB09039,gaucher,Gaucher disease,204.0,1933
+eliglustat,DB09039,cf,cystic fibrosis,6.0,1933
+eliglustat,DB09039,ttr,ATTRV122I amyloidosis,767.0,1933
+eliglustat,DB09039,ttr,wild type ATTR amyloidosis,17.0,1933
+eliglustat,DB09039,ttr,hereditary ATTR amyloidosis,1065.0,1933
+ivacaftor,DB08820,cel,chronic eosinophilic leukemia,1452.0,1933
+ivacaftor,DB08820,cel,"chronic eosinophilic leukemia, not otherwise specified",1397.0,1933
+ivacaftor,DB08820,sm,systemic mastocytosis,1756.0,1933
+ivacaftor,DB08820,nsiad,nephrogenic syndrome of inappropriate antidiuresis,1602.0,1933
+ivacaftor,DB08820,pku,phenylketonuria,1036.0,1933
+ivacaftor,DB08820,mh,malignant hyperthermia of anesthesia,1815.0,1933
+ivacaftor,DB08820,mh,exercise-induced malignant hyperthermia,1419.0,1933
+ivacaftor,DB08820,tyr1,tyrosinemia,1182.0,1933
+ivacaftor,DB08820,fabry,Fabry disease,96.0,1933
+ivacaftor,DB08820,gaucher,Gaucher disease,168.0,1933
+ivacaftor,DB08820,cf,cystic fibrosis,324.0,1933
+ivacaftor,DB08820,ttr,ATTRV122I amyloidosis,1286.0,1933
+ivacaftor,DB08820,ttr,wild type ATTR amyloidosis,979.0,1933
+ivacaftor,DB08820,ttr,hereditary ATTR amyloidosis,1519.0,1933
+lumacaftor,DB09280,cel,chronic eosinophilic leukemia,1432.0,1933
+lumacaftor,DB09280,cel,"chronic eosinophilic leukemia, not otherwise specified",1379.0,1933
+lumacaftor,DB09280,sm,systemic mastocytosis,1752.0,1933
+lumacaftor,DB09280,nsiad,nephrogenic syndrome of inappropriate antidiuresis,1595.0,1933
+lumacaftor,DB09280,pku,phenylketonuria,1021.0,1933
+lumacaftor,DB09280,mh,malignant hyperthermia of anesthesia,1811.0,1933
+lumacaftor,DB09280,mh,exercise-induced malignant hyperthermia,1405.0,1933
+lumacaftor,DB09280,tyr1,tyrosinemia,1169.0,1933
+lumacaftor,DB09280,fabry,Fabry disease,72.0,1933
+lumacaftor,DB09280,gaucher,Gaucher disease,134.0,1933
+lumacaftor,DB09280,cf,cystic fibrosis,289.0,1933
+lumacaftor,DB09280,ttr,ATTRV122I amyloidosis,1276.0,1933
+lumacaftor,DB09280,ttr,wild type ATTR amyloidosis,963.0,1933
+lumacaftor,DB09280,ttr,hereditary ATTR amyloidosis,1509.0,1933
+migalastat,DB05018,cel,chronic eosinophilic leukemia,1042.0,1933
+migalastat,DB05018,cel,"chronic eosinophilic leukemia, not otherwise specified",959.0,1933
+migalastat,DB05018,sm,systemic mastocytosis,1231.0,1933
+migalastat,DB05018,nsiad,nephrogenic syndrome of inappropriate antidiuresis,1119.0,1933
+migalastat,DB05018,pku,phenylketonuria,619.0,1933
+migalastat,DB05018,mh,malignant hyperthermia of anesthesia,1408.0,1933
+migalastat,DB05018,mh,exercise-induced malignant hyperthermia,832.0,1933
+migalastat,DB05018,tyr1,tyrosinemia,775.0,1933
+migalastat,DB05018,fabry,Fabry disease,118.0,1933
+migalastat,DB05018,gaucher,Gaucher disease,23.0,1933
+migalastat,DB05018,cf,cystic fibrosis,17.0,1933
+migalastat,DB05018,ttr,ATTRV122I amyloidosis,841.0,1933
+migalastat,DB05018,ttr,wild type ATTR amyloidosis,241.0,1933
+migalastat,DB05018,ttr,hereditary ATTR amyloidosis,1062.0,1933
+miglustat,DB00419,cel,chronic eosinophilic leukemia,1522.0,1933
+miglustat,DB00419,cel,"chronic eosinophilic leukemia, not otherwise specified",1286.0,1933
+miglustat,DB00419,sm,systemic mastocytosis,1315.0,1933
+miglustat,DB00419,nsiad,nephrogenic syndrome of inappropriate antidiuresis,1096.0,1933
+miglustat,DB00419,pku,phenylketonuria,664.0,1933
+miglustat,DB00419,mh,malignant hyperthermia of anesthesia,1511.0,1933
+miglustat,DB00419,mh,exercise-induced malignant hyperthermia,922.0,1933
+miglustat,DB00419,tyr1,tyrosinemia,498.0,1933
+miglustat,DB00419,fabry,Fabry disease,27.0,1933
+miglustat,DB00419,gaucher,Gaucher disease,10.0,1933
+miglustat,DB00419,cf,cystic fibrosis,33.0,1933
+miglustat,DB00419,ttr,ATTRV122I amyloidosis,879.0,1933
+miglustat,DB00419,ttr,wild type ATTR amyloidosis,106.0,1933
+miglustat,DB00419,ttr,hereditary ATTR amyloidosis,1109.0,1933
+tafamidis,DB11644,cel,chronic eosinophilic leukemia,959.0,1933
+tafamidis,DB11644,cel,"chronic eosinophilic leukemia, not otherwise specified",948.0,1933
+tafamidis,DB11644,sm,systemic mastocytosis,1515.0,1933
+tafamidis,DB11644,nsiad,nephrogenic syndrome of inappropriate antidiuresis,1307.0,1933
+tafamidis,DB11644,pku,phenylketonuria,665.0,1933
+tafamidis,DB11644,mh,malignant hyperthermia of anesthesia,1623.0,1933
+tafamidis,DB11644,mh,exercise-induced malignant hyperthermia,1048.0,1933
+tafamidis,DB11644,tyr1,tyrosinemia,784.0,1933
+tafamidis,DB11644,fabry,Fabry disease,8.0,1933
+tafamidis,DB11644,gaucher,Gaucher disease,8.0,1933
+tafamidis,DB11644,cf,cystic fibrosis,14.0,1933
+tafamidis,DB11644,ttr,ATTRV122I amyloidosis,155.0,1933
+tafamidis,DB11644,ttr,wild type ATTR amyloidosis,91.0,1933
+tafamidis,DB11644,ttr,hereditary ATTR amyloidosis,280.0,1933
+tezacaftor,DB11712,cel,chronic eosinophilic leukemia,1429.0,1933
+tezacaftor,DB11712,cel,"chronic eosinophilic leukemia, not otherwise specified",1381.0,1933
+tezacaftor,DB11712,sm,systemic mastocytosis,1754.0,1933
+tezacaftor,DB11712,nsiad,nephrogenic syndrome of inappropriate antidiuresis,1608.0,1933
+tezacaftor,DB11712,pku,phenylketonuria,1039.0,1933
+tezacaftor,DB11712,mh,malignant hyperthermia of anesthesia,1814.0,1933
+tezacaftor,DB11712,mh,exercise-induced malignant hyperthermia,1416.0,1933
+tezacaftor,DB11712,tyr1,tyrosinemia,1183.0,1933
+tezacaftor,DB11712,fabry,Fabry disease,82.0,1933
+tezacaftor,DB11712,gaucher,Gaucher disease,137.0,1933
+tezacaftor,DB11712,cf,cystic fibrosis,302.0,1933
+tezacaftor,DB11712,ttr,ATTRV122I amyloidosis,1288.0,1933
+tezacaftor,DB11712,ttr,wild type ATTR amyloidosis,980.0,1933
+tezacaftor,DB11712,ttr,hereditary ATTR amyloidosis,1524.0,1933

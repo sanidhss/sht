@@ -1,0 +1,55 @@
+source,disease,eval_node,ref_drug,ref_drug_db_id,seed,rank_pool,n_pool,percentile_pool,rank_7957,n_full,percentile_7957,best_cos,reliable,pool
+try24,cel,chronic eosinophilic leukemia,Imatinib,DB00619,1,877.0,1933,0.4537,6381,7957,0.8019,0.1333,False,pool_v1
+try24,cel,chronic eosinophilic leukemia,Imatinib,DB00619,2,892.0,1933,0.4615,6411,7957,0.8057,0.1333,False,pool_v1
+try24,cel,chronic eosinophilic leukemia,Imatinib,DB00619,3,765.0,1933,0.3958,5879,7957,0.7388,0.1333,False,pool_v1
+try24,cel,"chronic eosinophilic leukemia, not otherwise specified",Imatinib,DB00619,1,847.0,1933,0.4382,6314,7957,0.7935,0.1732,False,pool_v1
+try24,cel,"chronic eosinophilic leukemia, not otherwise specified",Imatinib,DB00619,2,848.0,1933,0.4387,6326,7957,0.795,0.1732,False,pool_v1
+try24,cel,"chronic eosinophilic leukemia, not otherwise specified",Imatinib,DB00619,3,742.0,1933,0.3839,5388,7957,0.6771,0.1732,False,pool_v1
+try24,sm,systemic mastocytosis,Midostaurin,DB06595,1,1033.0,1933,0.5344,6532,7957,0.8209,0.1768,False,pool_v1
+try24,sm,systemic mastocytosis,Midostaurin,DB06595,2,931.0,1933,0.4816,6350,7957,0.798,0.1768,False,pool_v1
+try24,sm,systemic mastocytosis,Midostaurin,DB06595,3,967.0,1933,0.5003,6340,7957,0.7968,0.1768,False,pool_v1
+try24,nsiad,nephrogenic syndrome of inappropriate antidiuresis,Tolvaptan,DB06212,1,,1933,,6511,7957,0.8183,0.1754,False,pool_v1
+try24,nsiad,nephrogenic syndrome of inappropriate antidiuresis,Tolvaptan,DB06212,2,,1933,,6626,7957,0.8327,0.1754,False,pool_v1
+try24,nsiad,nephrogenic syndrome of inappropriate antidiuresis,Tolvaptan,DB06212,3,,1933,,2640,7957,0.3318,0.1754,False,pool_v1
+try24,pku,phenylketonuria,Sapropterin,DB00360,1,312.0,1933,0.1614,981,7957,0.1233,0.1784,False,pool_v1
+try24,pku,phenylketonuria,Sapropterin,DB00360,2,182.0,1933,0.0942,502,7957,0.0631,0.1784,False,pool_v1
+try24,pku,phenylketonuria,Sapropterin,DB00360,3,159.0,1933,0.0823,448,7957,0.0563,0.1784,False,pool_v1
+try24,mh,malignant hyperthermia of anesthesia,Dantrolene,DB01219,1,37.0,1933,0.0191,45,7957,0.0057,0.134,False,pool_v1
+try24,mh,malignant hyperthermia of anesthesia,Dantrolene,DB01219,2,25.0,1933,0.0129,31,7957,0.0039,0.134,False,pool_v1
+try24,mh,malignant hyperthermia of anesthesia,Dantrolene,DB01219,3,27.0,1933,0.014,33,7957,0.0041,0.134,False,pool_v1
+try24,mh,exercise-induced malignant hyperthermia,Dantrolene,DB01219,1,21.0,1933,0.0109,25,7957,0.0031,0.2438,True,pool_v1
+try24,mh,exercise-induced malignant hyperthermia,Dantrolene,DB01219,2,11.0,1933,0.0057,14,7957,0.0018,0.2438,True,pool_v1
+try24,mh,exercise-induced malignant hyperthermia,Dantrolene,DB01219,3,14.0,1933,0.0072,18,7957,0.0023,0.2438,True,pool_v1
+try24,tyr1,tyrosinemia,Nitisinone,DB00348,1,149.0,1933,0.0771,200,7957,0.0251,0.2289,True,pool_v1
+try24,tyr1,tyrosinemia,Nitisinone,DB00348,2,573.0,1933,0.2964,4011,7957,0.5041,0.2289,True,pool_v1
+try24,tyr1,tyrosinemia,Nitisinone,DB00348,3,831.0,1933,0.4299,6197,7957,0.7788,0.2289,True,pool_v1
+try23,fabry,Fabry disease,migalastat,DB05018,1,56.0,1933,0.029,246,7957,0.0309,0.3176,True,pool_v1
+try23,fabry,Fabry disease,migalastat,DB05018,2,162.0,1933,0.0838,845,7957,0.1062,0.3176,True,pool_v1
+try23,fabry,Fabry disease,migalastat,DB05018,3,257.0,1933,0.133,1103,7957,0.1386,0.3176,True,pool_v1
+try23,gaucher,Gaucher disease,miglustat,DB00419,1,339.0,1933,0.1754,4207,7957,0.5287,0.3305,True,pool_v1
+try23,gaucher,Gaucher disease,miglustat,DB00419,2,3.0,1933,0.0016,8,7957,0.001,0.3305,True,pool_v1
+try23,gaucher,Gaucher disease,miglustat,DB00419,3,13.0,1933,0.0067,33,7957,0.0041,0.3305,True,pool_v1
+try23,gaucher,Gaucher disease,eliglustat,DB09039,1,100.0,1933,0.0517,1249,7957,0.157,0.3305,True,pool_v1
+try23,gaucher,Gaucher disease,eliglustat,DB09039,2,318.0,1933,0.1645,1674,7957,0.2104,0.3305,True,pool_v1
+try23,gaucher,Gaucher disease,eliglustat,DB09039,3,309.0,1933,0.1599,1207,7957,0.1517,0.3305,True,pool_v1
+try23,cf,cystic fibrosis,ivacaftor,DB08820,1,262.0,1933,0.1355,698,7957,0.0877,0.1588,False,pool_v1
+try23,cf,cystic fibrosis,ivacaftor,DB08820,2,431.0,1933,0.223,1224,7957,0.1538,0.1588,False,pool_v1
+try23,cf,cystic fibrosis,ivacaftor,DB08820,3,315.0,1933,0.163,976,7957,0.1227,0.1588,False,pool_v1
+try23,cf,cystic fibrosis,lumacaftor,DB09280,1,237.0,1933,0.1226,644,7957,0.0809,0.1588,False,pool_v1
+try23,cf,cystic fibrosis,lumacaftor,DB09280,2,397.0,1933,0.2054,1123,7957,0.1411,0.1588,False,pool_v1
+try23,cf,cystic fibrosis,lumacaftor,DB09280,3,275.0,1933,0.1423,842,7957,0.1058,0.1588,False,pool_v1
+try23,cf,cystic fibrosis,tezacaftor,DB11712,1,254.0,1933,0.1314,677,7957,0.0851,0.1588,False,pool_v1
+try23,cf,cystic fibrosis,tezacaftor,DB11712,2,385.0,1933,0.1992,1076,7957,0.1352,0.1588,False,pool_v1
+try23,cf,cystic fibrosis,tezacaftor,DB11712,3,302.0,1933,0.1562,928,7957,0.1166,0.1588,False,pool_v1
+try23,cf,cystic fibrosis,elexacaftor,DB15444,1,244.0,1933,0.1262,657,7957,0.0826,0.1588,False,pool_v1
+try23,cf,cystic fibrosis,elexacaftor,DB15444,2,388.0,1933,0.2007,1086,7957,0.1365,0.1588,False,pool_v1
+try23,cf,cystic fibrosis,elexacaftor,DB15444,3,236.0,1933,0.1221,700,7957,0.088,0.1588,False,pool_v1
+try23,ttr,ATTRV122I amyloidosis,tafamidis,DB11644,1,178.0,1933,0.0921,400,7957,0.0503,0.1473,False,pool_v1
+try23,ttr,ATTRV122I amyloidosis,tafamidis,DB11644,2,229.0,1933,0.1185,1121,7957,0.1409,0.1473,False,pool_v1
+try23,ttr,ATTRV122I amyloidosis,tafamidis,DB11644,3,110.0,1933,0.0569,224,7957,0.0282,0.1473,False,pool_v1
+try23,ttr,wild type ATTR amyloidosis,tafamidis,DB11644,1,85.0,1933,0.044,134,7957,0.0168,0.1714,False,pool_v1
+try23,ttr,wild type ATTR amyloidosis,tafamidis,DB11644,2,198.0,1933,0.1024,437,7957,0.0549,0.1714,False,pool_v1
+try23,ttr,wild type ATTR amyloidosis,tafamidis,DB11644,3,36.0,1933,0.0186,72,7957,0.009,0.1714,False,pool_v1
+try23,ttr,hereditary ATTR amyloidosis,tafamidis,DB11644,1,264.0,1933,0.1366,541,7957,0.068,0.201,True,pool_v1
+try23,ttr,hereditary ATTR amyloidosis,tafamidis,DB11644,2,410.0,1933,0.2121,2265,7957,0.2847,0.201,True,pool_v1
+try23,ttr,hereditary ATTR amyloidosis,tafamidis,DB11644,3,277.0,1933,0.1433,460,7957,0.0578,0.201,True,pool_v1

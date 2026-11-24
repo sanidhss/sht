@@ -1,0 +1,34 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA100x4
+#SBATCH --gpus=1 -n 1 -c 16 --mem=128g -t 08:00:00
+#SBATCH -J try16_A_score
+#SBATCH -a 0-5
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgemma_lora_orphan/%x_%A_%a.out
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+# INFERENCE ONLY. No training, no optimizer, no gradients, nothing refitted. Each task
+# loads the base model once and swaps the SAVED adapters around it.
+#
+# Six tasks, not eight: gaucher's ambroxol and nsiad's tolvaptan are absent from
+# pool_v1 (verified by canonical structure, not just by name), so neither reference can
+# be ranked on this pool. 06_equalized_pool/try01's POOL_REPORT.md records the same
+# finding and deliberately substituted no salt or analogue. Spiking either drug in
+# would break the premise that every arm scores the identical frozen pool, so they are
+# reported as not evaluable instead.
+#
+# TARGET is exported per task and the script exits 2 if it is unset -- the try05
+# scope-coupling bug came from relying on an implicit default.
+#
+# fabry task runs 6 adapters (3 step-stopping + 3 cross-validation folds) where the
+# others run 3, so it is roughly twice the work. 8h covers it: try15 measured ~0.64s
+# per generation, and 6 x 1933 = 11,598 generations is ~2h05m plus one ~10m model load.
+NAMES=(cf fabry attr cel mastocytosis tyrosinemia)
+export TARGET=${NAMES[$SLURM_ARRAY_TASK_ID]}
+
+echo "=== try16 task $SLURM_ARRAY_TASK_ID -> TARGET=$TARGET ==="
+/work/hdd/bisa/sshah21/envs/txgemma/bin/python \
+  /projects/bisa/sshah21/library/01_txgemma_predict/try16_23-11-2026_equalized-pool/score_pool_adapters.py
