@@ -152,6 +152,31 @@ a correct model must fail. Carried forward from try16 for the same reason.
 - Import audit clean: no unused imports (`MaxMinPicker` removed with the decoy arm;
   `build_decoys` and `enrichment` deleted rather than left dead).
 - Collate dry-run produces a valid CSV and SUMMARY.md with the GPU arm absent.
+- **`DRY_RUN=1` run of the submitted script itself**, all six targets, exit 0: reference
+  injected with the correct label and 5 lines everywhere, `reference in training? True`
+  everywhere, holdout exemption firing on exactly fabry and cel, pool sha256 verified and
+  the reference located in the pool on every target. This checks the real code path, not
+  the independent RDKit replication used for the two tables above.
+
+### One thing the dry-run surfaced
+
+fabry's scaffold holdout removes **18 of 90 compounds (20%)**, against 0.2-3.4% on every
+other target:
+
+| target | compounds | removed by holdout | trainable |
+|---|---|---|---|
+| cf | 1451 | 26 (1.8%) | 1425 |
+| fabry | 90 | **18 (20.0%)** | **72** |
+| attr | 494 | 17 (3.4%) | 477 |
+| cel | 1502 | 18 (1.2%) | 1484 |
+| mastocytosis | 1502 | 3 (0.2%) | 1499 |
+| tyrosinemia | 180 | 3 (1.7%) | 177 |
+
+This is inherent to fabry: 90 compounds that largely share migalastat's iminosugar
+scaffold, so holding out the hard negatives' scaffold takes a fifth of the data with it.
+It is not a try17 regression -- try11 and try12 did the same -- but fabry trains on 72
+compounds and its unblinded result will be the noisiest of the six. Read it with the
+seed spread, not as a point estimate.
 
 ## Result
 
