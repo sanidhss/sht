@@ -87,9 +87,17 @@ def main():
             raise RuntimeError(f'{model_name} s{seed}: reloaded model does NOT reproduce its '
                                'saved scores -- every unblinded number from it would be invalid')
 
-        with open(out_path, 'wb') as f:
+        # Atomic write. An A100 copy and a preemptible A40 copy of this array may both be
+        # queued (see README): the skip-if-done check above means they normally divide the
+        # work, but if both reach the same seed at once a plain open() could leave a
+        # half-written pickle. Write to a per-process temp file and rename -- a rename is
+        # atomic, so a reader never sees a partial file and last-writer-wins is harmless
+        # (the output is deterministic and the reproduction check above proves it).
+        tmp = f'{out_path}.tmp.{os.getpid()}'
+        with open(tmp, 'wb') as f:
             pickle.dump({'model': model_name, 'seed': seed, 'holdout': holdout,
                          'nodes': nodes, 'prediction': out['prediction']}, f)
+        os.replace(tmp, out_path)
         print(f'[{model_name} s{seed}] saved {out_path}', flush=True)
     print(f'{model_name}: all seeds done')
 
