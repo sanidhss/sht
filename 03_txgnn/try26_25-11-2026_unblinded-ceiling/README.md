@@ -69,8 +69,61 @@ ATTR)**. So:
   properly labelled node, and 6665/6008 are PrimeKG data errors (tafamidis is not indicated
   for AL or AH amyloidosis), so they are not added as targets.
 
-## Result
-*(filled in by job C)*
+## Result — job A in, jobs B/C pending (25-11-2026)
+
+**Job A (`24533464`, edge audit) COMPLETED 25-11 13:06**, 1m13s.
+`/work/hdd/bisa/sshah21/results/txgnn_v5_unblinded/edge_audit.csv`, 180 rows =
+10 models x 18 (target node, reference drug) cells, plus `node_ids.csv` (the
+x_idx → raw-PrimeKG-id map `eval_disease_centric()`'s prediction dict is keyed by).
+
+| `edge_in` | cells | counts as unblinded? |
+|---|---|---|
+| `train` | **137** | yes |
+| `absent` | 20 | no — no edge exists |
+| `test` | 16 | no — held out, not in message passing |
+| `valid` | 7 | no — held out, not in message passing |
+
+**The valid/test split mattered, and would have been missed by inferring eligibility
+from the holdout list.** 23 cells sit in `valid` or `test` under some model: a target can
+be absent from a run's holdout list and still be blind there, because the random
+valid/test draw took its edge out of the message-passing graph anyway. Those 23 are
+correctly excluded. Had eligibility been computed as "not in this run's holdout list" —
+the obvious shortcut — 23 of 160 edge-bearing cells (14%) would have been scored as
+unblinded while the model never saw the edge.
+
+### The two TTR nodes are confirmed unevaluable, 0 of 10 models
+
+| target node | drug | models giving an unblinded cell |
+|---|---|---|
+| exercise-induced MH / MH of anesthesia | dantrolene | 9/10 each |
+| Fabry disease | migalastat | 9/10 |
+| Gaucher disease | miglustat, eliglustat | 9/10 each |
+| cystic fibrosis | all 4 modulators | 9/10 each |
+| ATTRV122I amyloidosis | tafamidis | 9/10 |
+| NSIAD | tolvaptan | 9/10 |
+| chronic eosinophilic leukemia (2 nodes) | imatinib | 9/10, 7/10 |
+| phenylketonuria | sapropterin | 8/10 |
+| tyrosinemia | nitisinone | 8/10 |
+| systemic mastocytosis | midostaurin | 6/10 |
+| **hereditary ATTR amyloidosis** | tafamidis | **0/10** |
+| **wild type ATTR amyloidosis** | tafamidis | **0/10** |
+
+This is the prediction in "Known before running" above, now verified by the audit rather
+than assumed: there is no tafamidis `indication` edge at 4803 or 5528, so no split can
+place one in `train` and no model can be unblinded there. **try23/try25's pool ranks of
+280 (hereditary) and 91 (wild type) are ranks with no ground-truth edge behind them and
+must not be read as hits or misses** — including the 91, which is the better-looking of
+the two and therefore the one most likely to be quoted by mistake.
+
+9/10 is the expected ceiling, not a shortfall: each cell is blind under exactly the one
+model that held that disease out. The cells below 9 (sm 6/10, cel's second node 7/10,
+pku and tyr1 8/10) are the valid/test draws above.
+
+**Jobs B (`24533465_[0-9]`, GPU array) and C (`24533466`) are PENDING on priority** —
+Delta had 2,602 jobs queued on `gpuA100x4` at submission. `24537102_[0-9]`, the A40
+duplicate, was cancelled for the `PriorityTier` reason recorded in the scheduling notes
+below. No unblinded rank exists yet, and the reporting rule above was fixed before job A
+ran, so it cannot be tuned to the outcome.
 
 ## Scheduling notes (25-11-2026)
 Delta was heavily congested when this was submitted (2,602 jobs pending on `gpuA100x4`;

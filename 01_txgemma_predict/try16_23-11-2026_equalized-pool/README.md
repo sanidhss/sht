@@ -143,11 +143,100 @@ again.
 - **Collate runs under `afterany`** so a dead array task yields a report naming what is
   missing rather than no report.
 
-## Result
+## Result — PARTIAL (2 of 6 targets, as of 25-11-2026)
 
-Pending — GPU array queued. Fill in from
-`/work/hdd/bisa/sshah21/results/txgemma_lora_orphan/try16_equalized_pool/SUMMARY.md`.
+Array tasks 0 (`cf`) and 1 (`fabry`) COMPLETED 25-11 at 08:03 and 08:33, after ~37h
+queued. Tasks 2-5 (`attr`, `cel`, `mastocytosis`, `tyrosinemia`) are still PENDING on
+priority, so `24440723` (collate) has not run and
+`try16_equalized_pool/SUMMARY.md` still reports all eight as "array task did not
+finish" — that file is the 23-11 dry-run collate, **not** the current state. The numbers
+below are read directly from the per-seed rows in
+`try17_unblinded/results_unblinded_pool_v1.csv`, whose `model_blinded` arm is this try's
+output (try17's collate joins it).
 
 The bar: the adapter arm must beat the Tanimoto rank in the table above, on the same
 1,933 compounds. Note that mastocytosis's baseline is rank **11 of 1,933** — the model
 has to place midostaurin in the top 11 approved drugs to beat a fingerprint lookup there.
+
+### digit_exp, per seed, rank among 1,933 (lower is better; chance 49.90%)
+
+| target | path | seed 0 | seed 1 | seed 2 | mean | spread | Tanimoto | chance |
+|---|---|---|---|---|---|---|---|---|
+| cf | stepstop | 14.54% | 43.77% | 58.36% | **38.89%** | **43.8** | 71.03% | 49.90% |
+| fabry | stepstop | 15.21% | 44.70% | 21.37% | 27.09% | 29.5 | 85.83% (TRIVIAL) | 49.90% |
+| fabry | crossval | 40.35% | 38.33% | 42.78% | 40.49% | **4.4** | 85.83% (TRIVIAL) | 49.90% |
+
+fabry's headline 33.79% is the mean over all six adapters and should not be quoted as a
+point estimate; the two paths disagree and only one of them is trustworthy (below).
+
+### Finding 1 — both targets beat their Tanimoto baseline on every seed, but only one comparison is admissible
+
+cf: all 3 seeds beat 71.03%, the worst by 12.7 points. That is a genuine win for the
+adapter arm over a fingerprint lookup on a real approved-drug field — and it **inverts
+the 1-win/1-tie/6-loss verdict** sections 9/10 recorded against the 500-decoy baseline.
+The decoy field was flattering the baseline on cf by 41.6 points (29.4% → 71.03%),
+which try16's own STEP 2 table already measured before any adapter ran.
+
+fabry's baseline is `trivial_flag = True` (a training active at Tanimoto 1.000), so
+85.83% is not a result and beating it is not evidence. **fabry has no admissible
+baseline on this pool.** Against chance it is the weaker claim that still holds: all six
+adapters land between 15.2% and 44.7%, i.e. better than 49.90% in every case.
+
+### Finding 2 — cf's seed spread is 43.8 points and that is the real problem
+
+14.54 / 43.77 / 58.36. The spread is larger than the 32.1-point distance from the mean
+to the Tanimoto baseline, so "cf beats the baseline" survives on the worst seed but "cf
+scores 38.89%" is not a statement about anything. This reproduces, on an externally
+fixed pool, exactly what try11 recorded: **CF's step-selection check failed on 2 of 3
+seeds** because its 228-254 distinct validation molecules cannot resolve its loss curve.
+The instrument, not the pool, is the limit.
+
+### Finding 3 — cross-validation stabilises fabry again, and the two paths disagree about where it lands
+
+fabry's crossval spread is **4.4 points against stepstop's 29.5** — a 6.7x reduction,
+reproducing try12's result (spread 38.4 → 4.6) on a different candidate field. The
+mechanism is the one try17's dry-run then quantified: fabry's scaffold holdout removes
+18 of 90 compounds (20%), so a single scaffold split is a high-variance draw and
+6-fold CV averages over it.
+
+They do not agree on the answer. crossval says 40.49% (just better than chance);
+stepstop says 27.09% but with a 29.5-point spread that contains it. **Report crossval.**
+Taking stepstop's lower mean would be selecting the noisier instrument because it
+flatters the result, and try12 already established CV as the trustworthy measurement for
+this target.
+
+### Finding 4 — greedy's rank is not a rank, now demonstrated on a real drug field
+
+The `n_tied_with_ref` column does what it was added for. cf seed 2: **508 of 1,933
+approved drugs tie with lumacaftor** under greedy decoding; fabry stepstop seed 2: 375
+ties. digit_exp ties with exactly 1 (itself) in all 12 rows. Greedy's ranks are also
+wildly inconsistent with digit_exp's — cf seed 0 reads 52.98% greedy vs 14.54%
+digit_exp, fabry stepstop seed 1 reads 12.73% vs 44.70%, in opposite directions. Since
+greedy ranks are reported best-case, every tie broken in the reference's favour, these
+are upper bounds on an already meaningless number. **digit_exp is the only readout from
+this try that may be quoted.**
+
+### Finding 5 — `abs_label_error` says cf is accurate and fabry is not, which the ranks hide
+
+Rank is confounded with absolute potency (try17 Finding 3), and these two targets sit on
+opposite sides of that confound:
+
+| target | real label | predicted (digit_exp, per seed) | abs error |
+|---|---|---|---|
+| cf / lumacaftor | 584 | 540.6 / 558.8 / 567.8 | **16-43** |
+| fabry / migalastat | 196 | 524.4-604.6 | **328-409** |
+
+cf's prediction is within 3-7% of the measured value on all three seeds. fabry's is off
+by a factor of ~3 on all six adapters, in the same direction every time — the model
+places migalastat at ~560-600 when it measures 196. So fabry's mid-field rank is not a
+near-miss on a weak binder; it is a confident wrong answer about a **potent** one
+(40.4 nM, the most potent reference in the project). The rank understates how wrong it
+is, because 196 is low enough that even a 400-point error still leaves it mid-pack.
+
+### What is still missing
+
+`attr`, `cel`, `mastocytosis` and `tyrosinemia`. Three of the four carry the baselines
+the comparison most needs — mastocytosis at 0.57%, cel at 17.80%, tyrosinemia at
+18.42% — so the adapter arm's hardest tests are all in the pending half. **No
+cross-architecture claim should be written off cf and fabry alone**, and fabry's half of
+that pair has no admissible baseline.

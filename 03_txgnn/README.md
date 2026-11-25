@@ -4,7 +4,28 @@
 chemistry at all) correctly identify the right drug for Fabry/Gaucher while being
 provably blind to the true answer during training?
 
-## Arc (23 tries, the longest debugging arc of the three projects)
+## Current state (25-11-2026)
+
+On the frozen equalized pool (`06_equalized_pool/try01`, 1,933 approved drugs, the
+common ruler for all arms), with the specificity control applied, **this arm has one
+clean pass and one borderline one out of thirteen target nodes**:
+
+- **Malignant hyperthermia / dantrolene: rank 11 of 1,933 at its own node, 458-1,223
+  under every unrelated disease model.** The only unambiguous result in the project.
+- **Gaucher / miglustat: 10 at its own node vs 27 under the Fabry model** — borderline,
+  and partly borrowed from Niemann-Pick, which carries miglustat (try18).
+- Everything else fails or is flagged unreliable. **The model ranks by disease
+  *category*, not by disease**: tafamidis ranks **8 under the Fabry model** and 155
+  under TTR's own; migalastat ranks **17 under the CF model** and 118 under Fabry's own.
+
+**The two headline results this README used to lead with are both void.** See the Result
+section for the detail: Fabry's 17.7 was leaked (try18), and the "complementarity with
+TxGemma-predict" story rested on a TxGemma Gaucher pass that its own track retracted.
+
+Unblinded ceilings (try26) are queued; the edge audit is in and confirms two of the
+three TTR nodes can never be evaluated at all.
+
+## Arc (26 tries, the longest debugging arc of the three projects)
 1. **try01-02** — old environment (`envs/txgnn`, dgl 0.9.1): two different crashes, one
    from a wrong disease-index bug (see try03), one from a DGL API version mismatch after
    trying to fix the first by upgrading dgl in-place. Motivated building a fresh,
@@ -53,9 +74,28 @@ forward: train 3 seeds, average scores, report the ensembled rank, not any singl
 seed's.
 
 ## Result (computed 29-09-2026, from a real completed training+eval run)
+
+> **VOID as a result — superseded by try18, try17 and try25. Do not quote the 17.7.**
+> Three independent reasons, in order of severity:
+> 1. **try18: it is leaked.** With `proto=True` a held-out disease is scored as 90% the
+>    blend of its 3 nearest training diseases. Fabry's #1 (31%) is *chylomicron
+>    retention disease*, which in PrimeKG carries all 23 of Fabry's genes **including
+>    GLA, and a migalastat indication** — almost certainly an "Anderson disease" name
+>    collision. Fabry's answer was in the training graph under another name.
+> 2. **try17: it is not disease-specific.** Migalastat ranks 16 under the Fabry model
+>    and 27 under Gaucher's; Fabry's and Gaucher's full rankings correlate 0.957. The
+>    model had learned "rare metabolic disease drug", not Fabry.
+> 3. **try14: the configuration was chosen after seeing this number.** `attention=True`
+>    was adopted on the strength of Fabry's first result, so 17.7 is optimistic by
+>    construction. Fabry is also blind only by luck at the parent-category level.
+>
+> On the equalized pool migalastat ranks **118** under the Fabry model (try25), and
+> **17 under the CF model** — which is the finding, not the 118.
+
 **Fabry: migalastat ranks a mean of 17.7 / 7,957 drugs** (12th/22nd/19th across 3
-seeds) — strong, consistent, top-0.2%. A large improvement over try03's early
-`attention=False` result (2,863rd).
+seeds) — at the time read as strong, consistent and top-0.2%, and a large improvement
+over try03's early `attention=False` result (2,863rd). Kept here because the later tries
+are written as corrections to it.
 
 **Gaucher: weak and mixed per-seed**, but the picture changes with ensembling. Best
 per-seed drug was miglustat (mean rank 1251, wildly seed-variable: 7th to 3724th).
@@ -155,3 +195,35 @@ the Gaucher reference set (now 4 drugs).
     added only between existing nodes (indices unchanged), no drug–disease edges, plus a
     fix for the Fabry duplicate. Dry run: +80,710 rows (CF genes 11→25, ATTRV122I symptoms
     0→21). The user builds kg.csv locally and copies it to `/work/hdd/bisa/sshah21/primekg_aug/`.
+24. **try24** — six new diseases on the augmented graph (MH x2, CEL x2, systemic
+    mastocytosis, PKU, tyrosinemia, NSIAD), jobs 23702757_[0-5] / 23702758, completed
+    23-11-2026. Adds the seed-ensembled `collate.py` and the `best_cos` reliability
+    audit that try25 and try26 both reuse. **Dantrolene at 14/7,957 on the
+    exercise-induced MH node is the first result in this project that is not Fabry or
+    Gaucher.** NSIAD's tolvaptan indication in PrimeKG is medically questionable and its
+    rank (6,373) is treated as uninformative rather than as a miss.
+25. **try25** — re-rank try23/try24's saved scores on the frozen equalized pool
+    (`06_equalized_pool/try01`: 1,933 drugs, sha256-verified). Job 24441350, CPU, 4 min,
+    COMPLETED 23-11-2026. No training; try24's `collate.py` ranking and seed-ensembling
+    verbatim, **only the candidate field changes**. Two results:
+    **(a)** every rank improves while the percentile barely moves (tyrosinemia
+    3,224 → 566 is 0.405 → 0.293), because 7,957 → 1,933 removes mostly biologics — many
+    of them try12's isolated zero-score nodes. A change of denominator, not of evidence.
+    **(b)** with the biologics gone, **what fills the top of each rare-metabolic model is
+    the other diseases' drugs**, and the specificity control fails on almost everything:
+    tafamidis 8 under Fabry vs 155 under TTR's own, migalastat 17 under CF vs 118 under
+    Fabry's own, nitisinone 34 under Gaucher vs 566 under tyrosinemia's own. try17's
+    category-not-disease finding, now unmistakable on a common field. Only dantrolene
+    passes cleanly (11 own vs 458+ elsewhere); Gaucher's miglustat passes narrowly
+    (10 vs 27).
+26. **try26** — unblinded ceilings for every disease on the pool, to separate "the graph
+    has no signal" from "the model cannot express it even when handed the answer".
+    Needs no retraining: each try23/try24 run held out only its own disease, so every
+    *other* disease is already unblinded under it — inference on existing checkpoints,
+    try19's trick. **Job A (edge audit) COMPLETED**: 137 of 180 cells are genuinely
+    unblinded, and 23 cells absent from a run's holdout list are nonetheless blind
+    because the random valid/test draw removed the edge from message passing — inferring
+    eligibility from the holdout list would have mis-scored 14% of the edge-bearing
+    cells. Confirms **hereditary and wild-type ATTR have no tafamidis edge at all (0/10
+    models)**, so try23/try25's ranks of 280 and 91 at those nodes have no ground truth
+    behind them and are neither hits nor misses. Jobs B/C pending on priority.
