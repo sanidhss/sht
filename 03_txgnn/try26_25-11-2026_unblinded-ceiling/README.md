@@ -71,3 +71,23 @@ ATTR)**. So:
 
 ## Result
 *(filled in by job C)*
+
+## Scheduling notes (25-11-2026)
+Delta was heavily congested when this was submitted (2,602 jobs pending on `gpuA100x4`;
+4 of 392 A40 GPUs and 6 of 396 A100 GPUs actually free). Three things were changed on the
+**pending** array with `scontrol update`, which preserves its queue age and priority and
+leaves job C's dependency intact — cancelling and resubmitting would have cost both:
+
+1. `-p gpuA100x4,gpuA40x4`. Each task is one forward pass on one GPU, so an A40 serves as
+   well as an A100 here; try24's A40 problem was *training* hitting the 12h wall, which does
+   not apply. Both partitions are `PriorityTier=100`.
+2. Wall time 6h → 4h. try19's comparable inference job (15 model-seed reloads) took 7h39m,
+   i.e. ~30 min per reload, nearly all of it in `prepare_split` + graph construction rather
+   than scoring. One task here is 3 reloads ≈ 1.5h, so 4h keeps ~2.5x headroom while being
+   far easier for the backfill scheduler to place than 6h.
+3. The `gpuA40x4-preempt` duplicate was withdrawn. The `-preempt` partitions are
+   `PriorityTier=30`, and Slurm treats the tier as a hard gate: nothing in a lower tier is
+   scheduled while any higher-tier job is pending. Cluster-wide, zero jobs were running in
+   any `-preempt` partition. `sinfo` showing those nodes as `mixed` is misleading — it
+   refers to free CPU cores; `scontrol show node` reports `gres/gpu=4` of 4 allocated, and
+   the `-` suffix is `PLANNED` (already earmarked for a pending higher-priority job).
