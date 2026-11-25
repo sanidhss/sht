@@ -178,6 +178,101 @@ It is not a try17 regression -- try11 and try12 did the same -- but fabry trains
 compounds and its unblinded result will be the noisiest of the six. Read it with the
 seed spread, not as a point estimate.
 
+## Scheduling: re-submitted as 18 preempt chunks (25-11-2026)
+
+The original submission (`24534036`, one array of 6 tasks x 3 seeds, 16h, `gpuA100x4`)
+was cancelled and replaced:
+
+```
+24536392  try17_large   9 tasks  cf, cel, mastocytosis x 3 seeds   16h
+24536393  try17_small   9 tasks  fabry, attr, tyrosinemia x 3 seeds 6h
+24536394  try17_B_collate                          afterany on both
+          -p gpuA40x4-preempt,gpuA100x4-preempt    --requeue
+```
+
+One array task per **(target, seed)**. Driven by a hard deadline of 12:00 on 27-11-2026.
+
+### What the scheduler actually rewards here, measured
+
+Start estimates from `sbatch --test-only`, which costs nothing and queues nothing:
+
+| time limit | gpuA100x4 | + A40 + H200 |
+|---|---|---|
+| 1h | Dec 4 01:10 | Dec 4 02:23 |
+| 2h | Dec 4 01:41 | Dec 4 01:41 |
+| 6h | Dec 4 01:41 | Dec 4 01:41 |
+| 16h | Dec 4 01:41 | Dec 4 01:41 |
+
+**For a zero-age job, the time limit and the partition list change nothing.** Priority
+is the binding constraint -- a fresh job sits behind ~2,600 pending jobs and cannot win
+a reservation at any size. Splitting for backfill alone buys nothing.
+
+**For an AGED job the opposite is true.** try16 (`24440722`, queued since 23-11, priority
+2156) had its limit cut 8h -> 2h in place with `scontrol update`, and its start estimate
+moved **26-11 15:48 -> 25-11 19:54, nearly 20 hours earlier**. Backfill engages once a
+job has the priority to be considered at all. The lesson is the pairing, not the limit:
+*shorten aged jobs in place; never resubmit them.*
+
+### Partition choice, and two traps
+
+| partition | free GPUs | pending | fresh-job estimate |
+|---|---|---|---|
+| **gpuA40x4-preempt** | 5 | 525 | **Nov 26 13:09** |
+| gpuA100x4-preempt | 6 | 736 | Nov 27 03:48 |
+| gpuA100x4 | 6 | 2596 | Dec 4 01:41 |
+| gpuH200x8 | 9 | 690 | **2027-01-17** |
+| full | 21 | **0** | **not permitted** |
+
+- **gpuH200x8 is a trap.** Most free GPUs, best free/pending ratio, newest hardware --
+  and nearly two months out. Free-GPU count is the wrong metric; those GPUs are held by
+  reservations. Excluded.
+- **`full` is a trap.** 21 free GPUs and zero pending because
+  `AllowAccounts=bbka-delta-gpu,bbka-delta-cpu` -- another project's partition. Not ours.
+- Both preempt partitions are listed so SLURM takes whichever frees first.
+  `PreemptMode=REQUEUE`, `GraceTime=300`, `PreemptExemptTime=10min`: a preempted job is
+  requeued, not killed, but **restarts from scratch**. That, not backfill, is the real
+  reason for fine chunks -- a 4h chunk is far likelier to complete between preemptions
+  than a 16h one.
+
+### Time limits are sized for A40, not A100
+
+Per-(target, seed) chunk times measured on A100 were 3h13-3h49 (large) and 1h17-1h29
+(small). A40 runs ~696 GB/s against A100's ~2039 GB/s, and single-sequence
+autoregressive generation is memory-bandwidth bound, so A40 may be **~3x slower** --
+up to ~11h30m for a large chunk. Limits are 16h/6h accordingly. This costs nothing:
+the limit was measured not to affect the start estimate on these partitions.
+
+**There is no empirical A40 number for this workload.** The only historical A40 job
+(`tx_score`, 41-47 min) was almost entirely model load. The 3x figure is a
+bandwidth-ratio argument, not a measurement, and it is the largest uncertainty here.
+
+Verified runnable on A40: `torch 2.14.0+cu130` lists `sm_75, sm_80, sm_86, sm_90,
+sm_100, sm_120`, so sm_86 is covered; the trainer and scorer both run **batch size 1**,
+so 48 GB is ample.
+
+### Code change the chunking required
+
+Three tasks for one target now run **concurrently**, so the per-target
+`step_stopping_summary.json` would have been a write race with the last writer silently
+dropping two seeds. Each seed now writes
+`step_stopping_summary_seed<N>.json`, and `collate_unblinded.py` merges the shards
+(falling back to the single-file name if a 3-seeds-in-one-job run is ever used).
+
+### Deadline risk, recorded honestly
+
+Runway 45.5h; estimated start 26-11 13:09, leaving ~23h of compute. The large chunks fit
+only if they start near the estimate and are not preempted late. The **small array is the
+safe deliverable**; cf, cel and mastocytosis may not land by 12:00 on 27-11.
+
+Two fallbacks, neither applied:
+1. Cut the large targets to 1 seed (3 chunks, not 9). Near-guarantees delivery but loses
+   the seed-variance estimate -- which has mattered on every target so far, with spreads
+   up to 48 percentile points.
+2. Batch the pool scoring. The scorer generates one prompt at a time; batching 16-32
+   would cut that phase several-fold. Rejected under this deadline: left-padding affects
+   per-position logits, so it risks the `digit_exp` readout and would break strict
+   comparability with try16. It is the right fix for the next run.
+
 ## Result
 
 Pending — GPU array queued. Fill in from
