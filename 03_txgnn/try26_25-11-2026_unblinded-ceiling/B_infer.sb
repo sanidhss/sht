@@ -1,0 +1,11 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA100x4
+#SBATCH --gpus=1 -n 1 -c 16 --mem=128g -t 06:00:00
+#SBATCH -J txgnn_t26_B
+#SBATCH --array=0-9
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgnn/%x_%A_%a.out
+# task i reloads config26.ORDER[i] = fabry gaucher cf ttr cel sm nsiad pku mh tyr1
+# Inference only: no training, no new checkpoints, nothing in try23/try24 is written to.
+cd /projects/bisa/sshah21/library/03_txgnn/try26_25-11-2026_unblinded-ceiling
+/work/hdd/bisa/sshah21/envs/txgnn2/bin/python -u unblind_infer.py
