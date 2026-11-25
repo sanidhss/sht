@@ -1,0 +1,41 @@
+#!/bin/bash
+#SBATCH -J boltz2_smoke
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA100x4
+#SBATCH --gpus=1 -n 1 -c 16 --mem=64g -t 01:00:00
+#SBATCH -o /work/hdd/bisa/sshah21/results/structure/%x_%j.out
+set -euo pipefail
+source /sw/rh9.4/python/miniforge3/etc/profile.d/conda.sh
+conda activate /work/hdd/bisa/sshah21/envs/boltz2
+export BOLTZ_CACHE=/work/hdd/bisa/sshah21/boltz_cache
+
+python -c "import torch; print('torch', torch.__version__, 'cuda', torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+
+WORK=/work/hdd/bisa/sshah21/results/structure/boltz_smoke
+mkdir -p "$WORK"
+cat > "$WORK/smoke.yaml" <<'YAML'
+version: 1
+sequences:
+  - protein:
+      id: A
+      # Single-sequence mode. NOT because the node lacks internet -- compute nodes
+      # DO have outbound HTTPS (verified 13-11-2026, job 23850441, per
+      # 04_setup/build_vllm_env.sb). It is to keep this smoke test fast and
+      # self-contained: no dependency on an external MSA server's availability or
+      # queue. Real runs should drop `msa: empty` and pass --use_msa_server, which
+      # will work on these nodes.
+      msa: empty
+      sequence: MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEKAVQVKVKALPDAQFEVVHSLAKWKRQTLGQHDFSAGEGLYTHMKALRPDEDRLSPLHSVYVDQWDWERVMGDGERQFSTLKSTVEAIWAGIKATEAAVSEEFGLAPFLPDQIHFVHSQELLSRYPDLDAKGRERAIAKDLGAVFLVGIGGKLSDGHRHDVRAPDYDDWSTPSELGHAGLNGDILVWNPVLEDAFELSSMGIRVDADTLKHQLALTGDEDRLELEWHQALLRGEMPQTIGGGIGQSRLTMLLLQLPHIGQVQAGVWPAAVRESVPSLL
+  - ligand:
+      id: B
+      smiles: 'CC(=O)Oc1ccccc1C(=O)O'
+properties:
+  - affinity:
+      binder: B
+YAML
+
+boltz predict "$WORK/smoke.yaml" --out_dir "$WORK/out" \
+  --cache "$BOLTZ_CACHE" --override --diffusion_samples 1
+
+echo "--- outputs ---"
+find "$WORK/out" -type f | head -20

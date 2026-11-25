@@ -1,0 +1,46 @@
+#!/bin/bash
+#SBATCH -J af3
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA100x4
+#SBATCH --gpus=1 -n 1 -c 16 --mem=128g -t 06:00:00
+#SBATCH -o /work/hdd/bisa/sshah21/results/structure/%x_%j.out
+# Usage: sbatch run_af3.sb <fold_input.json> <output_dir>
+# AF3 3.0.2 via Delta's prebuilt container + shared databases.
+# Weights are NOT provided by the module -- they live in AF3_MODELS (see README).
+set -euo pipefail
+
+IN_JSON=$(readlink -f "$1")
+OUT_DIR=$(readlink -f "$2")
+IN_DIR=$(dirname "$IN_JSON")
+AF3_MODELS=/work/hdd/bisa/sshah21/af3_models
+mkdir -p "$OUT_DIR"
+
+source /etc/profile.d/modules.sh 2>/dev/null || true
+module load alphafold/3.0.2
+
+# AF3's select_model_files() globs the model dir for *.bin / *.bin.zst and derives
+# the model name from the filename -- it is NOT required to be literally af3.bin.
+# It does, however, raise "Multiple models matched" if more than one is present.
+mapfile -t _params < <(find "$AF3_MODELS" -maxdepth 1 -type f \
+  \( -name '*.bin' -o -name '*.bin.zst' \) -printf '%f\n')
+if [ "${#_params[@]}" -eq 0 ]; then
+  echo "ERROR: no *.bin/*.bin.zst params found in $AF3_MODELS -- upload the DeepMind params first." >&2
+  exit 1
+elif [ "${#_params[@]}" -gt 1 ]; then
+  echo "ERROR: $AF3_MODELS holds ${#_params[@]} param files (${_params[*]}); AF3 requires exactly one." >&2
+  exit 1
+fi
+echo "AF3 params: ${_params[0]}"
+
+apptainer run --nv \
+  --bind "$IN_DIR":/data/af_input \
+  --bind "$OUT_DIR":/data/af_output \
+  --bind "$AF3_MODELS":/data/models \
+  --bind "${AF3_DB_DIR}":/data/public_databases \
+  "${AF3_IMAGE}" \
+  --json_path=/data/af_input/$(basename "$IN_JSON") \
+  --model_dir=/data/models \
+  --db_dir=/data/public_databases \
+  --output_dir=/data/af_output \
+  --force_output_dir \
+  --flash_attention_implementation=cudnn

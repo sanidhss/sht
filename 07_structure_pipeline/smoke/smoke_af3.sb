@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH -J af3_smoke
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA100x4
+#SBATCH --gpus=1 -n 1 -c 16 --mem=128g -t 04:00:00
+#SBATCH -o /work/hdd/bisa/sshah21/results/structure/%x_%j.out
+# Requires af3.bin in /work/hdd/bisa/sshah21/af3_models (see README).
+set -euo pipefail
+W=/work/hdd/bisa/sshah21/results/structure/af3_smoke
+mkdir -p "$W/in"
+cat > "$W/in/fold_input.json" <<'JSON'
+{
+  "name": "af3_smoke",
+  "modelSeeds": [1],
+  "sequences": [
+    {"protein": {"id": "A", "sequence": "MKTAYIAKQRQISFVKSHFSRQLEERLGLIEVQAPILSRVGDGTQDNLSGAEKAVQVKVKALPDAQFEVVHSLAKWKRQTLGQHDFSAGEGLYTHMKALRPDEDRLSPLHSVYVDQWDWERVMGDGERQ"}},
+    {"ligand": {"id": "B", "smiles": "CC(=O)Oc1ccccc1C(=O)O"}}
+  ],
+  "dialect": "alphafold3",
+  "version": 1
+}
+JSON
+bash /projects/bisa/sshah21/library/07_structure_pipeline/setup/run_af3.sb "$W/in/fold_input.json" "$W/out"
+echo "--- outputs ---"
+find "$W/out" -type f | head -20
