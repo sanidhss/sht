@@ -110,6 +110,15 @@ def main():
                                      "max_sim_to_actives": "", "trivial_flag": "",
                                      "status": "ok"})
             else:
+                # try17 runs one array task per (target, seed), so each seed writes its
+                # own shard. Merge them; fall back to the single-file name if a
+                # 3-seeds-in-one-job run was used instead.
+                import glob as _glob
+                shards = sorted(_glob.glob(os.path.join(
+                    root, target, "step_stopping_summary_seed*.json")))
+                merged = {}
+                for sh in shards:
+                    merged.update(json.load(open(sh)).get("results", {}))
                 sfile = os.path.join(root, target, "step_stopping_summary.json")
                 marker = os.path.join(root, f"{target}_NOT_EVALUABLE.json")
                 if os.path.exists(marker):
@@ -120,7 +129,7 @@ def main():
                                  "max_sim_to_actives": "", "trivial_flag": "",
                                  "status": "NOT EVALUABLE: reference absent from pool_v1"})
                     continue
-                if not os.path.exists(sfile):
+                if not merged and not os.path.exists(sfile):
                     rows.append({**base, "arm": arm_name, "readout": "", "path_used": "",
                                  "seed": "", "rank_pool": "", "n_pool": "",
                                  "percentile_pool": "", "n_tied_with_ref": "",
@@ -128,7 +137,7 @@ def main():
                                  "max_sim_to_actives": "", "trivial_flag": "",
                                  "status": "MISSING: unblinded task not finished"})
                     continue
-                d = json.load(open(sfile))
+                d = {"results": merged} if merged else json.load(open(sfile))
                 for tag, rec in sorted(d["results"].items()):
                     for readout in ("digit_exp", "greedy"):
                         r = rec[readout]

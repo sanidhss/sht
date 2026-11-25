@@ -612,7 +612,14 @@ if __name__ == "__main__":
                        "greedy": dg, "digit_exp": dd}, f)
         del model, base
         torch.cuda.empty_cache()
-        with open(os.path.join(out_dir, "step_stopping_summary.json"), "w") as f:
+        # Per-seed filename when a single seed is requested. try17 is submitted as one
+        # array task per (target, seed) so the chunks survive preempt REQUEUE, which
+        # means three tasks for the same target run CONCURRENTLY -- a shared
+        # step_stopping_summary.json would be a write race and the last writer would
+        # silently drop the other two seeds. collate_unblinded.py merges the shards.
+        sname = ("step_stopping_summary.json" if len(SEEDS) > 1
+                 else f"step_stopping_summary_seed{SEEDS[0]}.json")
+        with open(os.path.join(out_dir, sname), "w") as f:
             json.dump({"target": TARGET, "seeds": SEEDS, "lr": LR, "n_epoch": N_EPOCH,
                        "evals_per_epoch": EVALS_PER_EPOCH, "results": results}, f, indent=2)
 

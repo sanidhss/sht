@@ -1,0 +1,44 @@
+#!/bin/bash
+#SBATCH -A bisa-delta-gpu
+#SBATCH -p gpuA40x4-preempt,gpuA100x4-preempt
+#SBATCH --gpus=1 -n 1 -c 16 --mem=96g -t 06:00:00
+#SBATCH -J try17_small
+#SBATCH -a 0-8
+#SBATCH --requeue
+#SBATCH -o /work/hdd/bisa/sshah21/results/txgemma_lora_orphan/%x_%A_%a.out
+
+module load miniforge3-python
+source activate /work/hdd/bisa/sshah21/envs/txgemma
+export HF_HOME=/work/hdd/bisa/sshah21/hf_cache
+
+# ONE (target, seed) per task -- 3 big targets x 3 seeds. Chunked this finely because
+# PreemptMode=REQUEUE restarts a preempted job from scratch, so a short chunk is far
+# more likely to complete between preemptions. Measured: the time limit does NOT affect
+# the start estimate on these partitions (identical Nov 26 14:53 from 3h to 16h), so a
+# generous limit is free and the limit is sized for the SLOW hardware.
+#
+# PARTITION: preempt partitions were measured 8 days faster than gpuA100x4 for a
+# zero-age job (A40-preempt Nov 26 14:36 vs A100 Dec 4 01:41). Both preempt partitions
+# are listed so SLURM takes whichever frees first; A100-preempt is ~3x the memory
+# bandwidth and would finish much sooner if it lands there. gpuH200x8 is deliberately
+# EXCLUDED despite having the most free GPUs -- measured start estimate 2027-01-17.
+#
+# TIME LIMIT: per-seed chunks measured 3h13-3h49 on A100. A40 has ~696 GB/s against
+# A100's ~2039 GB/s and this is single-sequence autoregressive generation, which is
+# memory-bandwidth bound, so A40 may be ~3x slower: up to ~11h30m. 16h covers that with
+# margin. torch 2.14.0+cu130 lists sm_86, so A40 runs; batch size is 1 throughout, so
+# 48 GB is ample.
+TARGETS=(fabry attr tyrosinemia)
+SEEDS_ALL=(0 1 2)
+export TARGET=${TARGETS[$((SLURM_ARRAY_TASK_ID / 3))]}
+export SEEDS=${SEEDS_ALL[$((SLURM_ARRAY_TASK_ID % 3))]}
+export N_EPOCH=2
+export LR=6.666666666666667e-05
+export EVALS_PER_EPOCH=7
+export VAL_EVAL_CAP=400
+export UNBLIND=1
+
+echo "=== try17 SMALL task $SLURM_ARRAY_TASK_ID -> TARGET=$TARGET SEED=$SEEDS ==="
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+/work/hdd/bisa/sshah21/envs/txgemma/bin/python \
+  /projects/bisa/sshah21/library/01_txgemma_predict/try17_25-11-2026_unblinded/unblinded_pool_eval.py
