@@ -392,6 +392,90 @@ particular, try11's fine-tuned numbers for the original four are 4-pool and cann
 differenced against try15's 8-pool zero-shot — which is why the table in section 10 shows
 direction for those four rather than a delta.
 
+### 12. THE PATTERN: what makes txgemma-predict succeed (25-11-2026)
+
+Derived from all eight targets with zero-shot, fine-tuned and baseline numbers measured
+on matched yardsticks. This supersedes "success tracks the base model's prior"
+(section 7), which was right about the mechanism and wrong about the direction.
+
+#### The governing law: fine-tuning moves every target to the same place
+
+| | spread across 8 targets |
+|---|---|
+| before fine-tuning (zero-shot) | sd 37.5, range 10.0-96.6 |
+| after fine-tuning | sd 25.3, range 0.4-77.9 |
+
+```
+r(zero-shot percentile, improvement) = +0.867
+r(zero-shot percentile, final)       = -0.216
+```
+
+**Where a target starts predicts almost perfectly how much it changes, and almost
+nothing about where it ends up.** The landing zone is a band: mean 34.8, median 32.0
+percentile. LoRA is not learning each target's chemistry; it is learning the task's
+output distribution and dragging everything onto it.
+
+Confirmed directly on predictions, not just ranks (try16). Across six targets the model
+predicted 453, 525, 556, 560, 597, 787 for true labels of 234, 441, 584, 196, 410, 552 --
+and **a constant predictor of 410 beats it on absolute accuracy, MAE 123 vs 186.**
+
+#### Two regimes follow
+
+**Regime 1 -- the base model already has a prior (zero-shot < 20). Fine-tuning usually
+destroys it.**
+
+| target | zero-shot | fine-tuned | |
+|---|---|---|---|
+| fabry | 10.0 | 35.2 | **harmed** |
+| gaucher | 11.0 | **0.4** | helped |
+| mastocytosis | 14.6 | 77.9 | **harmed badly** |
+
+2 of 3 damaged. Gaucher is the sole exception and the only target with both a strong
+prior *and* ~1,200 training compounds.
+
+**Regime 2 -- cold start (zero-shot > 45). Fine-tuning reliably helps, and data volume
+orders the outcome.**
+
+| target | n_train | zero-shot | fine-tuned |
+|---|---|---|---|
+| cel | 1484 | 94.2 | **20.6** |
+| cf | 1425 | 47.8 | 28.8 |
+| nsiad | 1092 | 96.6 | **16.0** |
+| attr | 477 | 58.0 | 64.2 |
+| tyrosinemia | 177 | 86.6 | 35.3 |
+
+4 of 5 helped, by up to +80.6 points. `Spearman(n_train, final percentile) = -0.60`.
+
+**This reconciles try07.** Downsampling showed volume "didn't matter" -- but try07 tested
+it on Gaucher, a regime-1 target where volume is irrelevant because the prior does the
+work. Volume matters only in the cold-start regime.
+
+#### The usable rule
+
+Run zero-shot first. It costs one hour, no training (try15 scored eight targets in 53
+minutes).
+
+1. **zero-shot < 20th percentile -> do not fine-tune.** The prior is better than what
+   you will land on. Ship the base model.
+2. **zero-shot > 45th and n_train > ~1,000 -> fine-tune.** Expect ~20th percentile.
+3. **zero-shot > 45th and n_train < 500 -> marginal.** Expect 35-65th; attr got worse.
+4. **Never expect better than ~16th percentile.** Nothing except Gaucher has beaten it.
+
+Applied retrospectively the rule is right on 6 of 8; the misses are gaucher (+10.6, the
+regime-1 exception) and attr (-6.2, within seed noise).
+
+#### What this means for the thesis claim
+
+The honest framing is **not** "a fine-tuned LLM ranks chaperones correctly." It is:
+
+> LoRA fine-tuning on bioactivity data moves any target to a fixed ~30th-percentile band
+> regardless of where it began. That is a large gain for targets the base model cannot
+> handle and a large loss for targets it can, and the deciding variable -- measurable in
+> one GPU-hour before committing to any training -- is the base model's zero-shot
+> performance, not the quantity or quality of the training data.
+
+The deliverable is the **triage rule**, not the screening tool.
+
 ### Caveats on earlier numbers
 - Gaucher's analog real labels are 791/**679**/839, not the 791/791/839 quoted in places
   (those are *predicted*). Analog #2's real 679 is more potent than ambroxol's real 685.
