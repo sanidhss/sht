@@ -143,6 +143,86 @@ again.
 - **Collate runs under `afterany`** so a dead array task yields a report naming what is
   missing rather than no report.
 
+## Result (complete, 25-11-2026)
+
+All six evaluable targets finished. Tasks 2-5 ran after the time limit was cut 8h -> 2h
+in place, taking 50-61 min each -- within the "strictly less work than cf's 62 min"
+prediction.
+
+digit_exp readout, mean of 3 seeds, rank among the 1,933-drug pool. Lower is better.
+
+| target | drug | path | model rank | model %ile | seed spread | kNN rank | kNN %ile | winner |
+|---|---|---|---|---|---|---|---|---|
+| cel | imatinib | stepstop | **199** | **10.28** | 4.7 | 344 | 17.80 | **model** |
+| fabry | migalastat | stepstop | 524 | 27.09 | 29.5 | 1659 | 85.83 | model* |
+| cf | lumacaftor | stepstop | 752 | 38.89 | 43.8 | 1373 | 71.03 | **model** |
+| fabry | migalastat | crossval | 783 | 40.49 | 4.4 | 1659 | 85.83 | model* |
+| tyrosinemia | nitisinone | stepstop | 943 | 48.77 | 52.2 | 356 | 18.42 | kNN |
+| mastocytosis | midostaurin | stepstop | 1224 | 63.34 | 26.6 | **11** | **0.57** | kNN |
+| attr | tafamidis | stepstop | 1326 | 68.62 | 12.8 | 1108 | 57.32 | kNN |
+
+`*` fabry's kNN arm is leak-damaged (Tanimoto 1.000 to its own diastereomers), so that
+comparison is not a fair one -- see below.
+
+**On a real drug pool the model does far better than the decoy field suggested.** The
+500-decoy scoring had it at 1 win, 1 tie, 6 losses against the same baseline. Here it is
+roughly even. This is the clearest vindication of building the equalized pool: the decoy
+field was not a neutral yardstick.
+
+### Rank alone is misleading. The label errors settle it.
+
+| target | drug | real | nM | model predicts | abs error | verdict |
+|---|---|---|---|---|---|---|
+| cf | lumacaftor | 584 | 1293 | 556 | **28** | genuinely accurate |
+| cel | imatinib | 441 | 84.6 | 525 | **84** | good |
+| mastocytosis | midostaurin | 410 | 57.2 | 597 | 187 | poor |
+| tyrosinemia | nitisinone | 234 | 37.0 | 453 | 219 | poor |
+| attr | tafamidis | 552 | 838.7 | 787 | 235 | poor |
+| fabry | migalastat | 196 | 40.4 | 560 | **364** | worst |
+
+This reclassifies one result. **fabry's rank "win" is an artifact.** The model predicts
+560 against a true 196 -- an error of 364, its worst anywhere. It outranks the kNN only
+because the kNN is even more wrong (predicts 796, error 600) in the same direction. Two
+badly wrong methods, one less wrong. Nothing was learned about migalastat.
+
+cf and cel survive the check: best label accuracy (28 and 84) *and* better rank. Those
+are the two real wins.
+
+Revised tally: **2 genuine wins (cf, cel), 1 artifact (fabry), 3 clear losses.**
+
+### The model compresses everything into one band — now quantified
+
+Model predictions across the six: 453, 525, 556, 560, 597, 787 — mean 580, range 453-787.
+True labels: 196, 234, 410, 441, 552, 584 — mean 403, range 196-584.
+
+**It over-predicts the score (under-predicts potency) on 5 of 6 targets**, by +84 to
++364, and the only under-prediction is cf at -28. The true labels span 388 points; the
+predictions span 334 but sit almost entirely above 450.
+
+This is try15's "converges to a band regardless of where it started" finding, now
+measured directly on predictions rather than inferred from ranks. The model has largely
+learned the task's output distribution, not each target's chemistry -- which is exactly
+why it does well on cf (true label 584, near the band) and worst on fabry (true label
+196, far below it).
+
+### Seed spreads make most of these differences non-significant
+
+Spreads: tyrosinemia 52.2, cf 43.8, fabry stepstop 29.5, mastocytosis 26.6, attr 12.8,
+cel 4.7, fabry crossval 4.4 percentile points.
+
+With 3 seeds and spreads of 40-50 points, cf's and tyrosinemia's results are barely
+distinguishable from noise. Only **cel** (10.28, spread 4.7) and **mastocytosis**
+(63.34 against a kNN at 0.57) are large enough relative to their spread to assert.
+Treat cf's win as suggestive, not established.
+
+### mastocytosis is the clearest failure in the project
+
+A Tanimoto 5-NN puts midostaurin **11th of 1,933** approved drugs. The fine-tuned 9B
+model puts it **1,224th**. try15 measured mastocytosis zero-shot at 14.6 percentile, so
+fine-tuning took a target the base model handled reasonably and destroyed it -- the same
+pattern as Fabry, and the strongest single argument that LoRA on this data actively
+damages good priors.
+
 ## Result — PARTIAL (2 of 6 targets, as of 25-11-2026)
 
 Array tasks 0 (`cf`) and 1 (`fabry`) COMPLETED 25-11 at 08:03 and 08:33, after ~37h
