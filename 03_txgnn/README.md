@@ -7,16 +7,35 @@ provably blind to the true answer during training?
 ## Current state (25-11-2026)
 
 On the frozen equalized pool (`06_equalized_pool/try01`, 1,933 approved drugs, the
-common ruler for all arms), with the specificity control applied, **this arm has one
-clean pass and one borderline one out of thirteen target nodes**:
+common ruler for all arms), out of thirteen target nodes. **Two separate tests are
+applied, and they do not agree — earlier versions of this section combined them into a
+single verdict, which hid PKU:**
+
+1. `specificity_pass` — does the drug rank better at its own disease node than under any
+   other disease's model? **Three nodes pass: MH, Gaucher, PKU.**
+2. `reliable` — is the node embedded well enough (`best_cos`) for its score to mean
+   anything? **PKU fails this one** (`best_cos` 0.1784).
+
+So the headline is **one clean pass, one borderline, one specific-but-unreliable**:
 
 - **Malignant hyperthermia / dantrolene: rank 11 of 1,933 at its own node, 458-1,223
-  under every unrelated disease model.** The only unambiguous result in the project.
-- **Gaucher / miglustat: 10 at its own node vs 27 under the Fabry model** — borderline,
-  and partly borrowed from Niemann-Pick, which carries miglustat (try18).
-- Everything else fails or is flagged unreliable. **The model ranks by disease
-  *category*, not by disease**: tafamidis ranks **8 under the Fabry model** and 155
-  under TTR's own; migalastat ranks **17 under the CF model** and 118 under Fabry's own.
+  under every unrelated disease model.** Passes both tests. The only unambiguous result
+  in the project.
+- **Gaucher / miglustat: 10 at its own node vs 27 under the Fabry model** — passes both,
+  but borderline on margin, and partly borrowed from Niemann-Pick, which carries
+  miglustat (try18).
+- **PKU / sapropterin: 211 at its own node vs 778 under the Fabry model** — passes
+  specificity, fails `reliable`. Not a hit (211 of 1,933 is not a find), but it is
+  *specific*, and reporting it as a plain failure was wrong.
+- Everything else fails specificity outright. **The model ranks by disease *category*,
+  not by disease**: tafamidis ranks **8 under the Fabry model** and 155 under TTR's own;
+  migalastat ranks **17 under the CF model** and 118 under Fabry's own.
+
+The mechanism behind those category-level ranks, from `specificity_pool_v1.csv`: median
+rank assigned to the thirteen reference drugs is **96 under the Fabry model** and **986
+under TTR's**. The Fabry model lifts approved orphan small molecules as a class rather
+than identifying any one of them, and TTR's ranks them all at chance. Neither is tracking
+its disease. MH is the contrast — median 1,370, but dantrolene at 11.
 
 **The two headline results this README used to lead with are both void.** See the Result
 section for the detail: Fabry's 17.7 was leaked (try18), and the "complementarity with

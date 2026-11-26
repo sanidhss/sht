@@ -63,9 +63,11 @@ and logs only.
   hallucinating it.
 - **[03_txgnn](03_txgnn/README.md)** — PrimeKG knowledge-graph link prediction, no
   chemistry at all. 26 tries, the longest debugging arc. Current state on the equalized
-  pool with the specificity control applied: **one clean pass out of thirteen target
-  nodes** — dantrolene at 11/1,933 for malignant hyperthermia (458+ under every
-  unrelated model) — plus Gaucher/miglustat at 10 vs 27, borderline. **The model ranks
+  pool, out of thirteen target nodes: **three pass the specificity control** (MH,
+  Gaucher, PKU) but only two also pass `reliable`, so the headline is **one clean pass**
+  — dantrolene at 11/1,933 for malignant hyperthermia (458+ under every unrelated
+  model) — plus Gaucher/miglustat at 10 vs 27, borderline, and PKU/sapropterin specific
+  (211 vs 778) but unreliable. **The model ranks
   by disease *category*, not by disease**: tafamidis ranks 8 under the *Fabry* model and
   155 under TTR's own. Fabry's old top-0.2% result is **void** — try18 found migalastat's
   answer in the training graph under another name (a *chylomicron retention disease*
