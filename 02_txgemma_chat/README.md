@@ -210,46 +210,39 @@ replicate on the full library and is withdrawn.
 
 ## Current state
 
-What this track can honestly claim, and what it cannot:
+Detail behind the summary at the top of this file.
 
-- **Narrow and conditional:** given a *crisp physicochemical* condition, the model ranks
-  a realistic library very well — but **on 1 of 4 mechanisms tested** (try10). fabry:
-  rank 4/3420, 427x enrichment. gaucher 1143, cf 993, attr 1774 — 1.0-1.7x enrichment,
-  i.e. at or near chance. try08's headline number was a single-fold result and does not
-  generalize. A three-line RDKit descriptor filter lands within ~2.7x of the model on
-  fabry, the one fold that works.
-- **Phrasing register is causally dominant (try11).** Changing only the register of
-  fabry's condition -- pharmacological instead of physicochemical, same disease, same
-  weights, same library -- moves migalastat from rank 11/3420 to 2974/3420 (worse than
-  random). Physicochemical phrasing is necessary but not sufficient: three
-  physicochemical rewrites of the failing folds still miss recall@100.
-- **A deterministic RDKit property filter beats the model on all four folds** by 2x-48x
-  (try11). Where the model appears to work it is approximating a property calculator,
-  more expensively and less accurately. For attr, descriptors reach rank 6/88 from the
-  same condition text on which the model manages 291/3420 -- so the condition carried the
-  information and the model failed to use it.
-- **The dominant variable is condition authoring, not model capability.** The screen
-  converts a *property specification* into a ranking. fabry's condition is one
-  ("compact, highly polar, ring position able to carry positive charge"). gaucher's is
-  pharmacological and negative ("modulatory contact rather than a clean mimic, modest
-  potency") and yields a yes-set of 38.5% of the library. cf's ("larger, rigid,
-  multi-ring") is applied *correctly* but describes hundreds of modern kinase inhibitors
-  and antivirals, so it cannot single out lumacaftor.
-- **Not supported:** end-to-end identification for an unseen disease. try09 fails this by
-  ~330x in rank. Nor is a general-purpose mechanism-to-shortlist screen supported, per
-  try10.
+- **Works on 1 of 4 mechanisms (try10).** Given a crisp *physicochemical* condition the
+  model ranks a realistic library well — fabry 4/3420, 427x enrichment. The other three
+  are at or near chance (gaucher 1143, cf 993, attr 1774). try08's headline was a single
+  fold and does not generalize.
+- **Phrasing register is causally dominant.** Same disease, weights and library; only the
+  register of fabry's condition changed: 11 → 2974 of 3420 (try11, ~270x), and 7 → 1,675
+  of 1,933 on the shared pool (try12, 239x). Physicochemical phrasing is necessary but
+  not sufficient — three rewrites of the failing folds still miss recall@100.
+- **A deterministic RDKit filter beats the model on all four folds, 2x-48x (try11).**
+  Where the model appears to work it is approximating a property calculator, more
+  expensively and less accurately. On attr, descriptors reach 6/88 from the same condition
+  text the model scores 291/3420 with — the condition carried the information and the
+  model failed to use it.
+- **The dominant variable is condition authoring, not model capability.** fabry's
+  condition is a genuine property spec ("compact, highly polar, ring position able to
+  carry positive charge"). gaucher's is pharmacological and negative, yielding a yes-set
+  of 38.5% of the library. cf's is applied correctly but describes hundreds of modern
+  kinase inhibitors, so it cannot single out lumacaftor.
+- **Not supported:** end-to-end identification for an unseen disease (try09 misses by
+  ~330x), or a general-purpose mechanism-to-shortlist screen (try10).
 - **No self-check has survived validation.** Two candidate warning lights for a bad run
-  (empty yes-set, try09; small yes-set, try10) each held on one fold and failed on the
-  others. Nothing yet distinguishes a good shortlist from a bad one without ground truth.
-- **Also established:** the model does no within-class discrimination (try08 —
-  migalastat vs its own stereoisomer separate by 1.8e-7), which is the natural handoff
-  point to the downstream docking stage rather than a gap to fine-tune away.
+  each held on one fold and failed on the others.
+- **No within-class discrimination** (try08 — migalastat and its own stereoisomer differ
+  by 1.8e-7). That is the natural handoff point to downstream docking, not a gap to
+  fine-tune away.
 
-Open and unsolved: **stage 1**, and it is now the only thing that matters. No screening
-refinement — bigger libraries, salt-form dedup, more folds, better metrics — changes
-anything while the derived condition is hallucinated. The untested lever is still
-try07's conclusion: require the stated condition to quote or cite spans of the provided
-mechanism description, so a memorized or invented one cannot be substituted.
+Open and unsolved: **stage 1**. No screening refinement — bigger libraries, salt-form
+dedup, more folds, better metrics — changes anything while the derived condition is
+hallucinated. The untested lever is try07's conclusion: require the stated condition to
+quote spans of the provided mechanism description, so an invented one cannot be
+substituted.
 
 ## Open question, raised mid-project
 "Bare TxGemma" (what every try in this project runs — a single `generate()` call, no

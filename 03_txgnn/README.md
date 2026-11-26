@@ -46,7 +46,7 @@ are applied and they disagree, so both are reported:
 1. **Specificity** — does the drug rank better under its own disease than under any
    other? **Three pass: malignant hyperthermia, Gaucher, PKU.**
 2. **Reliability** — is the disease entry richly enough connected for its score to mean
-   anything? **PKU fails this** (its entry is too sparse).
+   anything? **PKU fails this** (`best_cos` 0.1784 — its entry is too sparse).
 
 So: one clean pass, one borderline, one specific-but-unreliable.
 
@@ -115,45 +115,6 @@ familiarity with the tooling; the summary above does not depend on it.
    `txgnn_fabry.sb` was still silently pointing at try09's script. Computed the real
    result directly from the already-saved `eval.pkl` files rather than waiting on a
    resubmission, then resubmitted for an official clean log (22544783/22544784).
-
-## Adopted mitigation for seed variance
-**Ensembling (averaging raw scores across the 3 seeds)**, not a training/selection
-fix — try11 showed the variance is inherent embedding-space stochasticity, not a bug.
-This is the validated path forward for reporting results on any target going
-forward: train 3 seeds, average scores, report the ensembled rank, not any single
-seed's.
-
-## Result (computed 29-09-2026, from a real completed training+eval run)
-
-> **VOID as a result — superseded by try18, try17 and try25. Do not quote the 17.7.**
-> Three independent reasons, in order of severity:
-> 1. **try18: it is leaked.** With `proto=True` a held-out disease is scored as 90% the
->    blend of its 3 nearest training diseases. Fabry's #1 (31%) is *chylomicron
->    retention disease*, which in PrimeKG carries all 23 of Fabry's genes **including
->    GLA, and a migalastat indication** — almost certainly an "Anderson disease" name
->    collision. Fabry's answer was in the training graph under another name.
-> 2. **try17: it is not disease-specific.** Migalastat ranks 16 under the Fabry model
->    and 27 under Gaucher's; Fabry's and Gaucher's full rankings correlate 0.957. The
->    model had learned "rare metabolic disease drug", not Fabry.
-> 3. **try14: the configuration was chosen after seeing this number.** `attention=True`
->    was adopted on the strength of Fabry's first result, so 17.7 is optimistic by
->    construction. Fabry is also blind only by luck at the parent-category level.
->
-> On the equalized pool migalastat ranks **118** under the Fabry model (try25), and
-> **17 under the CF model** — which is the finding, not the 118.
-
-**Fabry: migalastat ranks a mean of 17.7 / 7,957 drugs** (12th/22nd/19th across 3
-seeds) — at the time read as strong, consistent and top-0.2%, and a large improvement
-over try03's early `attention=False` result (2,863rd). Kept here because the later tries
-are written as corrections to it.
-
-**Gaucher: weak and mixed per-seed**, but the picture changes with ensembling. Best
-per-seed drug was miglustat (mean rank 1251, wildly seed-variable: 7th to 3724th).
-The 3 enzyme-replacement biologics (alglucerase, imiglucerase, taliglucerase alfa) all
-score exactly 0.0 identically across all 3 seeds — root-caused in try12: their only
-PrimeKG edge is the held-out Gaucher indication, so they are isolated nodes in the
-training graph and get a zero embedding (no self-loop). Not evaluable; excluded from
-the Gaucher reference set (now 4 drugs).
 
 11. **try11** — hypothesized the Gaucher seed variance was a checkpoint-selection
     artifact (macro AUROC across 3 relation types vs. the indication-specific AUROC
@@ -277,3 +238,36 @@ the Gaucher reference set (now 4 drugs).
     cells. Confirms **hereditary and wild-type ATTR have no tafamidis edge at all (0/10
     models)**, so try23/try25's ranks of 280 and 91 at those nodes have no ground truth
     behind them and are neither hits nor misses. Jobs B/C pending on priority.
+
+## Appendix — the void Fabry result
+
+Kept because the later tries are written as corrections to it.
+
+**Fabry: migalastat ranked a mean of 17.7 / 7,957** (12th/22nd/19th across 3 seeds),
+computed 29-09-2026 and read at the time as top-0.2%. **VOID — do not quote it.** Three
+independent reasons:
+
+1. **Leaked (try18).** With `proto=True` a held-out disease is scored as 90% the blend of
+   its 3 nearest training diseases. Fabry's nearest is *chylomicron retention disease*,
+   which in PrimeKG carries all 23 Fabry genes including GLA and a migalastat indication
+   — almost certainly an "Anderson disease" name collision.
+2. **Not disease-specific (try17).** Migalastat ranks 16 under the Fabry model and 27
+   under Gaucher's; the two full rankings correlate 0.957. The model had learned "rare
+   metabolic disease drug", not Fabry.
+3. **Chosen after the fact (try14).** `attention=True` was adopted on the strength of
+   this number, so it is optimistic by construction.
+
+On the equalized pool migalastat ranks 118 under the Fabry model and **17 under the CF
+model** — that contrast is the finding, not the 118.
+
+**Gaucher, same run:** best per-seed drug was miglustat (mean rank 1251, ranging 7th to
+3724th). Three enzyme-replacement biologics scored exactly 0.0 across all seeds —
+root-caused in try12: their only PrimeKG edge is the held-out Gaucher indication, so they
+are isolated nodes in the training graph and get a zero embedding. Not evaluable;
+excluded, leaving 4 Gaucher reference drugs.
+
+## Seed variance: adopted mitigation
+
+Train 3 seeds, average the raw scores, report the ensembled rank — never a single seed's.
+Not a training or selection fix: try11 showed the variance is inherent embedding-space
+stochasticity rather than a bug.

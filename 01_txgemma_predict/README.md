@@ -121,70 +121,35 @@ familiarity with the tooling; the summary above does not depend on it.
    uniformly improve, and **Fabry's apparent category-level success was a mode artifact**
    (15.5 → 83.0 percentile, worse than chance). See try10's Result.
 
-## Current state
+## Sections 1-6: why everything before try10 is void
 
-**Every pass/fail verdict recorded before try09 was produced by a leaky test AND an
-over-trained model. Treat them all as void.** The evidence, in order of importance:
+Condensed — these verdicts are all retracted, and section 7 supersedes the reasoning
+behind them. Kept for the record of *how* each was caught.
 
-### 1. The pipeline trained ~3x too long, with no validation set at all
-`best_epoch = 0` in all 4 completed try09 runs; validation loss rises essentially
-monotonically after the first epoch while training loss keeps falling to ~0.19. The
-original script ran a fixed 3 epochs and never evaluated held-out data. This is a mundane
-and complete explanation for the memorization try08 measured — no architectural theory
-needed. Fix: stop at epoch 0, and never train without a validation set again.
-
-### 2. The hard-negative test leaked
-All 12 hard negatives, across all four targets, were in their training sets; only the
-reference was held out. So the test compared a generalization task against a memorization
-task. This is what produced the "collapse" signature behind the Fabry and TTR diagnoses —
-the model applying a memorized neighbour's label to a whole structural family. **Fabry's
-stereochemistry/diastereomer diagnosis is most likely an artifact of this.**
-
-### 3. Under the fixed harness, the target ranking inverts
-| | old (leaky, over-trained) | try09 (leak-free, epoch 0) |
-|---|---|---|
-| **TTR** | fails everything; enrichment 47.7% (~chance); "worst target" | **2/3 seeds pass**; enrichment 19–25%; reference spread **41 points** |
-| **CF** | clean pass; enrichment 11.5%; "only genuine success" | **fails on its 1 completed seed** (555 vs analogs 540/529); enrichment 21.4% |
-
-On the category-level gate the two are now indistinguishable (CF 21.4% vs TTR 19–25%), so
-the apparent CF/TTR gap was an artifact. **"CF good, TTR hopeless" does not survive.**
-CF has only n=1 and must be re-run before "CF fails" is asserted.
-
-### 4. Seed variance collapses once you stop at epoch 0
-TTR's reference prediction spread across seeds is **41 points**, against the **377 points**
-try07 measured on the old pipeline. Most of the instability was over-training, not the
-task.
-
-### 5. Output degeneracy was largely a greedy-decoding artifact (try10)
-Every score this project ever produced came from `model.generate(...)` with no sampling
-argument — greedy decoding, which returns the **modal** output rather than an estimate.
-Switching to a digit-logit expectation (3 forward passes, deterministic, no retraining)
-drops Gaucher's most-common value from **51% of novel compounds to 5.5%**, and raises
-distinct values from 27.5% to 69%. Method A reproduced try08 at 100% on all four targets,
-so this is the readout and not drift. **Digit-logit expectation is now the scoring method.**
-
-But fixing the ties did **not** uniformly improve ranking, and one result is a serious
-correction: **Fabry's apparent top-15.5% category performance was entirely an artifact of
-its collapse value (436) happening to be a low number.** Under honest scoring migalastat's
-expected value is 647–660, ranking **83rd percentile — worse than chance.** Fabry is the
-weakest of the four targets, not the second strongest.
-
-Honest ranking under digit-logit expectation (on the old over-trained adapters):
-CF 14.0, Gaucher 29.0, TTR 45.0 (~chance), Fabry 83.0. **Every enrichment number recorded
-before try10 was computed from modes and is suspect.**
-
-Also: per-molecule sampling variance is not a quality proxy — TTR has the *lowest* variance
-(26.8) and chance-level ranking, i.e. confidently wrong, while Fabry has the highest (82.2).
-
-### 6. Ranking quality remains the open problem
-TTR still assigns **994 to ~40% of a diverse 500-compound decoy set** (70–92 distinct
-values out of 500); CF assigns 889 to 14%. So Gaucher's 791-on-51%-of-novel-compounds is
-not merely an over-training artifact. This is the failure that most directly threatens the
-downstream plan: a 40% tie-group makes any top-K shortlist arbitrary.
-
-Related: validation loss at its best (2.26–2.97) is still far above training loss at the
-same epoch (~1.0), so the model overfits *within* epoch 0. Epoch-level early stopping may
-be too coarse — mid-epoch evaluation, lower LR, or fewer steps are the next things to try.
+1. **Over-training (try09).** `best_epoch = 0` in all four runs; the script ran a fixed 3
+   epochs and never checked held-out data. A mundane and complete explanation for the
+   memorization try08 measured. Fix: stop at epoch 0, never train without a validation
+   set.
+2. **The hard-negative test leaked (try09).** All 12 hard negatives were in their own
+   training sets; only the reference was held out, so the test pitted generalization
+   against memorization. **Fabry's stereochemistry diagnosis is most likely an artifact of
+   this.**
+3. **Fixing the harness inverted the target ranking.** TTR went from "worst target" to
+   2/3 seeds passing; CF went from "only genuine success" to failing its one completed
+   seed. "CF good, TTR hopeless" does not survive. CF had n=1 and needed a re-run before
+   asserting the reverse.
+4. **Most seed instability was over-training, not the task.** TTR's spread across seeds
+   fell from 377 points to 41 once training stopped at epoch 0.
+5. **The scoring method was returning the most common answer, not an estimate (try10).**
+   Every score before this used greedy decoding. Switching to a digit-logit expectation
+   dropped Gaucher's modal value from 51% of novel compounds to 5.5%. The correction that
+   mattered: **Fabry's apparent top-15.5% was entirely an artifact of its collapse value
+   happening to be a low number** — honestly scored it ranks 83rd percentile, worse than
+   chance, making it the weakest of the four rather than the second strongest. Honest
+   ranking: CF 14.0, Gaucher 29.0, TTR 45.0, Fabry 83.0.
+6. **Tie-groups remained the open problem.** TTR assigned one value to ~40% of a
+   500-compound set, which makes any shortlist arbitrary. Validation loss stayed far above
+   training loss within epoch 0, so epoch-level stopping was too coarse.
 
 ### 7. THE CAUSE, found 04-11-2026 (try13): success tracks the *base model's* prior, not the training data
 
@@ -530,6 +495,24 @@ Tanimoto 5-NN non-uniformly, by up to 56 points and in both directions:
 Measured before any adapter ran, so it is a property of the yardstick, not of the model.
 **No percentile in this project is comparable across tries unless both used the same
 candidate set, and every table in the thesis must state its pool.**
+
+#### Result: all six evaluable targets (try16, complete 25-11-2026)
+
+Blinded `digit_exp`, mean of 3 seeds, against the Tanimoto 5-NN on the same pool. Lower
+is better; chance is 49.90.
+
+| target | LoRA | kNN | verdict |
+|---|---|---|---|
+| cel | **10.28** | 17.80 | model |
+| cf | **38.89** | 71.03 | model |
+| fabry (crossval) | 40.49 | 85.83 | **artifact** — kNN is leak-flagged, inadmissible |
+| tyrosinemia | 48.77 | **18.42** | kNN |
+| attr | 68.62 | **57.32** | kNN |
+| mastocytosis | 63.34 | **0.57** | kNN, by ~100x |
+
+2 genuine wins, 1 artifact, 3 losses — roughly even. On the old 500-decoy field the same
+comparison read 1 win / 1 tie / 6 losses, which is the clearest single demonstration that
+the decoy field was not a neutral yardstick.
 
 #### Scope: 6 targets, not 8 — and the one that matters most is missing
 
