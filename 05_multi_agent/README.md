@@ -1,8 +1,17 @@
-# 05_multi_agent — tool-augmented multi-agent integrator
+# 05_multi_agent — can one model combine the others?
 
-The fourth arm. Unlike 01/02/03, this one is **not** a disjoint evidence source — it is
-an **integrator** that is allowed to call the other arms' evidence as tools. That
-framing is a deliberate decision (see below), not an accident of design.
+## In plain terms
+
+Projects 01-03 each use one kind of evidence and are kept strictly apart, so that
+agreement between them means something. This project is the opposite by design: a
+reasoning model that is allowed to *call* the others as tools — a chemistry calculator, a
+binding scorer, the disease map — and argue with itself about what they return.
+
+The question is whether the combination beats its own parts, and whether it beats the
+trivial chemical look-alike method that currently beats all of them.
+
+It is also the source of that trivial method, which now serves as the baseline
+everywhere else in the project.
 
 ## The question
 

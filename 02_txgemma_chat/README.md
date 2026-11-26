@@ -1,13 +1,44 @@
-# Project: TxGemma-Chat (reasoning-based chaperone identification)
+# TxGemma-chat — the reasoning approach
 
-**Question:** Can `txgemma-27b-chat`'s general biochemical reasoning (not a numeric
-score) identify the right chaperone/corrector/stabilizer for a target, using only the
-mechanism described in the prompt — and can that reasoning be fine-tuned to generalize
-to orphan disease mechanisms it's never seen, without becoming an agentic pipeline (no
-docking/structure-prediction tool calls — that verification stays in the user's own
-downstream pipeline by design)?
+## What this is
 
-## Arc
+The other two approaches output numbers. This one is asked to *explain*: given a written
+description of how a disease works, which drug should help, and why?
+
+It sees neither the disease map nor any binding measurements — only plain-English
+descriptions of mechanism.
+
+It is deliberately not allowed to call out to other tools. The point was to test the
+reasoning itself, with any physical verification left to a separate step.
+
+## Status: removed from the main comparison
+
+Dropped at try12. It is kept in the repository for one finding that stands on its own.
+
+**Wording alone swings the answer 239-fold.** Holding the disease, the model, and the
+drug list fixed, and changing only how the key requirement was *phrased*, moved the
+correct drug from 7th out of 1,933 to 1,675th out of 1,933.
+
+That is not a result about the disease. It means the apparent reasoning is extremely
+sensitive to presentation, so a good answer cannot be distinguished from a lucky phrasing.
+
+Supporting failures:
+
+- **It cannot identify a drug for a disease it has not seen** — off by roughly 330-fold
+  (try09).
+- **A simple mechanical chemistry filter beats it on all four tests**, by 2- to 48-fold
+  (try11). No AI involved in the filter.
+- **No self-check has worked.** Every attempt to have the model judge its own answer
+  failed validation.
+
+The open and unsolved problem is the first step: getting the model to derive the
+requirement for itself without inventing one.
+
+## Attempt log — all 12 tries
+
+The technical record, kept in full including the failures. This section assumes
+familiarity with the tooling; the summary above does not depend on it.
+
 1. **try01** — smoke test, unrelated to the science: confirmed a `generate()` API bug
    (fixed) and that the model loads/runs correctly.
 2. **try02** — double-blinded (drug AND target identity hidden) single-shot test:

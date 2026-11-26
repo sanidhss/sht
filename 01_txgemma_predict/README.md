@@ -1,33 +1,61 @@
-# Project: TxGemma-Predict (numeric drug-target scoring)
+# TxGemma-predict — the chemistry approach
 
-**Question:** Can `txgemma-9b-predict`'s `BindingDB_ki`-style numeric scoring correctly
-rank a known drug (migalastat/GLA, ambroxol/GBA1) above unrelated and structurally
-near-identical decoys, for orphan disease targets?
+## What this is
 
-## Current state (25-11-2026)
+A language model adapted to a chemistry task. It is shown a drug's chemical structure and
+a protein, and asked to output a number: how tightly do these stick together? That number
+is used to rank drugs.
 
-17 tries. Two things in this project are defensible results and the rest is
-instrumentation:
+**It never sees the disease map.** Its evidence is chemical structure plus laboratory
+binding measurements.
 
-1. **The triage rule (section 12).** Fine-tuning moves every target onto a fixed
-   ~30th-percentile band regardless of where it started — `r(zero-shot, improvement) =
-   +0.867` but `r(zero-shot, final) = -0.216`. So the deciding variable is the base
-   model's zero-shot percentile, measurable in one GPU-hour before committing to any
-   training. **The deliverable is the triage rule, not the screening tool.**
-2. **On a real approved-drug field the arm is roughly even with a Tanimoto 5-NN
-   (try16).** 2 genuine wins (cel 10.28 vs 17.80, cf 38.89 vs 71.03), 1 rank artifact
-   (fabry), 3 clear losses — against 1 win / 1 tie / 6 losses on the 500-decoy field.
-   The decoy field was not a neutral yardstick, which is what the equalized pool was
-   built to fix.
+"Fine-tuning" below means taking the general-purpose model and training it further on
+examples specific to one protein. The central finding is about when that helps.
 
-**Everything numeric here is pool-dependent and most of it is superseded.** All pre-try09
-pass/fail verdicts are void (leaky hard negatives + ~3x over-training); all pre-try10
-enrichment numbers were computed from greedy modes; and try15 showed percentiles move by
-up to 31 points when only the decoy pool changes. **try16 completed 25-11 on all six
-evaluable targets** on the frozen 1,933-drug pool (`06_equalized_pool/try01`) — the only
-field comparable with the TxGNN arm. try17's unblinded ceilings are still queued.
+## The two real findings
 
-## Arc
+**1. You can predict whether training will help, before doing it.**
+
+Fine-tuning pulls every target toward the same middling result regardless of where it
+started. A target the base model already handles well usually gets *worse*; one it
+handles badly usually gets better. The starting point is measurable in about an hour of
+computing time, so the decision to train can be made in advance rather than after days of
+work.
+
+The deliverable here is that triage rule, not a working screening tool. Full numbers in
+section 12.
+
+**2. Against a fair drug list, the model only ties a trivial baseline.**
+
+The baseline is plain chemical look-alike matching — rank drugs by how similar they look
+to compounds already known to bind the target. No AI involved.
+
+On the shared 1,933-drug list (try16, all six testable targets finished 25-11): two
+genuine wins, one apparent win that is an artifact, three losses. Roughly even.
+
+On the older, easier list of 500 unrelated decoys the same comparison read 1 win, 1 tie,
+6 losses — which is how we learned the old list was not a neutral yardstick.
+
+## Read the numbers with care
+
+Most figures in this file are superseded, and the arc below records why:
+
+- Everything before try09 is void — the "hard" decoys were present in training, and the
+  model was trained about three times too long with nothing to check against.
+- Everything before try10 used a scoring method that returned the most common answer
+  rather than an estimate.
+- try15 showed scores shift by up to 31 percentage points when *only* the list of wrong
+  answers changes. That is larger than most differences being measured, and is why the
+  frozen shared list exists.
+
+try16 is the only set of numbers directly comparable with the TxGNN arm. try17's ceiling
+tests are still queued.
+
+## Attempt log — all 17 tries
+
+The technical record, kept in full including the failures. This section assumes
+familiarity with the tooling; the summary above does not depend on it.
+
 1. **try01/try02** — zero-shot: failed. Root cause is data coverage, not a broken
    pipeline: BindingDB has 0 records for GLA, 17 for GBA1, and the one real ABL1/imatinib
    hit is filed under a different sequence identity (BCR-ABL fusion) than what was asked.

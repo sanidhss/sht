@@ -1,4 +1,17 @@
-# try01 — build and freeze the equalized candidate pool
+# try01 — build and freeze the shared drug list
+
+## In plain terms
+
+Each approach was ranking the correct drug against a *different* set of candidates, which
+makes their scores incomparable — coming 10th out of 500 is not the same achievement as
+coming 10th out of 8,000, and a list padded with obviously unrelated compounds flatters
+whichever model is being tested.
+
+This step builds one list every approach uses: the drugs present in **both** source
+collections, 1,933 of them. The list is frozen and fingerprinted, and every scoring
+script verifies that fingerprint before it will run.
+
+Nothing is scored here. This only builds the ruler.
 
 ## Why
 The four arms score different drug universes, so none of their current numbers are

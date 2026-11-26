@@ -1,4 +1,19 @@
-# 07_structure_pipeline — structure prediction → ligand prep → interface scoring
+# 07_structure_pipeline — does the drug physically fit?
+
+## In plain terms
+
+Projects 01-03 are statistical: they rank drugs without ever modelling the physical
+object. This half of the thesis asks the complementary question — if you predict the
+three-dimensional shape of the protein with the drug attached, does the pairing make
+physical sense, and how strongly do the two hold together?
+
+The chain: predict the structure, check the prediction is good enough to use, prepare the
+drug molecule, then measure the contact between the two.
+
+**Nothing has been run yet.** This folder only proves each tool installs and starts on
+this machine. The jobs that would produce a result are still queued.
+
+## The pipeline
 
 Installs and verifies the four tools in the pipeline diagram:
 

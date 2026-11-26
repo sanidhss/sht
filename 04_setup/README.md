@@ -1,6 +1,7 @@
-# Project: Setup / Installation
+# 04_setup — one-time installation
 
-One-time environment and data preparation that every other project depends on.
+Downloading the models and preparing the disease database. No science happens here; every
+other project depends on this having been done once.
 
 1. **try01** — download TxGemma-9B and TxGemma-27B weights. Completed cleanly.
 2. **try02** — prepare PrimeKG's processed knowledge graph for TxGNN. Two early failures
