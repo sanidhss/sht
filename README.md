@@ -38,16 +38,19 @@ and logs only.
 - **[01_txgemma_predict](01_txgemma_predict/README.md)** — numeric drug-target scoring
   fine-tune (`txgemma-9b-predict`), chemistry only (SMILES + real bioactivity data).
   17 tries, 8 targets. Current state: the defensible result is **not** a per-disease
-  pass/fail but a **screening criterion** — whether the pipeline will work on a given
-  orphan drug is measurable zero-shot in one GPU-hour (try13), and it sorted all four
-  original targets correctly. Fine-tuning produces swings up to 80 percentile points in
-  *both* directions and converges every target to one band, i.e. it teaches the task's
-  output distribution more than the target's chemistry (try14/15). Now moving onto the
-  frozen equalized pool (try16/17): **2 of 6 targets landed**, cf and fabry, both
-  beating their Tanimoto baseline but with cf's seed spread at 43.8 points and fabry's
-  baseline inadmissible (leak-flagged). `NEXT_PHASE_diverse_structural_training.md` is
-  **superseded** — try13 showed the fine-tuning data is not where the discrimination
-  comes from.
+  pass/fail but a **triage rule** — fine-tuning drags every target onto a fixed
+  ~30th-percentile band wherever it started (`r(zero-shot, improvement) = +0.867`,
+  `r(zero-shot, final) = -0.216`), so the deciding variable is the base model's
+  zero-shot percentile, measurable in one GPU-hour before committing to training. A
+  strong prior is usually *destroyed* by fine-tuning (2 of 3 targets); a cold start is
+  reliably helped, ordered by data volume. **try16 completed 25-11 on the frozen
+  equalized pool**, all six evaluable targets: **2 genuine wins** (cel 10.28 vs kNN
+  17.80, cf 38.89 vs 71.03), 1 rank artifact (fabry — it outranks the kNN only because
+  the kNN is more wrong in the same direction), 3 clear losses, the worst being
+  mastocytosis at 63.34 against a kNN at **0.57**. That is roughly even, against 1 win /
+  1 tie / 6 losses on the old 500-decoy field.
+  `NEXT_PHASE_diverse_structural_training.md` is **superseded** — try13 showed the
+  fine-tuning data is not where the discrimination comes from.
 - **[02_txgemma_chat](02_txgemma_chat/README.md)** — reasoning-based chaperone
   identification (`txgemma-27b-chat`), leave-one-target-out across 4 mechanism
   classes. 12 tries. **Descoped from the architecture comparison** (try12); it is kept
@@ -112,13 +115,21 @@ control rather than by inspection.
 | eligibility inferred from a holdout list, not the actual split | 03/try26 | would have mis-scored 14% of cells |
 | hard-negative *selection* picking salts/tautomers of the reference | 01/try14 | 3 of 4 new targets' verdicts |
 
-**The cross-architecture comparison is now on one ruler but is not finished.**
-`06_equalized_pool`'s 1,933-drug pool is the shared field; the graph arm is complete on
-it (03/try25) and the transformer arm has 2 of 6 targets (01/try16). Unblinded ceilings
-for both arms (01/try17, 03/try26) are queued. **Gaucher cannot be placed on the shared
-ruler at all** — ambroxol is absent from the pool — which bears directly on the thesis's
-stated Fabry+Gaucher proof-of-concept pair and needs an explicit decision: drop it, or
-re-freeze as `pool_v2` with a curated override table, reported as such.
+**Both blinded arms are now on one ruler.** `06_equalized_pool`'s 1,933-drug pool is the
+shared field: the graph arm re-ranked onto it in 03/try25 (23-11) and the transformer arm
+completed all six evaluable targets in 01/try16 (25-11). The side-by-side per-disease
+percentiles are **held locally and deliberately not committed to this repository**; each
+arm's own numbers stay in its track README. Read them with the controls attached, not as
+a scoreboard: TxGNN leads on most shared diseases **but fails the specificity control on
+all of them except malignant hyperthermia** (its drugs rank as well or better under
+unrelated disease models), and TxGemma's weaker rows have seed spreads wide enough to
+swallow their own means. Chance is 49.9%.
+
+**Still missing:** unblinded ceilings for both arms (01/try17, 03/try26) are queued, and
+**Gaucher cannot be placed on the shared ruler at all** — ambroxol is absent from the
+pool — which bears directly on the thesis's stated Fabry+Gaucher proof-of-concept pair
+and needs an explicit decision: drop it, or re-freeze as `pool_v2` with a curated
+override table, reported as such.
 
 **Standing decisions, unchanged.** Do *not* merge chemistry into TxGNN's architecture —
 it would blur the clean architectural contrast and is a large, risky library

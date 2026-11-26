@@ -9,21 +9,23 @@ near-identical decoys, for orphan disease targets?
 17 tries. Two things in this project are defensible results and the rest is
 instrumentation:
 
-1. **The up-front screening criterion (try13).** Whether this pipeline will work on a
-   given orphan drug is measurable in one GPU-hour with no training: score the drug and
-   its closest real analogs zero-shot and check whether the base model separates them.
-   It sorted all four original targets correctly. This is the transferable finding.
-2. **Fine-tuning converges every target to the same band (try14/try15, 8 targets).**
-   Effects up to 80 percentile points in both directions — cel 94.2 → 20.6 and
-   nsiad 96.6 → 16.0, but fabry 10.0 → 35.2 and mastocytosis 14.6 → 77.9 are *damaged*.
-   LoRA teaches the task's output distribution more than the target's chemistry.
+1. **The triage rule (section 12).** Fine-tuning moves every target onto a fixed
+   ~30th-percentile band regardless of where it started — `r(zero-shot, improvement) =
+   +0.867` but `r(zero-shot, final) = -0.216`. So the deciding variable is the base
+   model's zero-shot percentile, measurable in one GPU-hour before committing to any
+   training. **The deliverable is the triage rule, not the screening tool.**
+2. **On a real approved-drug field the arm is roughly even with a Tanimoto 5-NN
+   (try16).** 2 genuine wins (cel 10.28 vs 17.80, cf 38.89 vs 71.03), 1 rank artifact
+   (fabry), 3 clear losses — against 1 win / 1 tie / 6 losses on the 500-decoy field.
+   The decoy field was not a neutral yardstick, which is what the equalized pool was
+   built to fix.
 
 **Everything numeric here is pool-dependent and most of it is superseded.** All pre-try09
 pass/fail verdicts are void (leaky hard negatives + ~3x over-training); all pre-try10
 enrichment numbers were computed from greedy modes; and try15 showed percentiles move by
-up to 31 points when only the decoy pool changes. **try16/try17 move this arm onto the
-frozen 1,933-drug equalized pool** (`06_equalized_pool/try01`), which is the only field
-comparable with the TxGNN arm. 2 of 6 targets have landed — see section 12.
+up to 31 points when only the decoy pool changes. **try16 completed 25-11 on all six
+evaluable targets** on the frozen 1,933-drug pool (`06_equalized_pool/try01`) — the only
+field comparable with the TxGNN arm. try17's unblinded ceilings are still queued.
 
 ## Arc
 1. **try01/try02** — zero-shot: failed. Root cause is data coverage, not a broken
@@ -476,6 +478,72 @@ The honest framing is **not** "a fine-tuned LLM ranks chaperones correctly." It 
 
 The deliverable is the **triage rule**, not the screening tool.
 
+### 13. The equalized pool itself: scope, and what it changed (try16 complete, try17 queued)
+
+try15's lesson was that a percentile is a statement about a candidate set. try16/try17
+therefore drop the 500-decoy field entirely and score `06_equalized_pool/try01`'s
+**pool_v1: 1,933 real approved drugs, sha256-verified inside every scoring script** --
+the same field the TxGNN arm re-ranked onto in try25. The question becomes the
+deployment question: how deep a shortlist of approved drugs must a screen carry before
+the right drug is in it.
+
+**This is what flipped the baseline verdict.** The decoy field was flattering the
+Tanimoto 5-NN non-uniformly, by up to 56 points and in both directions:
+
+| target | kNN on 500 decoys | kNN on 1,933 real drugs | shift |
+|---|---|---|---|
+| mastocytosis | 20.8 | **0.57** | far better |
+| tyrosinemia | 26.8 | 18.42 | better |
+| cel | 5.8 | 17.80 | worse |
+| attr | 31.0 | 57.32 | much worse |
+| cf | 29.4 | 71.03 | much worse |
+| fabry | 26.4 | 85.83 | far worse (leak) |
+
+Measured before any adapter ran, so it is a property of the yardstick, not of the model.
+**No percentile in this project is comparable across tries unless both used the same
+candidate set, and every table in the thesis must state its pool.**
+
+#### Scope: 6 targets, not 8 — and the one that matters most is missing
+
+Ambroxol and tolvaptan are absent from pool_v1 by canonical structure (ambroxol is not
+`max_phase=4` in ChEMBL; tolvaptan's UniChem partner is a different ChEMBL record from
+the library's). **Nothing was substituted** -- tolvaptan's UniChem partner CHEMBL4303142
+is the same record try14 used as nsiad's *hard negative*, a 350x weaker stereoisomer, so
+spiking it would have swapped the drug for its own decoy.
+
+So **gaucher -- this project's only target that ever beat its hard negatives, and the
+only one to finish below the ~16th-percentile floor -- cannot be placed on the shared
+ruler at all.** That is a limitation of the pool, not of the model, and it lands squarely
+on the thesis's stated Fabry+Gaucher proof-of-concept pair. It needs an explicit
+decision: drop it, or re-freeze as `pool_v2` with a curated ChEMBL-id override table,
+reported as such.
+
+#### No hard-negative result in either try
+
+Carried forward from try14: the selection takes the top-3 Tanimoto neighbours with no
+identity or potency check, so on 3 of 4 new targets it picked the reference drug in
+disguise (imatinib mesylate, both nitisinone enol tautomers, staurosporine twice), and
+on mastocytosis the negatives are genuinely more potent than midostaurin -- so a correct
+model must fail that test. The pool rank is the number that means something.
+
+#### try17 (unblinded ceiling) -- queued, but two guard fixes are already worth recording
+
+Injecting the reference with its own measured label is not sufficient to unblind it.
+Two mechanisms would have silently re-blinded it: the scaffold holdout **deletes** the
+injected reference on fabry and cel (their hard negatives are their close analogs), and
+the scaffold validation split puts it in validation rather than training on 4 of 18
+seed-runs. **Without both fixes "unblinded" would have been false on half the targets.**
+The script now exits 6 rather than reporting an unblinded number if the reference is not
+in the training pool.
+
+The CPU arms are in. Finding 1: unblinding does **not** let a 5-NN ace the task -- k=5
+averaging dilutes the exact match, and the rank is set by the other 1,932 drugs' scores,
+not the reference's. Finding 2: Morgan-2 is stereo-blind, so migalastat's four nearest
+actives sit at similarity **exactly 1.000** with labels 925/754/993 against its own 196.
+That is the definitive explanation of why fabry was never solvable by a fingerprint
+method -- a representation failure, not a data failure -- and why fabry's kNN baseline
+is inadmissible rather than merely bad.
+
 ### Caveats on earlier numbers
 - Gaucher's analog real labels are 791/**679**/839, not the 791/791/839 quoted in places
   (those are *predicted*). Analog #2's real 679 is more potent than ambroxol's real 685.
@@ -488,65 +556,3 @@ The deliverable is the **triage rule**, not the screening tool.
   which is how Gaucher printed "trust this target adapter for broader DrugBank-wide
   screening" while scoring worse than metformin. try09 sidesteps this by reporting
   enrichment separately; the original script still has the flaw.
-
-### 12. On the frozen equalized pool (try16/try17, partial — 25-11-2026)
-
-try15's lesson was that a percentile is a statement about a candidate set. try16 and
-try17 therefore drop the 500-decoy field entirely and score
-`06_equalized_pool/try01`'s **pool_v1: 1,933 real approved drugs, sha256-verified inside
-every scoring script**, which is the same field the TxGNN arm re-ranked onto in try25.
-The question becomes the deployment question: how deep a shortlist of approved drugs must
-a screen carry before the right drug is in it.
-
-**Scope: 6 targets, not 8.** Ambroxol and tolvaptan are absent from pool_v1 by canonical
-structure (ambroxol is not `max_phase=4` in ChEMBL; tolvaptan's UniChem partner is a
-different ChEMBL record from the library's). **Nothing was substituted** — tolvaptan's
-UniChem partner CHEMBL4303142 is the same record try14 used as nsiad's *hard negative*,
-a 350x weaker stereoisomer. So **Gaucher, this project's one success, cannot be placed on
-the shared ruler at all.** That is a limitation of the pool, and it lands squarely on the
-thesis's stated n=2 (Fabry + Gaucher) design.
-
-**Status: 2 of 6 targets scored.** try16 array tasks 0/1 (`cf`, `fabry`) completed 25-11
-after ~37h queued; tasks 2-5 (`attr`, `cel`, `mastocytosis`, `tyrosinemia`) and all of
-try17 are PENDING on priority. The `SUMMARY.md` in try16's results directory is the 23-11
-dry-run collate and still says all eight are missing — it is not the current state.
-
-| target | model blinded (digit_exp) | seed spread | Tanimoto blinded | chance |
-|---|---|---|---|---|
-| cf / lumacaftor | **38.89%** (14.5 / 43.8 / 58.4) | **43.8** | 71.03% | 49.90% |
-| fabry / migalastat, crossval | 40.49% | **4.4** | 85.83% **TRIVIAL** | 49.90% |
-| fabry / migalastat, stepstop | 27.09% | 29.5 | 85.83% **TRIVIAL** | 49.90% |
-
-Four things follow, all detailed in try16's README:
-
-- **The 1-win/1-tie/6-loss verdict against the Tanimoto baseline does not survive the
-  change of field, at least on cf.** All three cf seeds beat 71.03%; the decoy field had
-  been flattering that baseline by 41.6 points. But three of the four pending targets
-  carry the baselines that matter most (mastocytosis 0.57%, cel 17.80%, tyrosinemia
-  18.42%), so the verdict is open, not overturned.
-- **fabry has no admissible baseline here.** Its Tanimoto row is `trivial_flag = True`
-  (a training active at Tanimoto 1.000 — Morgan-2 is stereo-blind, so migalastat's
-  diastereomers are *identical* to it in that representation, with labels 925/754/993
-  against migalastat's 196). Beating 85.83% is not evidence of anything.
-- **Cross-validation stabilises fabry again** — spread 4.4 vs stepstop's 29.5, a 6.7x
-  reduction reproducing try12 on a new field. Report crossval (40.49%, just better than
-  chance), not stepstop's lower but noisier 27.09%.
-- **`abs_label_error` separates the two targets in a way the ranks hide.** cf's
-  prediction is within 3-7% of lumacaftor's measured 584 on every seed. fabry's is off by
-  ~3x (524-605 against a real 196) on all six adapters, in the same direction every time.
-  fabry's mid-field rank is a confident wrong answer about the most potent reference in
-  the project, not a near-miss on a weak binder.
-
-**No hard-negative result is reported in either try**, carried forward from try14: the
-selection takes the top-3 Tanimoto neighbours with no identity or potency check, so on 3
-of 4 new targets it selected the reference drug in disguise, and on mastocytosis the
-negatives are genuinely more potent than midostaurin, so a correct model must fail.
-
-try17 adds the unblinded ceiling (the reference injected with its own measured label),
-and its two guard fixes are worth recording even before the GPU arm lands: the scaffold
-holdout would have **deleted** the injected reference on fabry and cel, and the scaffold
-validation split would have put it in validation on 4 of 18 seed-runs. **Without both
-fixes "unblinded" would have been false on half the targets.** The CPU arms are already
-in, and Finding 1 there is that unblinding does *not* let a 5-NN ace the task — k=5
-averaging dilutes the exact match, and the rank is set by the other 1,932 drugs' scores,
-not the reference's.
