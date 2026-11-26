@@ -1,6 +1,4 @@
-# Can AI find new uses for existing drugs in rare diseases?
-
-A senior honors thesis. Written to be readable without a computing background.
+A senior honors thesis at the University of Houston.
 
 ## The problem
 
