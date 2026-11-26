@@ -95,28 +95,6 @@ unrelated compounds. The "hard negative" discipline (real structurally-similar
 analogs, not just unrelated drugs) recurs across all three as the thing that separates
 a real result from an easy, uninformative one.
 
-### RETRACTED: the "complementarity" finding this README used to lead with
-
-> This README previously led with: *TxGemma-predict passes on Gaucher and fails on
-> Fabry; TxGNN does the opposite — strong on Fabry, weaker on Gaucher; the two signal
-> sources are therefore complementary.* **Both halves of that contrast have since been
-> withdrawn by the tracks that produced them, so the inference is void.**
->
-> - **TxGemma's Gaucher pass:** every pre-try09 verdict in 01 was produced by a leaky
->   test *and* an over-trained model — all 12 hard negatives were in the training sets,
->   and `best_epoch = 0` showed the pipeline trained ~3x past optimum with no validation
->   set at all. try13 then showed what remains of Gaucher's result is a **base-model
->   prior that LoRA sharpened**, not knowledge learned from its 1,208 training
->   compounds.
-> - **TxGNN's Fabry result:** try18 found migalastat's answer sitting in the training
->   graph under another name (a *chylomicron retention disease* node carrying all 23 of
->   Fabry's genes and a migalastat indication), and try17 showed the model ranks by
->   disease category anyway — migalastat scores 16 under the Fabry model and 27 under
->   Gaucher's.
->
-> Kept visible rather than deleted, because the pattern of **a clean story arriving
-> before the leak audit that kills it** is the recurring shape of this project and the
-> reason the audits are now run first.
 
 **What actually spans the tracks is methodological, and it is the project's most
 transferable output:** every apparent success here was produced by a measurement
