@@ -1,0 +1,11 @@
+disease,reference_drug,txgnn_percentile_ensembled,txgnn_seed_min,txgnn_seed_max,txgnn_specificity_pass,txgnn_best_rank_under_other_model,txgnn_other_model,txgemma_lora_percentile_mean,txgemma_seed_min,txgemma_seed_max,txgemma_n_seeds,txgemma_path,tanimoto_knn_percentile,tanimoto_knn_trivial_flag
+Gaucher,miglustat,0.517,0.155,17.538,pass,27,fabry,REFERENCE_NOT_IN_POOL,,,,,REFERENCE_NOT_IN_POOL,
+Malignant hyperthermia,Dantrolene,0.569,0.569,1.086,pass,29,mh,NO_TXGEMMA_ARM,,,,,NO_ACTIVES_SET,
+Fabry,migalastat,6.105,2.897,13.295,FAIL,17,cf,40.490,38.334,42.783,3,crossval,85.825,TRIVIAL
+ATTR amyloidosis,tafamidis,8.019,5.691,11.847,FAIL,8,fabry,68.615,63.942,76.772,3,stepstop,57.320,
+Phenylketonuria,Sapropterin,10.916,8.226,16.141,pass,778,fabry,NO_TXGEMMA_ARM,,,,,NO_ACTIVES_SET,
+Cystic fibrosis,lumacaftor,14.951,12.261,20.538,FAIL,72,fabry,38.886,14.537,58.355,3,stepstop,71.029,
+Tyrosinemia,Nitisinone,29.281,7.708,42.990,FAIL,34,gaucher,48.767,17.848,70.098,3,stepstop,18.417,
+Chronic eos. leukemia,Imatinib,43.404,39.576,46.146,FAIL,121,cf,10.278,7.501,12.209,3,stepstop,17.796,
+Systemic mastocytosis,Midostaurin,50.491,48.163,53.440,FAIL,768,fabry,63.339,47.077,73.668,3,stepstop,0.569,
+NSIAD,Tolvaptan,NOT_IN_POOL,,,,,,REFERENCE_NOT_IN_POOL,,,,,REFERENCE_NOT_IN_POOL,
