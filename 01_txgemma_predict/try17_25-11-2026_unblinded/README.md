@@ -273,6 +273,60 @@ Two fallbacks, neither applied:
    per-position logits, so it risks the `digit_exp` readout and would break strict
    comparability with try16. It is the right fix for the next run.
 
+### Preempt was a dead end — measured, 27-11-2026
+
+The 25-11 decision to move both arrays to `gpuA40x4-preempt,gpuA100x4-preempt` was wrong,
+and the cost was 44 hours of queue age for zero progress.
+
+Measured at 10:56 on 27-11, after 44h pending:
+
+| partition          | running | pending |
+|--------------------|---------|---------|
+| gpuA40x4           | 314     | 1863    |
+| gpuA40x4-preempt   | **0**   | 532     |
+| gpuA100x4          | 262     | 2922    |
+| gpuA100x4-preempt  | **0**   | 711     |
+
+Cluster-wide `sacct` since 20-11 on `gpuA40x4-preempt`: 755 CANCELLED, 127 PENDING,
+**zero COMPLETED, zero RUNNING** — for any user, not just this account. Over 30 days the
+partition does complete jobs (179), so it is not broken; it is starved. The preempt
+partitions only get nodes that the standing partitions leave idle, and with 1863 + 2922
+jobs queued on the standing partitions there are no idle nodes to backfill into.
+
+The reasoning that put the jobs there — "preempt partitions allocated ~8 days faster in
+historical `sacct`" — came from a window when the standing queues were shallow. Queue
+depth, not partition identity, is what decides this. Check `running` on the target
+partition before choosing it; a partition with 0 running jobs is not fast, it is starved.
+
+The counter-evidence was visible the same morning: `txgnn_t26_B` was taking fresh
+`gpuA40x4` (standing, non-preempt) allocations every 8–15 minutes with a 4h time limit,
+while try17 sat unscheduled on preempt with no start estimate at all.
+
+**Recovery, and what it cost.** Both arrays moved back in place:
+
+    scontrol update jobid=24536392 partition=gpuA40x4,gpuA100x4
+    scontrol update jobid=24536393 partition=gpuA40x4,gpuA100x4
+
+`scontrol update` was used rather than cancel-and-resubmit specifically to keep the
+accrued age. **It did not work.** Priority went 2293 -> 981, with the AGE factor dropping
+1319 -> 0 and staying there across scheduler passes, even though `scontrol show job` still
+reports the original `AccrueTime=2026-11-25T14:34:04`. Slurm restarts priority accrual when
+a pending job's partition is modified; the displayed `AccrueTime` is not what the age factor
+is computed from. There is no way to change a pending job's partition and keep its age.
+
+So the real cost of the preempt decision is the full 44h, not the switch.
+
+### Deadline outcome
+
+The 12:00 27-11 deadline was missed. At 11:00 the arrays held priority 981 against 1863
+queued jobs on `gpuA40x4`, with no start estimate. The model-unblinded arm is the only
+missing piece: `results_unblinded_pool_v1.csv` already carries the Tanimoto blinded and
+unblinded arms, the empirical random-chance baseline, and the try16 blinded model numbers.
+Its `model_unblinded` rows read `MISSING: unblinded task not finished`.
+
+Fallback 1 from the section above (cut the large targets to 1 seed) is the lever that is
+still unused, and is now the fastest route to a complete table.
+
 ## Result
 
 Pending — GPU array queued. Fill in from
