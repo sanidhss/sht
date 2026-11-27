@@ -140,12 +140,20 @@ def main():
     print('\n[note] a cell whose edge_in is valid/test is NOT unblinded; see '
           'unblinded_all_models.csv for the edge_in of every cell.')
 
+    # `tabulate` is not installed in envs/txgnn2, so to_markdown() raises. The CSVs are
+    # already written by this point, but the job would still exit 1 with no summary.
+    def table(df, index):
+        try:
+            return df.to_markdown(index=index)
+        except ImportError:
+            return '```\n' + df.to_string(index=index) + '\n```'
+
     md = os.path.join(TRY_DIR, 'SUMMARY.md')
     with open(md, 'w') as f:
         f.write('# try26 unblinded ceiling vs blinded (pool_v1, seed-ensembled)\n\n')
-        f.write(show.to_markdown(index=False))
+        f.write(table(show, False))
         f.write('\n\n## Per-model unblinded ranks (pool_v1)\n\n')
-        f.write(piv.to_markdown())
+        f.write(table(piv, True))
         f.write('\n')
     print(f'\n[C] wrote blinded_vs_unblinded.csv, unblinded_all_models.csv, {md}')
 
